@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
 import {
   ActionIcon,
   Avatar,
@@ -11,7 +11,7 @@ import {
   Indicator,
   Kbd,
   Tooltip,
-} from '@mantine/core';
+} from "@mantine/core";
 import {
   IconBell,
   IconBolt,
@@ -23,17 +23,22 @@ import {
   IconSettings,
   IconUsers,
   IconVocabulary,
-} from '@tabler/icons-react';
-import { useUiStore } from '@/stores/use-ui-store';
-import styles from './forkroom-shell.module.css';
+} from "@tabler/icons-react";
+import { useUiStore } from "@/stores/use-ui-store";
+import styles from "./forkroom-shell.module.css";
 
 const navigation = [
-  { label: 'Home', icon: IconHome, href: '#' },
-  { label: 'Decisions', icon: IconVocabulary, href: '/decisions/authentication-strategy', active: true },
-  { label: 'Actions', icon: IconListCheck, href: '#' },
-  { label: 'Reviews', icon: IconBolt, href: '#' },
-  { label: 'Exports', icon: IconFileExport, href: '#' },
-  { label: 'Members', icon: IconUsers, href: '#' },
+  { label: "Home", icon: IconHome, href: "#" },
+  {
+    label: "Decisions",
+    icon: IconVocabulary,
+    href: "/decisions/authentication-strategy",
+    active: true,
+  },
+  { label: "Actions", icon: IconListCheck, href: "#" },
+  { label: "Reviews", icon: IconBolt, href: "#" },
+  { label: "Exports", icon: IconFileExport, href: "#" },
+  { label: "Members", icon: IconUsers, href: "#" },
 ];
 
 function NavigationLinks({ compact = false }: { compact?: boolean }) {
@@ -43,11 +48,16 @@ function NavigationLinks({ compact = false }: { compact?: boolean }) {
       {navigation.map((item) => {
         const Icon = item.icon;
         return (
-          <Tooltip key={item.label} label={item.label} position="right" disabled={!compact}>
+          <Tooltip
+            key={item.label}
+            label={item.label}
+            position="right"
+            disabled={!compact}
+          >
             <Link
               href={item.href}
-              className={`${styles.navItem} ${item.active ? styles.navItemActive : ''}`}
-              aria-current={item.active ? 'page' : undefined}
+              className={`${styles.navItem} ${item.active ? styles.navItemActive : ""}`}
+              aria-current={item.active ? "page" : undefined}
             >
               <Icon size={19} stroke={1.8} aria-hidden="true" />
               <span className={styles.navText}>{item.label}</span>
@@ -59,7 +69,9 @@ function NavigationLinks({ compact = false }: { compact?: boolean }) {
   );
 }
 
-export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode }>) {
+export function ForkRoomShell({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   const navigationOpen = useUiStore((state) => state.navigationOpen);
   const setNavigationOpen = useUiStore((state) => state.setNavigationOpen);
 
@@ -75,7 +87,9 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
             aria-label="Open navigation"
           />
           <Link href="/" className={styles.brand} aria-label="ForkRoom home">
-            <span className={styles.brandMark} aria-hidden="true">F</span>
+            <span className={styles.brandMark} aria-hidden="true">
+              F
+            </span>
             <span className={styles.brandName}>ForkRoom</span>
           </Link>
         </div>
@@ -95,11 +109,18 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
             Search
           </Button>
           <Indicator color="rust" size={7} offset={5}>
-            <ActionIcon variant="subtle" color="dark" size={40} aria-label="Notifications">
+            <ActionIcon
+              variant="subtle"
+              color="dark"
+              size={40}
+              aria-label="Notifications"
+            >
               <IconBell size={20} stroke={1.8} />
             </ActionIcon>
           </Indicator>
-          <Avatar color="rust" radius="xl" size={34} aria-label="Raman Singh">RS</Avatar>
+          <Avatar color="rust" radius="xl" size={34} aria-label="Raman Singh">
+            RS
+          </Avatar>
         </div>
       </header>
 
@@ -112,7 +133,9 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
             <span className={styles.navText}>Settings</span>
           </Link>
           <div className={styles.profileBlock}>
-            <Avatar color="dark" size={30} radius="xl">RS</Avatar>
+            <Avatar color="dark" size={30} radius="xl">
+              RS
+            </Avatar>
             <div className={styles.profileCopy}>
               <strong>Raman Singh</strong>
               <span>Workspace owner</span>
