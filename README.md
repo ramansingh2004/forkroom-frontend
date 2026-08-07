@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+ForkRoom Frontend
 
-## Getting Started
+ForkRoom is a collaborative decision workspace. This repository contains the separate Next.js frontend for the completed FastAPI backend.
 
-First, run the development server:
+Stack
 
-```bash
+Next.js App Router + React + TypeScript
+
+Mantine + CSS Modules + PostCSS
+
+Tabler Icons
+
+TanStack Query for server state
+
+Zustand for local UI state
+
+Axios for API access
+
+react-resizable-panels for the desktop Decision Room
+
+React Hook Form + Zod for forms
+
+Motion for deliberate interface transitions
+
+Tiptap, Yjs/Hocuspocus, and WebRTC dependencies will be added when their corresponding collaborative surfaces are implemented.
+
+Local setup
+
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The default local API URL is http://127.0.0.1:8000/api/v1.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Quality checks
 
-## Learn More
+npm run typecheck
+npm run lint
+npm run build
 
-To learn more about Next.js, take a look at the following resources:
+Design source of truth
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The frontend follows the supplied ForkRoom product brief, layout blueprint, and light-mode ARES-derived design system:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+warm canvas: #F4EEEA
 
-## Deploy on Vercel
+raised surface: #FFFDFC
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+primary rust: #CB4D22
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+commitment anchor: #000000
+
+Manrope for interface text
+
+Source Serif 4 for long-form decision content
+
+JetBrains Mono for compact metadata
+
+The core interface is the Decision Room: a resizable three-area desktop workspace that becomes tabs/sheets on smaller viewports.
+
+Backend contract
+
+Before wiring authentication and real server data, export the exact OpenAPI document from the running backend:
+
+http://127.0.0.1:8000/openapi.json
+
+The frontend will generate TypeScript API types from that contract instead of inventing request or response fields.
