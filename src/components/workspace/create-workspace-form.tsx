@@ -35,11 +35,11 @@ export function CreateWorkspaceForm() {
 
   return (
     <div className={styles.formPage}>
-      <div className={styles.formIntro}>
+      <header className={styles.formIntro}>
         <span className={styles.eyebrow}>NEW WORKSPACE</span>
         <h1>Create a shared decision space</h1>
         <p>You will be the workspace owner. You can invite teammates after creation.</p>
-      </div>
+      </header>
 
       <form className={styles.formCard} onSubmit={submit} noValidate>
         <TextInput

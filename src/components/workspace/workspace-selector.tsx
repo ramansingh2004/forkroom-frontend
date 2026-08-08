@@ -52,7 +52,7 @@ export function WorkspaceSelector() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.pageHeader}>
+      <header className={styles.pageHeader}>
         <div>
           <span className={styles.eyebrow}>WORKSPACES</span>
           <h1>Choose where to decide</h1>
@@ -61,17 +61,19 @@ export function WorkspaceSelector() {
         <Button component={Link} href="/workspaces/new" color="rust" leftSection={<IconPlus size={17} />}>
           Create workspace
         </Button>
-      </div>
+      </header>
 
       {(workspaces.data?.length ?? 0) > 8 && (
-        <TextInput
-          className={styles.search}
-          value={query}
-          onChange={(event) => setQuery(event.currentTarget.value)}
-          placeholder="Search workspaces"
-          leftSection={<IconSearch size={16} />}
-          aria-label="Search workspaces"
-        />
+        <section className={styles.toolbarPanel} aria-label="Workspace tools">
+          <TextInput
+            className={styles.search}
+            value={query}
+            onChange={(event) => setQuery(event.currentTarget.value)}
+            placeholder="Search workspaces"
+            leftSection={<IconSearch size={16} />}
+            aria-label="Search workspaces"
+          />
+        </section>
       )}
 
       {workspaces.data?.length === 0 ? (

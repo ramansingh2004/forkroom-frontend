@@ -24,28 +24,11 @@ export const workspaceKeys = {
   decisions: (workspaceId: string, status?: DecisionStatus) =>
     [...workspaceKeys.all, 'decisions', workspaceId, status ?? 'all'] as const,
   decision: (workspaceId: string, decisionId: string) =>
-  [
-    ...workspaceKeys.all,
-    'decision',
-    workspaceId,
-    decisionId,
-  ] as const,
-
-proposals: (workspaceId: string, decisionId: string) =>
-  [
-    ...workspaceKeys.all,
-    'proposals',
-    workspaceId,
-    decisionId,
-  ] as const,
-
-criteria: (workspaceId: string, decisionId: string) =>
-  [
-    ...workspaceKeys.all,
-    'criteria',
-    workspaceId,
-    decisionId,
-  ] as const,
+    [...workspaceKeys.all, 'decision', workspaceId, decisionId] as const,
+  proposals: (workspaceId: string, decisionId: string) =>
+    [...workspaceKeys.all, 'proposals', workspaceId, decisionId] as const,
+  criteria: (workspaceId: string, decisionId: string) =>
+    [...workspaceKeys.all, 'criteria', workspaceId, decisionId] as const,
 };
 
 export function useWorkspaces() {

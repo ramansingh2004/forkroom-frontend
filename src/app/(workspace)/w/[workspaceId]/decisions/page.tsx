@@ -15,9 +15,5 @@ export default async function DecisionsPage({
 }) {
   const { workspaceId } = await params;
 
-  return (
-    <DecisionsIndex
-      workspaceId={workspaceId}
-    />
-  );
+  return <DecisionsIndex workspaceId={workspaceId} />;
 }

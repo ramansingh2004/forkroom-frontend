@@ -1,77 +1,52 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   ActionIcon,
-  Avatar,
-  AvatarGroup,
+  Alert,
   Badge,
   Button,
-  Menu,
-  Progress,
+  Loader,
   ScrollArea,
   Tabs,
-  Textarea,
   Tooltip,
-} from "@mantine/core";
-import { useMediaQuery } from "@mantine/hooks";
+} from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import {
-  IconAlertTriangle,
-  IconArrowUpRight,
-  IconCheck,
   IconChevronRight,
-  IconDots,
   IconFileText,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarRightCollapse,
-  IconLink,
-  IconPaperclip,
   IconPlus,
   IconScale,
-  IconSend,
   IconUsers,
-} from "@tabler/icons-react";
+} from '@tabler/icons-react';
 import {
   Group,
   Panel,
   Separator,
   useDefaultLayout,
   usePanelRef,
-} from "react-resizable-panels";
-import { useUiStore } from "@/stores/use-ui-store";
-import styles from "./decision-room.module.css";
+} from 'react-resizable-panels';
 
-const proposals = [
-  {
-    id: "01",
-    title: "Short-lived JWT access tokens",
-    meta: "Raman · 4 objections",
-    selected: true,
-  },
-  { id: "02", title: "Server-side sessions", meta: "Priya · 2 objections" },
-  {
-    id: "03",
-    title: "Hybrid token + session model",
-    meta: "Arjun · 1 objection",
-  },
-];
+import {
+  useDecision,
+  useDecisionCriteria,
+  useDecisionProposals,
+  useWorkspace,
+} from '@/hooks/use-workspaces';
+import type { Criterion, Proposal } from '@/services/workspace.service';
+import { useUiStore } from '@/stores/use-ui-store';
 
-const comments = [
-  {
-    initials: "PS",
-    name: "Priya Sharma",
-    time: "12 min",
-    body: "The 15-minute access token window is a good default. I want refresh-token reuse detection called out in the final rationale.",
-  },
-  {
-    initials: "AK",
-    name: "Arjun Kapoor",
-    time: "7 min",
-    body: "Agreed. We should also preserve the reason we rejected long-lived browser tokens so this does not get reopened without context.",
-  },
-];
+import styles from './decision-room.module.css';
 
-function OutlinePanel() {
+function OutlinePanel({
+  proposals,
+  criteriaCount,
+}: {
+  proposals: Proposal[];
+  criteriaCount: number;
+}) {
   return (
     <section className={styles.panel} aria-label="Decision outline">
       <div className={styles.panelHeader}>
@@ -79,72 +54,67 @@ function OutlinePanel() {
           <span className={styles.kicker}>OUTLINE</span>
           <h2>Decision context</h2>
         </div>
-        <Tooltip label="Add proposal">
+        <Tooltip label="Proposal creation will be connected next">
           <ActionIcon variant="subtle" color="dark" aria-label="Add proposal">
             <IconPlus size={18} stroke={1.8} />
           </ActionIcon>
         </Tooltip>
       </div>
+
       <ScrollArea className={styles.panelScroll} type="auto">
         <nav className={styles.outlineNav} aria-label="Decision sections">
-          <a href="#context" className={styles.outlineLinkActive}>
-            Context
-          </a>
-          <a href="#criteria">
-            Criteria <span>4</span>
-          </a>
-          <a href="#evidence">
-            Evidence <span>7</span>
-          </a>
-          <a href="#objections">
-            Objections <span className={styles.warningCount}>3</span>
-          </a>
+          <a href="#context" className={styles.outlineLinkActive}>Context</a>
+          <a href="#criteria">Criteria <span>{criteriaCount}</span></a>
+          <a href="#proposals">Proposals <span>{proposals.length}</span></a>
         </nav>
 
         <div className={styles.sectionHeading}>
           <span>PROPOSALS</span>
-          <span>3</span>
-        </div>
-        <div className={styles.proposalList}>
-          {proposals.map((proposal) => (
-            <button
-              key={proposal.id}
-              className={`${styles.proposal} ${proposal.selected ? styles.proposalSelected : ""}`}
-              type="button"
-            >
-              <span className={styles.proposalNumber}>{proposal.id}</span>
-              <strong>{proposal.title}</strong>
-              <small>{proposal.meta}</small>
-            </button>
-          ))}
+          <span>{proposals.length}</span>
         </div>
 
-        <div className={styles.sectionHeading}>
-          <span>READINESS</span>
-          <span>68%</span>
-        </div>
-        <div className={styles.readiness}>
-          <Progress
-            value={68}
-            color="rust"
-            size="sm"
-            aria-label="Decision readiness 68 percent"
-          />
-          <p>
-            <IconAlertTriangle size={15} /> 3 unresolved objections before lock
-          </p>
-        </div>
+        {proposals.length > 0 ? (
+          <div className={styles.proposalList}>
+            {proposals.map((proposal, index) => (
+              <div
+                key={proposal.id}
+                className={`${styles.proposal} ${index === 0 ? styles.proposalSelected : ''}`}
+              >
+                <span className={styles.proposalNumber}>{String(index + 1).padStart(2, '0')}</span>
+                <strong>{proposal.title}</strong>
+                <small>{proposal.summary || proposal.status}</small>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className={styles.emptySection}>
+            <strong>No proposals yet</strong>
+            <p>Add an alternative that the team can compare, challenge, and vote on.</p>
+            <Button size="xs" variant="light" color="rust" leftSection={<IconPlus size={14} />}>
+              Add proposal
+            </Button>
+          </div>
+        )}
       </ScrollArea>
     </section>
   );
 }
 
-function DocumentPanel() {
+function DocumentPanel({
+  title,
+  summary,
+  criteria,
+  proposals,
+}: {
+  title: string;
+  summary: string | null;
+  criteria: Criterion[];
+  proposals: Proposal[];
+}) {
+  const leadingProposal = proposals[0];
+
   return (
-    <section
-      className={`${styles.panel} ${styles.documentPanel}`}
-      aria-label="Decision document"
-    >
+    <section className={`${styles.panel} ${styles.documentPanel}`} aria-label="Decision document">
       <div className={styles.documentToolbar}>
         <Tabs
           defaultValue="document"
@@ -157,101 +127,59 @@ function DocumentPanel() {
             <Tabs.Tab value="vote">Vote</Tabs.Tab>
           </Tabs.List>
         </Tabs>
-        <div className={styles.savedState}>
-          <IconCheck size={15} /> Saved
-        </div>
       </div>
 
       <ScrollArea className={styles.documentScroll} type="auto">
         <article className={styles.document}>
-          <div className={styles.documentMeta}>DECISION DRAFT · REV 08</div>
-          <h1>Authentication strategy</h1>
-          <p className={styles.lede}>
-            Choose the authentication model for ForkRoom&apos;s public API and
-            browser clients while keeping revocation and multi-device sessions
-            manageable.
-          </p>
-
-          <div className={styles.statusNote} role="note">
-            <IconAlertTriangle size={18} stroke={1.8} />
-            <div>
-              <strong>3 objections remain open</strong>
-              <span>
-                Resolve or explicitly accept them before this decision can be
-                locked.
-              </span>
-            </div>
-          </div>
+          <div className={styles.documentMeta}>DECISION</div>
+          <h1>{title}</h1>
+          <p className={styles.lede}>{summary || 'No decision summary has been added yet.'}</p>
 
           <section id="context" className={styles.copySection}>
             <div className={styles.sectionIndex}>01 / CONTEXT</div>
             <h2>Why this needs a decision</h2>
-            <p>
-              ForkRoom needs short-lived browser authentication without making
-              every API request depend on a database session lookup. The model
-              must also support explicit logout, token-family revocation, and
-              safe recovery when a refresh token is reused.
-            </p>
+            <p>{summary || 'Add context to explain what the team is deciding and why it matters now.'}</p>
           </section>
 
           <section id="criteria" className={styles.copySection}>
             <div className={styles.sectionIndex}>02 / CRITERIA</div>
             <h2>What we are optimizing for</h2>
-            <ul className={styles.criteriaList}>
-              <li>
-                <span>01</span>
-                <div>
-                  <strong>Revocation</strong>
-                  <p>
-                    Compromised sessions can be invalidated without waiting for
-                    a long token expiry.
-                  </p>
-                </div>
-              </li>
-              <li>
-                <span>02</span>
-                <div>
-                  <strong>Latency</strong>
-                  <p>
-                    Normal authenticated requests should avoid a database round
-                    trip for session validation.
-                  </p>
-                </div>
-              </li>
-              <li>
-                <span>03</span>
-                <div>
-                  <strong>Recovery</strong>
-                  <p>
-                    Refresh-token reuse has a clear, auditable response that
-                    protects the entire token family.
-                  </p>
-                </div>
-              </li>
-            </ul>
+            {criteria.length > 0 ? (
+              <ul className={styles.criteriaList}>
+                {criteria.map((criterion, index) => (
+                  <li key={criterion.id}>
+                    <span>{String(index + 1).padStart(2, '0')}</span>
+                    <div>
+                      <strong>{criterion.name}</strong>
+                      <p>{criterion.description || `Weight: ${criterion.weight}`}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className={styles.emptySection}>
+                <strong>No criteria yet</strong>
+                <p>Criteria will appear here once the team defines how proposals should be evaluated.</p>
+              </div>
+            )}
           </section>
 
-          <section className={styles.copySection}>
-            <div className={styles.sectionIndex}>03 / LEADING PROPOSAL</div>
-            <div className={styles.leadingProposal}>
-              <div>
-                <Badge variant="light" color="rust" size="sm">
-                  LEADING
-                </Badge>
-                <h3>Short-lived JWT access tokens</h3>
-                <p>
-                  15-minute access tokens paired with rotating refresh tokens
-                  and token-family reuse detection.
-                </p>
+          <section id="proposals" className={styles.copySection}>
+            <div className={styles.sectionIndex}>03 / PROPOSALS</div>
+            {leadingProposal ? (
+              <div className={styles.leadingProposal}>
+                <div>
+                  <Badge variant="light" color="rust" size="sm">PROPOSAL</Badge>
+                  <h3>{leadingProposal.title}</h3>
+                  <p>{leadingProposal.summary || 'No proposal summary has been added yet.'}</p>
+                </div>
               </div>
-              <Button
-                variant="subtle"
-                color="dark"
-                rightSection={<IconArrowUpRight size={16} />}
-              >
-                Open proposal
-              </Button>
-            </div>
+            ) : (
+              <div className={styles.emptySection}>
+                <strong>No proposals yet</strong>
+                <p>Alternatives will appear here as the team adds them.</p>
+              </div>
+            )}
           </section>
         </article>
       </ScrollArea>
@@ -264,86 +192,43 @@ function CollaborationPanel() {
     <section className={styles.panel} aria-label="Collaboration">
       <Tabs
         defaultValue="discussion"
-        classNames={{
-          root: styles.collaborationTabs,
-          list: styles.collabTabList,
-        }}
+        classNames={{ root: styles.collaborationTabs, list: styles.collabTabList }}
       >
         <Tabs.List grow>
-          <Tabs.Tab value="discussion">
-            Discussion <span className={styles.tabCount}>24</span>
-          </Tabs.Tab>
-          <Tabs.Tab value="evidence">
-            Evidence <span className={styles.tabCount}>7</span>
-          </Tabs.Tab>
+          <Tabs.Tab value="discussion">Discussion</Tabs.Tab>
+          <Tabs.Tab value="evidence">Evidence</Tabs.Tab>
           <Tabs.Tab value="people">People</Tabs.Tab>
         </Tabs.List>
-        <Tabs.Panel value="discussion" className={styles.collaborationBody}>
-          <ScrollArea className={styles.commentScroll} type="auto">
-            <div className={styles.threadMeta}>
-              <span>OPEN THREAD</span>
-              <span>Context · line 18</span>
-            </div>
-            {comments.map((comment) => (
-              <article key={comment.name} className={styles.comment}>
-                <Avatar color="rust" variant="light" size={30} radius="xl">
-                  {comment.initials}
-                </Avatar>
-                <div>
-                  <header>
-                    <strong>{comment.name}</strong>
-                    <time>{comment.time}</time>
-                  </header>
-                  <p>{comment.body}</p>
-                  <button type="button">Reply</button>
-                </div>
-              </article>
-            ))}
-          </ScrollArea>
-          <div className={styles.commentComposer}>
-            <Textarea
-              autosize
-              minRows={2}
-              maxRows={5}
-              placeholder="Add to the discussion…"
-              aria-label="Add a comment"
-            />
-            <div className={styles.composerActions}>
-              <ActionIcon
-                variant="subtle"
-                color="dark"
-                aria-label="Attach evidence"
-              >
-                <IconPaperclip size={18} />
-              </ActionIcon>
-              <Button size="xs" rightSection={<IconSend size={15} />}>
-                Comment
-              </Button>
-            </div>
-          </div>
+        <Tabs.Panel value="discussion" className={styles.emptyPanel}>
+          <strong>No discussion yet</strong>
+          <span>Comments and collaborative discussion will appear here.</span>
         </Tabs.Panel>
         <Tabs.Panel value="evidence" className={styles.emptyPanel}>
           <IconFileText size={24} />
-          <strong>7 evidence items</strong>
-          <span>Sources and attachments stay connected to this decision.</span>
+          <strong>No evidence loaded yet</strong>
+          <span>Evidence will appear here after its API is connected.</span>
         </Tabs.Panel>
         <Tabs.Panel value="people" className={styles.emptyPanel}>
           <IconUsers size={24} />
-          <strong>4 people here now</strong>
-          <span>12 members can participate in this decision.</span>
+          <strong>Presence is not connected yet</strong>
+          <span>Live participants will appear here once collaboration presence is wired.</span>
         </Tabs.Panel>
       </Tabs>
     </section>
   );
 }
 
-interface DecisionRoomProps {
+type DecisionRoomProps = {
   workspaceId: string;
   decisionId: string;
-}
+};
 
 export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
-  const desktop = useMediaQuery("(min-width: 80em)");
+  const workspace = useWorkspace(workspaceId);
+  const decision = useDecision(workspaceId, decisionId);
+  const proposals = useDecisionProposals(workspaceId, decisionId);
+  const criteria = useDecisionCriteria(workspaceId, decisionId);
+  const desktop = useMediaQuery('(min-width: 80em)');
   const mobileTab = useUiStore((state) => state.mobileDecisionTab);
   const setMobileTab = useUiStore((state) => state.setMobileDecisionTab);
   const leftPanelRef = usePanelRef();
@@ -351,72 +236,100 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: "forkroom-decision-room",
-    panelIds: ["outline", "document", "collaboration"],
+    id: 'forkroom-decision-room',
+    panelIds: ['outline', 'document', 'collaboration'],
     onlySaveAfterUserInteractions: true,
   });
 
-  const togglePanel = (side: "left" | "right") => {
-    const ref = side === "left" ? leftPanelRef : rightPanelRef;
-    const collapsed = side === "left" ? leftCollapsed : rightCollapsed;
+  if (workspace.isPending || decision.isPending || proposals.isPending || criteria.isPending) {
+    return (
+      <div className={styles.roomState}>
+        <Loader color="rust" size="sm" />
+        <span>Opening decision room…</span>
+      </div>
+    );
+  }
+
+  if (
+    workspace.isError ||
+    decision.isError ||
+    proposals.isError ||
+    criteria.isError ||
+    !workspace.data ||
+    !decision.data ||
+    !proposals.data ||
+    !criteria.data
+  ) {
+    return (
+      <div className={styles.roomState}>
+        <Alert color="red" title="Could not open decision">
+          The decision could not be loaded. It may have been removed or you may not have access to it.
+        </Alert>
+      </div>
+    );
+  }
+
+  const togglePanel = (side: 'left' | 'right') => {
+    const ref = side === 'left' ? leftPanelRef : rightPanelRef;
+    const collapsed = side === 'left' ? leftCollapsed : rightCollapsed;
     if (collapsed) ref.current?.expand();
     else ref.current?.collapse();
   };
+
+  const outline = <OutlinePanel proposals={proposals.data} criteriaCount={criteria.data.length} />;
+  const document = (
+    <DocumentPanel
+      title={decision.data.title}
+      summary={decision.data.summary}
+      criteria={criteria.data}
+      proposals={proposals.data}
+    />
+  );
+  const collaboration = <CollaborationPanel />;
 
   return (
     <div className={styles.room}>
       <header className={styles.roomHeader}>
         <div className={styles.titleBlock}>
           <div className={styles.breadcrumb}>
-            NEXUS ENGINEERING <IconChevronRight size={12} /> DECISIONS
+            {workspace.data.name.toUpperCase()} <IconChevronRight size={12} /> DECISIONS
           </div>
           <div className={styles.titleRow}>
-            <h1>Authentication strategy</h1>
-            <Badge variant="light" color="orange" size="sm">
-              IN REVIEW
+            <h1>{decision.data.title}</h1>
+            <Badge
+              variant="light"
+              color={
+                decision.data.status === 'locked'
+                  ? 'green'
+                  : decision.data.status === 'active'
+                    ? 'rust'
+                    : 'gray'
+              }
+              size="sm"
+            >
+              {decision.data.status.toUpperCase()}
             </Badge>
           </div>
         </div>
 
         <div className={styles.roomActions}>
-          <div className={styles.syncState}>
-            <span /> SYNCED
-          </div>
-          <AvatarGroup className={styles.avatarGroup}>
-            <Avatar size={30} color="rust">
-              RS
-            </Avatar>
-            <Avatar size={30} color="blue">
-              PS
-            </Avatar>
-            <Avatar size={30} color="teal">
-              AK
-            </Avatar>
-            <Avatar size={30} color="gray">
-              +1
-            </Avatar>
-          </AvatarGroup>
           {desktop && (
             <>
-              <Tooltip label={leftCollapsed ? "Show outline" : "Hide outline"}>
+              <Tooltip label={leftCollapsed ? 'Show outline' : 'Hide outline'}>
                 <ActionIcon
                   variant="subtle"
                   color="dark"
-                  onClick={() => togglePanel("left")}
+                  onClick={() => togglePanel('left')}
                   aria-label="Toggle decision outline"
                 >
                   <IconLayoutSidebarLeftCollapse size={19} />
                 </ActionIcon>
               </Tooltip>
-              <Tooltip
-                label={
-                  rightCollapsed ? "Show collaboration" : "Hide collaboration"
-                }
-              >
+              <Tooltip label={rightCollapsed ? 'Show collaboration' : 'Hide collaboration'}>
                 <ActionIcon
                   variant="subtle"
                   color="dark"
-                  onClick={() => togglePanel("right")}
+                  onClick={() => togglePanel('right')}
                   aria-label="Toggle collaboration panel"
                 >
                   <IconLayoutSidebarRightCollapse size={19} />
@@ -424,32 +337,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
               </Tooltip>
             </>
           )}
-          <Button
-            className={styles.voteButton}
-            leftSection={<IconScale size={17} />}
-          >
-            Vote
-          </Button>
-          <Menu position="bottom-end" shadow="md">
-            <Menu.Target>
-              <ActionIcon
-                variant="subtle"
-                color="dark"
-                size={36}
-                aria-label="More decision actions"
-              >
-                <IconDots size={20} />
-              </ActionIcon>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Item leftSection={<IconLink size={16} />}>
-                Copy decision link
-              </Menu.Item>
-              <Menu.Item leftSection={<IconFileText size={16} />}>
-                View revision history
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
+          <Button className={styles.voteButton} leftSection={<IconScale size={17} />}>Vote</Button>
         </div>
       </header>
 
@@ -472,19 +360,11 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
               collapsible
               onResize={(size) => setLeftCollapsed(size.inPixels < 1)}
             >
-              <OutlinePanel />
+              {outline}
             </Panel>
-            <Separator
-              className={styles.resizeHandle}
-              aria-label="Resize decision outline"
-            />
-            <Panel id="document" minSize={520} defaultSize="55%">
-              <DocumentPanel />
-            </Panel>
-            <Separator
-              className={styles.resizeHandle}
-              aria-label="Resize collaboration panel"
-            />
+            <Separator className={styles.resizeHandle} aria-label="Resize decision outline" />
+            <Panel id="document" minSize={520} defaultSize="55%">{document}</Panel>
+            <Separator className={styles.resizeHandle} aria-label="Resize collaboration panel" />
             <Panel
               id="collaboration"
               panelRef={rightPanelRef}
@@ -495,49 +375,27 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
               collapsible
               onResize={(size) => setRightCollapsed(size.inPixels < 1)}
             >
-              <CollaborationPanel />
+              {collaboration}
             </Panel>
           </Group>
         ) : (
           <div className={styles.responsiveWorkspace}>
-            <Tabs
-              value={mobileTab}
-              onChange={(value) =>
-                value && setMobileTab(value as typeof mobileTab)
-              }
-              classNames={{
-                list: styles.responsiveTabs,
-                tab: styles.responsiveTab,
-              }}
-            >
-              <Tabs.List grow>
+            <Tabs value={mobileTab} onChange={(value) => value && setMobileTab(value as typeof mobileTab)}>
+              <Tabs.List grow className={styles.responsiveTabs}>
                 <Tabs.Tab value="outline">Outline</Tabs.Tab>
                 <Tabs.Tab value="document">Document</Tabs.Tab>
-                <Tabs.Tab
-                  value="discussion"
-                  rightSection={<span className={styles.unreadDot} />}
-                >
-                  Discussion
-                </Tabs.Tab>
+                <Tabs.Tab value="discussion">Discussion</Tabs.Tab>
               </Tabs.List>
-              <Tabs.Panel value="outline" className={styles.responsivePanel}>
-                <OutlinePanel />
-              </Tabs.Panel>
-              <Tabs.Panel value="document" className={styles.responsivePanel}>
-                <DocumentPanel />
-              </Tabs.Panel>
-              <Tabs.Panel value="discussion" className={styles.responsivePanel}>
-                <CollaborationPanel />
-              </Tabs.Panel>
+              <Tabs.Panel value="outline" className={styles.responsivePanel}>{outline}</Tabs.Panel>
+              <Tabs.Panel value="document" className={styles.responsivePanel}>{document}</Tabs.Panel>
+              <Tabs.Panel value="discussion" className={styles.responsivePanel}>{collaboration}</Tabs.Panel>
             </Tabs>
           </div>
         )}
       </div>
 
       <div className={styles.mobileVoteDock}>
-        <Button fullWidth leftSection={<IconScale size={18} />}>
-          Vote on this decision
-        </Button>
+        <Button fullWidth leftSection={<IconScale size={18} />}>Vote on this decision</Button>
       </div>
     </div>
   );

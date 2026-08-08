@@ -15,9 +15,5 @@ export default async function NewDecisionPage({
 }) {
   const { workspaceId } = await params;
 
-  return (
-    <CreateDecisionForm
-      workspaceId={workspaceId}
-    />
-  );
+  return <CreateDecisionForm workspaceId={workspaceId} />;
 }

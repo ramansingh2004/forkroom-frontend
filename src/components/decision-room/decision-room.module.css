@@ -6,6 +6,40 @@
   background: var(--fr-canvas);
 }
 
+.roomState {
+  min-height: calc(100dvh - var(--fr-header-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  background: var(--fr-canvas);
+  color: var(--fr-text-muted);
+  font-size: 14px;
+}
+
+.emptySection {
+  margin: 8px 10px 16px;
+  padding: 18px;
+  display: grid;
+  gap: 8px;
+  border: 1px dashed var(--fr-border-strong);
+  border-radius: 8px;
+  background: var(--fr-raised);
+}
+
+.emptySection strong {
+  color: var(--fr-text);
+  font-size: 13px;
+}
+
+.emptySection p {
+  margin: 0 0 4px;
+  color: var(--fr-text-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
 .roomHeader {
   flex: 0 0 66px;
   min-width: 0;
