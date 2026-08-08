@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate:api": "openapi-typescript http://127.0.0.1:8000/openapi.json -o src/lib/api/generated/api-types.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",
