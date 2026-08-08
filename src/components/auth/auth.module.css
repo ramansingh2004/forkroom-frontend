@@ -1,0 +1,258 @@
+.page {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  place-items: center;
+  gap: 24px;
+  padding: 28px 20px 22px;
+  background:
+    radial-gradient(circle at 50% 16%, rgba(203, 77, 34, 0.08), transparent 34rem),
+    var(--fr-canvas);
+}
+
+.brand {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--fr-text);
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+
+.brandMark {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  color: white;
+  background: var(--fr-black);
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.card {
+  width: min(100%, 448px);
+  align-self: center;
+  padding: 36px;
+  background: var(--fr-raised);
+  border: 1px solid var(--fr-border-strong);
+  border-radius: 10px;
+  box-shadow: 0 22px 60px rgba(77, 50, 37, 0.08);
+}
+
+.heading {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 26px;
+}
+
+.eyebrow {
+  color: var(--fr-primary);
+  font-family: 'JetBrains Mono Variable', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.heading h1 {
+  margin: 0;
+  color: var(--fr-text);
+  font-size: clamp(26px, 5vw, 31px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+.heading p {
+  margin: 0;
+  color: var(--fr-text-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.form {
+  display: grid;
+  gap: 18px;
+}
+
+.fieldStack {
+  display: grid;
+  gap: 14px;
+}
+
+.input :global(.mantine-Input-input) {
+  min-height: 46px;
+  border-color: var(--fr-border-strong);
+  background: #fff;
+}
+
+.input :global(.mantine-Input-input:focus) {
+  border-color: var(--fr-primary);
+}
+
+.input :global(.mantine-InputWrapper-label) {
+  margin-bottom: 6px;
+  color: var(--fr-text);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.input :global(.mantine-InputWrapper-error) {
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.formMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: -4px;
+  color: var(--fr-text-muted);
+  font-size: 12px;
+}
+
+.textLink {
+  color: var(--fr-primary-hover);
+  font-weight: 650;
+}
+
+.textLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.submit {
+  min-height: 46px;
+  margin-top: 2px;
+  font-weight: 700;
+}
+
+.secondary {
+  margin: 0;
+  color: var(--fr-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.terms {
+  align-items: flex-start;
+}
+
+.terms :global(.mantine-Checkbox-label) {
+  padding-top: 1px;
+  color: var(--fr-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.termsError {
+  margin: -10px 0 0 30px;
+  color: var(--fr-danger);
+  font-size: 12px;
+}
+
+.status {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  padding: 4px 0;
+  text-align: center;
+}
+
+.statusIcon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--fr-primary);
+  background: var(--fr-primary-soft);
+}
+
+.statusIconSuccess {
+  color: var(--fr-success);
+  background: #def2e7;
+}
+
+.statusIconError {
+  color: var(--fr-danger);
+  background: #fbe7e5;
+}
+
+.status h1 {
+  margin: 0;
+  font-size: 27px;
+  letter-spacing: -0.03em;
+}
+
+.status p {
+  margin: -6px 0 2px;
+  color: var(--fr-text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.statusActions {
+  width: 100%;
+  display: grid;
+  gap: 10px;
+}
+
+.footer {
+  margin: 0;
+  color: #786d66;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 13px;
+}
+
+.boundary {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--fr-canvas);
+}
+
+.boundaryCard {
+  width: min(100%, 420px);
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 28px;
+  color: var(--fr-text-muted);
+  text-align: center;
+}
+
+.boundaryCard strong {
+  color: var(--fr-text);
+  font-size: 17px;
+}
+
+@media (max-width: 540px) {
+  .page {
+    place-items: stretch;
+    gap: 18px;
+    padding: 18px 14px;
+  }
+
+  .brand {
+    justify-self: start;
+  }
+
+  .card {
+    width: 100%;
+    align-self: start;
+    padding: 28px 22px;
+    border-radius: 8px;
+  }
+
+  .footer {
+    justify-self: center;
+  }
+}
