@@ -1,5 +1,4 @@
-export const DEFAULT_AUTHENTICATED_PATH =
-  '/decisions/authentication-strategy';
+export const DEFAULT_AUTHENTICATED_PATH = '/workspaces';
 
 export function safeNextPath(next: string | null) {
   if (!next || !next.startsWith('/') || next.startsWith('//')) {

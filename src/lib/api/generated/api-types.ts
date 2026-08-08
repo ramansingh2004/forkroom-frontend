@@ -1668,22 +1668,6 @@ export interface components {
         /** LoginResponse */
         LoginResponse: {
             user: components["schemas"]["UserResponse"];
-            /** Access Token */
-            access_token: string;
-            /** Refresh Token */
-            refresh_token: string;
-            /**
-             * Token Type
-             * @default bearer
-             */
-            token_type: string;
-            /** Expires In */
-            expires_in: number;
-        };
-        /** LogoutRequest */
-        LogoutRequest: {
-            /** Refresh Token */
-            refresh_token: string;
         };
         /** MarkAllReadResponse */
         MarkAllReadResponse: {
@@ -2018,11 +2002,6 @@ export interface components {
                 [key: string]: "ok" | "unavailable";
             };
         };
-        /** RefreshRequest */
-        RefreshRequest: {
-            /** Refresh Token */
-            refresh_token: string;
-        };
         /** RegisterRequest */
         RegisterRequest: {
             /**
@@ -2166,20 +2145,6 @@ export interface components {
              * Format: date-time
              */
             indexed_at: string;
-        };
-        /** TokenResponse */
-        TokenResponse: {
-            /** Access Token */
-            access_token: string;
-            /** Refresh Token */
-            refresh_token: string;
-            /**
-             * Token Type
-             * @default bearer
-             */
-            token_type: string;
-            /** Expires In */
-            expires_in: number;
         };
         /** UnreadCountResponse */
         UnreadCountResponse: {
@@ -2508,29 +2473,14 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RefreshRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
-            200: {
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": components["schemas"]["TokenResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
+                content?: never;
             };
         };
     };
@@ -2541,11 +2491,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LogoutRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             204: {
@@ -2553,15 +2499,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
             };
         };
     };

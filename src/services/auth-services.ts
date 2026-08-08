@@ -1,6 +1,13 @@
 import axios from 'axios';
 import { apiClient } from '@/lib/api/client';
-import type { LoginRequest, LoginResponse, MessageResponse, RegisterRequest, User } from '@/lib/api/types';
+import type { components } from '@/lib/api/generated/api-types';
+
+type LoginRequest = components['schemas']['LoginRequest'];
+type LoginResponse = components['schemas']['LoginResponse'];
+type RegisterRequest = components['schemas']['RegisterRequest'];
+type User = components['schemas']['UserResponse'];
+type MessageResponse = components['schemas']['MessageResponse'];
+type FastApiValidationError = components['schemas']['ValidationError'];
 
 export async function login(payload: LoginRequest) {
   const { data } = await apiClient.post<LoginResponse>('/auth/login', payload);
@@ -47,10 +54,6 @@ export async function resetPassword(token: string, newPassword: string) {
   });
   return data;
 }
-
-type FastApiValidationError = {
-  msg?: string;
-};
 
 type ApiErrorBody = {
   detail?: string | FastApiValidationError[];
