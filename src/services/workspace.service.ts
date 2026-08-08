@@ -48,3 +48,14 @@ export async function createDecision(workspaceId: string, payload: DecisionCreat
   const { data } = await apiClient.post<Decision>(`/workspaces/${workspaceId}/decisions`, payload);
   return data;
 }
+
+export async function getDecision(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const { data } = await apiClient.get<Decision>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}`,
+  );
+
+  return data;
+}

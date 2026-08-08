@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createWorkspace,
   createDecision,
+  getDecision,
   getWorkspace,
   listWorkspaceDecisions,
   listWorkspaceMembers,
@@ -20,6 +21,13 @@ export const workspaceKeys = {
   members: (workspaceId: string) => [...workspaceKeys.all, 'members', workspaceId] as const,
   decisions: (workspaceId: string, status?: DecisionStatus) =>
     [...workspaceKeys.all, 'decisions', workspaceId, status ?? 'all'] as const,
+  decision: (workspaceId: string, decisionId: string) =>
+  [
+    ...workspaceKeys.all,
+    'decision',
+    workspaceId,
+    decisionId,
+  ] as const,
 };
 
 export function useWorkspaces() {
@@ -75,5 +83,22 @@ export function useCreateDecision(workspaceId: string) {
         queryKey: [...workspaceKeys.all, 'decisions', workspaceId],
       });
     },
+  });
+}
+
+export function useDecision(
+  workspaceId?: string,
+  decisionId?: string,
+) {
+  return useQuery({
+    queryKey: workspaceKeys.decision(
+      workspaceId ?? '',
+      decisionId ?? '',
+    ),
+
+    queryFn: () =>
+      getDecision(workspaceId!, decisionId!),
+
+    enabled: Boolean(workspaceId && decisionId),
   });
 }
