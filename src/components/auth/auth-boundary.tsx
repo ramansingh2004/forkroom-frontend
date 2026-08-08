@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { Button, Loader } from '@mantine/core';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-auth';
-import { getApiStatus } from '@/services/auth-services';
+import { getApiStatus } from '@/services/auth.service';
 import styles from './auth.module.css';
 
 export function AuthBoundary({ children }: Readonly<{ children: React.ReactNode }>) {

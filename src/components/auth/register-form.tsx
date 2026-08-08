@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { registerSchema, type RegisterValues } from '@/lib/auth/schema';
-import { getApiErrorMessage, register } from '@/services/auth-services';
+import { getApiErrorMessage, register } from '@/services/auth.service';
 import { AuthHeading } from './auth-shell';
 import styles from './auth.module.css';
 

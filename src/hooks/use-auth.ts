@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getMe, logout } from '@/services/auth-services';
+import { getMe, logout } from '@/services/auth.service';
 
 export const authKeys = {
   all: ['auth'] as const,

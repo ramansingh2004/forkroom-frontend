@@ -11,7 +11,7 @@ import { IconAlertCircle } from '@tabler/icons-react';
 import { authKeys } from '@/hooks/use-auth';
 import { safeNextPath } from '@/lib/auth/navigation';
 import { loginSchema, type LoginValues } from '@/lib/auth/schema';
-import { getApiErrorMessage, login } from '@/services/auth-services';
+import { getApiErrorMessage, login } from '@/services/auth.service';
 import { AuthHeading } from './auth-shell';
 import styles from './auth.module.css';
 

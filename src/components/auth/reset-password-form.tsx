@@ -26,7 +26,7 @@ import {
 import {
   getApiErrorMessage,
   resetPassword,
-} from '@/services/auth-services';
+} from '@/services/auth.service';
 
 import { AuthHeading } from './auth-shell';
 import styles from './auth.module.css';

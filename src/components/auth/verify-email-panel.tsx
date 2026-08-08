@@ -9,7 +9,7 @@ import {
   confirmEmailVerification,
   getApiErrorMessage,
   requestEmailVerification,
-} from '@/services/auth-services';
+} from '@/services/auth.service';
 import styles from './auth.module.css';
 
 type VerifyState = 'waiting' | 'verifying' | 'verified' | 'error';
