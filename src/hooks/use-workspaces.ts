@@ -6,6 +6,8 @@ import {
   createDecision,
   getDecision,
   getWorkspace,
+  listCriteria,
+  listProposals,
   listWorkspaceDecisions,
   listWorkspaceMembers,
   listWorkspaces,
@@ -25,6 +27,22 @@ export const workspaceKeys = {
   [
     ...workspaceKeys.all,
     'decision',
+    workspaceId,
+    decisionId,
+  ] as const,
+
+proposals: (workspaceId: string, decisionId: string) =>
+  [
+    ...workspaceKeys.all,
+    'proposals',
+    workspaceId,
+    decisionId,
+  ] as const,
+
+criteria: (workspaceId: string, decisionId: string) =>
+  [
+    ...workspaceKeys.all,
+    'criteria',
     workspaceId,
     decisionId,
   ] as const,
@@ -95,10 +113,38 @@ export function useDecision(
       workspaceId ?? '',
       decisionId ?? '',
     ),
-
     queryFn: () =>
       getDecision(workspaceId!, decisionId!),
+    enabled: Boolean(workspaceId && decisionId),
+  });
+}
 
+export function useDecisionProposals(
+  workspaceId?: string,
+  decisionId?: string,
+) {
+  return useQuery({
+    queryKey: workspaceKeys.proposals(
+      workspaceId ?? '',
+      decisionId ?? '',
+    ),
+    queryFn: () =>
+      listProposals(workspaceId!, decisionId!),
+    enabled: Boolean(workspaceId && decisionId),
+  });
+}
+
+export function useDecisionCriteria(
+  workspaceId?: string,
+  decisionId?: string,
+) {
+  return useQuery({
+    queryKey: workspaceKeys.criteria(
+      workspaceId ?? '',
+      decisionId ?? '',
+    ),
+    queryFn: () =>
+      listCriteria(workspaceId!, decisionId!),
     enabled: Boolean(workspaceId && decisionId),
   });
 }

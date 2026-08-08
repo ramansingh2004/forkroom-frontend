@@ -89,8 +89,9 @@ export function DecisionsIndex({
           </div>
 
           {decisions.data.map((decision) => (
-            <div
+            <Link
               key={decision.id}
+              href={`/w/${workspaceId}/decisions/${decision.id}`}
               className={styles.decisionTableRow}
             >
               <div>
@@ -121,7 +122,7 @@ export function DecisionsIndex({
                   new Date(decision.updated_at),
                 )}
               </time>
-            </div>
+            </Link>
           ))}
         </div>
       )}

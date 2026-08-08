@@ -337,7 +337,12 @@ function CollaborationPanel() {
   );
 }
 
-export function DecisionRoom() {
+interface DecisionRoomProps {
+  workspaceId: string;
+  decisionId: string;
+}
+
+export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
   const desktop = useMediaQuery("(min-width: 80em)");
   const mobileTab = useUiStore((state) => state.mobileDecisionTab);
   const setMobileTab = useUiStore((state) => state.setMobileDecisionTab);

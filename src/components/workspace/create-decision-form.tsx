@@ -68,18 +68,15 @@ export function CreateDecisionForm({
 
   const submit = form.handleSubmit(
     async (values) => {
-      await createDecision.mutateAsync({
-        title: values.title.trim(),
+      const decision = await createDecision.mutateAsync({
+  title: values.title.trim(),
+  summary: values.summary.trim() || null,
+  category: values.category,
+});
 
-        summary:
-          values.summary.trim() || null,
-
-        category: values.category,
-      });
-
-      router.replace(
-        `/w/${workspaceId}/decisions`,
-      );
+router.replace(
+  `/w/${workspaceId}/decisions/${decision.id}`,
+);
     },
   );
 

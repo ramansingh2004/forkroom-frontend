@@ -8,6 +8,8 @@ export type WorkspaceMember = components['schemas']['WorkspaceMemberResponse'];
 export type Decision = components['schemas']['DecisionResponse'];
 export type DecisionStatus = components['schemas']['DecisionStatus'];
 export type DecisionCreateRequest = components['schemas']['DecisionCreateRequest'];
+export type Proposal = components['schemas']['ProposalResponse'];
+export type Criterion = components['schemas']['CriterionResponse'];
 
 export async function listWorkspaces() {
   const { data } = await apiClient.get<Workspace[]>('/workspaces');
@@ -55,6 +57,28 @@ export async function getDecision(
 ) {
   const { data } = await apiClient.get<Decision>(
     `/workspaces/${workspaceId}/decisions/${decisionId}`,
+  );
+
+  return data;
+}
+
+export async function listProposals(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const { data } = await apiClient.get<Proposal[]>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/proposals`,
+  );
+
+  return data;
+}
+
+export async function listCriteria(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const { data } = await apiClient.get<Criterion[]>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/criteria`,
   );
 
   return data;
