@@ -7,6 +7,13 @@ export type WorkspaceCreateRequest =
 export type WorkspaceUpdateRequest =
   components["schemas"]["WorkspaceUpdateRequest"];
 export type WorkspaceMember = components["schemas"]["WorkspaceMemberResponse"];
+export type WorkspaceRole = components["schemas"]["WorkspaceRole"];
+export type AssignableWorkspaceRole =
+  components["schemas"]["AssignableWorkspaceRole"];
+export type WorkspaceMemberCreateRequest =
+  components["schemas"]["WorkspaceMemberCreateRequest"];
+export type WorkspaceMemberUpdateRequest =
+  components["schemas"]["WorkspaceMemberUpdateRequest"];
 export type Decision = components["schemas"]["DecisionResponse"];
 export type DecisionStatus = components["schemas"]["DecisionStatus"];
 export type DecisionCreateRequest =
@@ -109,6 +116,38 @@ export async function listWorkspaceMembers(workspaceId: string) {
     `/workspaces/${workspaceId}/members`,
   );
   return data;
+}
+
+export async function addWorkspaceMember(
+  workspaceId: string,
+  payload: WorkspaceMemberCreateRequest,
+) {
+  const { data } = await apiClient.post<WorkspaceMember>(
+    `/workspaces/${workspaceId}/members`,
+    payload,
+  );
+  return data;
+}
+
+export async function updateWorkspaceMember(
+  workspaceId: string,
+  memberUserId: string,
+  payload: WorkspaceMemberUpdateRequest,
+) {
+  const { data } = await apiClient.patch<WorkspaceMember>(
+    `/workspaces/${workspaceId}/members/${memberUserId}`,
+    payload,
+  );
+  return data;
+}
+
+export async function removeWorkspaceMember(
+  workspaceId: string,
+  memberUserId: string,
+) {
+  await apiClient.delete(
+    `/workspaces/${workspaceId}/members/${memberUserId}`,
+  );
 }
 
 export async function listWorkspaceDecisions(

@@ -17,6 +17,7 @@ import {
   IconPlus,
   IconSearch,
   IconSwitchHorizontal,
+  IconUsers,
   IconVocabulary,
 } from '@tabler/icons-react';
 import { useWorkspaceSearch } from '@/hooks/use-search';
@@ -216,6 +217,14 @@ export function GlobalSearch({
               leftSection: <IconVocabulary size={18} />,
               keywords: ['decision', 'list', 'workspace'],
               onClick: () => navigate(`/w/${workspaceId}/decisions`),
+            },
+            {
+              id: 'workspace-members',
+              label: 'Open workspace members',
+              description: workspaceName ?? 'Current workspace',
+              leftSection: <IconUsers size={18} />,
+              keywords: ['members', 'people', 'roles', 'access'],
+              onClick: () => navigate(`/w/${workspaceId}/members`),
             },
           ]
         : []),

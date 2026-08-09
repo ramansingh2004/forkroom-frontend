@@ -125,7 +125,14 @@ function WorkspaceNavigation({
       active: Boolean(workspaceId && pathname.startsWith(`/w/${workspaceId}/decisions`)),
     },
     { label: 'Documents', icon: IconFileText },
-    { label: 'Members', icon: IconUsers },
+    {
+      label: 'Members',
+      icon: IconUsers,
+      href: workspaceId ? `/w/${workspaceId}/members` : undefined,
+      active: Boolean(
+        workspaceId && pathname.startsWith(`/w/${workspaceId}/members`),
+      ),
+    },
   ];
 
   const activityItems: NavItem[] = [
@@ -184,6 +191,8 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
   const unreadCount = unreadNotifications.data?.unread ?? 0;
   const section = pathname.startsWith('/notifications')
     ? 'Notifications'
+    : pathname.includes('/members')
+      ? 'Members'
     : pathname.includes('/decisions/')
       ? 'Decision'
       : pathname.endsWith('/decisions')

@@ -11,6 +11,7 @@ import {
   IconUserPlus,
   IconUsers,
 } from '@tabler/icons-react';
+import { useCurrentUser } from '@/hooks/use-auth';
 import { useNotifications } from '@/hooks/use-notifications';
 import {
   useWorkspace,
@@ -33,12 +34,18 @@ function formatUpdatedAt(value: string) {
 }
 
 export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
+  const currentUser = useCurrentUser();
   const workspace = useWorkspace(workspaceId);
   const decisions = useWorkspaceDecisions(workspaceId);
   const members = useWorkspaceMembers(workspaceId);
   const attention = useNotifications({ unreadOnly: true, limit: 50, offset: 0 });
 
-  if (workspace.isPending || decisions.isPending || members.isPending) {
+  if (
+    currentUser.isPending ||
+    workspace.isPending ||
+    decisions.isPending ||
+    members.isPending
+  ) {
     return (
       <div className={styles.centerState}>
         <Loader color="rust" size="sm" />
@@ -47,7 +54,13 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
     );
   }
 
-  if (workspace.isError || decisions.isError || members.isError) {
+  if (
+    currentUser.isError ||
+    workspace.isError ||
+    decisions.isError ||
+    members.isError ||
+    !currentUser.data
+  ) {
     return (
       <div className={styles.page}>
         <Alert color="red" title="Workspace unavailable">
@@ -68,6 +81,12 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
     attention.data?.items
       .filter((notification) => notification.workspace_id === workspaceId)
       .slice(0, 4) ?? [];
+  const currentMember = members.data.find(
+    (member) => member.user_id === currentUser.data.id,
+  );
+  const canManageMembership = ['owner', 'admin'].includes(
+    currentMember?.role ?? 'viewer',
+  );
 
   return (
     <div className={styles.dashboardPage}>
@@ -83,11 +102,18 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
 
         <div className={styles.heroActions}>
           <Button
+            component={Link}
+            href={`/w/${workspaceId}/members`}
             variant="default"
-            leftSection={<IconUserPlus size={17} />}
-            disabled
+            leftSection={
+              canManageMembership ? (
+                <IconUserPlus size={17} />
+              ) : (
+                <IconUsers size={17} />
+              )
+            }
           >
-            Invite member
+            {canManageMembership ? 'Add member' : 'View members'}
           </Button>
           <Button
             component={Link}
@@ -276,6 +302,12 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
                 <IconUsers size={19} />
                 Workspace members
               </h2>
+              <Link
+                href={`/w/${workspaceId}/members`}
+                className={styles.viewAllLink}
+              >
+                VIEW ALL
+              </Link>
             </div>
             <div className={styles.memberList}>
               {members.data.slice(0, 5).map((member) => (

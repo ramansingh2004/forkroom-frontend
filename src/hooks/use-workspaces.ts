@@ -7,6 +7,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import {
+  addWorkspaceMember,
   cancelDecisionReview,
   cancelVotingSession,
   castVote,
@@ -45,11 +46,13 @@ import {
   listWorkspaces,
   openVotingSession,
   requestDecisionExport,
+  removeWorkspaceMember,
   transitionProposal,
   transitionDecisionAction,
   transitionObjection,
   updateDecisionAction,
   updateDecisionReview,
+  updateWorkspaceMember,
   updateObjection,
   updateProposal,
   uploadAttachmentObject,
@@ -74,6 +77,9 @@ import {
   type VoteCastRequest,
   type VotingSessionCreateRequest,
   type WorkspaceCreateRequest,
+  type WorkspaceMember,
+  type WorkspaceMemberCreateRequest,
+  type WorkspaceMemberUpdateRequest,
 } from "@/services/workspace.service";
 import { getApiStatus } from "@/services/auth.service";
 
@@ -178,6 +184,67 @@ export function useWorkspaceMembers(workspaceId?: string) {
     queryKey: workspaceKeys.members(workspaceId ?? ""),
     queryFn: () => listWorkspaceMembers(workspaceId!),
     enabled: Boolean(workspaceId),
+  });
+}
+
+export function useAddWorkspaceMember(workspaceId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: WorkspaceMemberCreateRequest) =>
+      addWorkspaceMember(workspaceId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.members(workspaceId),
+      });
+    },
+  });
+}
+
+export function useUpdateWorkspaceMember(workspaceId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      memberUserId,
+      payload,
+    }: {
+      memberUserId: string;
+      payload: WorkspaceMemberUpdateRequest;
+    }) => updateWorkspaceMember(workspaceId, memberUserId, payload),
+    onSuccess: async (member) => {
+      queryClient.setQueryData(
+        workspaceKeys.members(workspaceId),
+        (current: WorkspaceMember[] | undefined) =>
+          current?.map((item) =>
+            item.user_id === member.user_id ? member : item,
+          ),
+      );
+
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.members(workspaceId),
+      });
+    },
+  });
+}
+
+export function useRemoveWorkspaceMember(workspaceId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (memberUserId: string) =>
+      removeWorkspaceMember(workspaceId, memberUserId),
+    onSuccess: async (_, memberUserId) => {
+      queryClient.setQueryData(
+        workspaceKeys.members(workspaceId),
+        (current: WorkspaceMember[] | undefined) =>
+          current?.filter((item) => item.user_id !== memberUserId),
+      );
+
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.members(workspaceId),
+      });
+    },
   });
 }
 
