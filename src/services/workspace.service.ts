@@ -2,52 +2,71 @@ import { apiClient } from "@/lib/api/client";
 import type { components } from "@/lib/api/generated/api-types";
 
 export type Workspace = components["schemas"]["WorkspaceResponse"];
-export type WorkspaceCreateRequest = components["schemas"]["WorkspaceCreateRequest"];
-export type WorkspaceUpdateRequest = components["schemas"]["WorkspaceUpdateRequest"];
+export type WorkspaceCreateRequest =
+  components["schemas"]["WorkspaceCreateRequest"];
+export type WorkspaceUpdateRequest =
+  components["schemas"]["WorkspaceUpdateRequest"];
 export type WorkspaceMember = components["schemas"]["WorkspaceMemberResponse"];
 export type Decision = components["schemas"]["DecisionResponse"];
 export type DecisionStatus = components["schemas"]["DecisionStatus"];
-export type DecisionCreateRequest = components["schemas"]["DecisionCreateRequest"];
+export type DecisionCreateRequest =
+  components["schemas"]["DecisionCreateRequest"];
 export type Proposal = components["schemas"]["ProposalResponse"];
-export type ProposalCreateRequest = components["schemas"]["ProposalCreateRequest"];
-export type ProposalUpdateRequest = components["schemas"]["ProposalUpdateRequest"];
+export type ProposalCreateRequest =
+  components["schemas"]["ProposalCreateRequest"];
+export type ProposalUpdateRequest =
+  components["schemas"]["ProposalUpdateRequest"];
 export type ProposalStatus = components["schemas"]["ProposalStatus"];
 export type Criterion = components["schemas"]["CriterionResponse"];
 export type Objection = components["schemas"]["ObjectionResponse"];
-export type ObjectionCreateRequest = components["schemas"]["ObjectionCreateRequest"];
-export type ObjectionUpdateRequest = components["schemas"]["ObjectionUpdateRequest"];
+export type ObjectionCreateRequest =
+  components["schemas"]["ObjectionCreateRequest"];
+export type ObjectionUpdateRequest =
+  components["schemas"]["ObjectionUpdateRequest"];
 export type ObjectionSeverity = components["schemas"]["ObjectionSeverity"];
 export type ObjectionStatus = components["schemas"]["ObjectionStatus"];
-export type ObjectionTransitionRequest = components["schemas"]["ObjectionTransitionRequest"];
+export type ObjectionTransitionRequest =
+  components["schemas"]["ObjectionTransitionRequest"];
 export type VotingSession = components["schemas"]["VotingSessionResponse"];
-export type VotingSessionCreateRequest = components["schemas"]["VotingSessionCreateRequest"];
+export type VotingSessionCreateRequest =
+  components["schemas"]["VotingSessionCreateRequest"];
 export type VotingSessionStatus = components["schemas"]["VotingSessionStatus"];
 export type VoteCastRequest = components["schemas"]["VoteCastRequest"];
 export type Vote = components["schemas"]["VoteResponse"];
 export type VotingResult = components["schemas"]["VotingResultResponse"];
 export type DecisionLock = components["schemas"]["DecisionLockResponse"];
-export type DecisionLockCreateRequest = components["schemas"]["DecisionLockCreateRequest"];
-export type DecisionLockVerification = components["schemas"]["DecisionLockVerificationResponse"];
+export type DecisionLockCreateRequest =
+  components["schemas"]["DecisionLockCreateRequest"];
+export type DecisionLockVerification =
+  components["schemas"]["DecisionLockVerificationResponse"];
 export type DecisionExport = components["schemas"]["DecisionExportResponse"];
-export type DecisionExportDownload = components["schemas"]["DecisionExportDownloadResponse"];
+export type DecisionExportDownload =
+  components["schemas"]["DecisionExportDownloadResponse"];
 export type DecisionAction = components["schemas"]["ActionResponse"];
 export type ActionStatus = components["schemas"]["ActionStatus"];
 export type ActionCreateRequest = components["schemas"]["ActionCreateRequest"];
 export type ActionUpdateRequest = components["schemas"]["ActionUpdateRequest"];
-export type ActionTransitionRequest = components["schemas"]["ActionTransitionRequest"];
+export type ActionTransitionRequest =
+  components["schemas"]["ActionTransitionRequest"];
 export type DecisionReview = components["schemas"]["ReviewResponse"];
 export type ReviewStatus = components["schemas"]["ReviewStatus"];
 export type ReviewOutcome = components["schemas"]["ReviewOutcome"];
 export type ReviewCreateRequest = components["schemas"]["ReviewCreateRequest"];
 export type ReviewUpdateRequest = components["schemas"]["ReviewUpdateRequest"];
-export type ReviewOutcomeRequest = components["schemas"]["ReviewOutcomeRequest"];
-export type ReviewOutcomeResponse = components["schemas"]["ReviewOutcomeResponse"];
-export type DecisionRevision = components["schemas"]["DecisionRevisionResponse"];
+export type ReviewOutcomeRequest =
+  components["schemas"]["ReviewOutcomeRequest"];
+export type ReviewOutcomeResponse =
+  components["schemas"]["ReviewOutcomeResponse"];
+export type DecisionRevision =
+  components["schemas"]["DecisionRevisionResponse"];
 export type Attachment = components["schemas"]["AttachmentResponse"];
 export type AttachmentStatus = components["schemas"]["AttachmentStatus"];
-export type AttachmentCreateRequest = components["schemas"]["AttachmentCreateRequest"];
-export type AttachmentUpload = components["schemas"]["AttachmentUploadResponse"];
-export type AttachmentDownload = components["schemas"]["AttachmentDownloadResponse"];
+export type AttachmentCreateRequest =
+  components["schemas"]["AttachmentCreateRequest"];
+export type AttachmentUpload =
+  components["schemas"]["AttachmentUploadResponse"];
+export type AttachmentDownload =
+  components["schemas"]["AttachmentDownloadResponse"];
 
 export type ObjectionFilters = {
   severity?: ObjectionSeverity;

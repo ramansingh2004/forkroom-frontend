@@ -17,7 +17,6 @@ import {
 import {
   IconAt,
   IconBell,
-  IconBuildingCommunity,
   IconChevronDown,
   IconChevronRight,
   IconFileText,
@@ -25,7 +24,6 @@ import {
   IconHistory,
   IconHome,
   IconLogout,
-  IconMenu2,
   IconPlug,
   IconSearch,
   IconSettings,
@@ -33,6 +31,7 @@ import {
   IconVocabulary,
 } from '@tabler/icons-react';
 import { useCurrentUser, useLogout } from '@/hooks/use-auth';
+import { useUnreadNotificationCount } from '@/hooks/use-notifications';
 import { useWorkspace, useWorkspaceMembers } from '@/hooks/use-workspaces';
 import { useUiStore } from '@/stores/use-ui-store';
 import styles from './forkroom-shell.module.css';
@@ -42,6 +41,7 @@ type NavItem = {
   icon: typeof IconHome;
   href?: string;
   active?: boolean;
+  badge?: number;
 };
 
 function NavGroup({
@@ -62,20 +62,23 @@ function NavGroup({
           <>
             <Icon size={19} stroke={1.75} aria-hidden="true" />
             <span className={styles.navText}>{item.label}</span>
+            {Boolean(item.badge) && (
+              <span className={styles.navBadge} aria-label={`${item.badge} unread`}>
+                {item.badge! > 99 ? '99+' : item.badge}
+              </span>
+            )}
           </>
         );
 
         if (!item.href) {
           return (
-            <Tooltip key={item.label} label={item.label} position="right" disabled={!compact}>
-              <div
-                className={`${styles.navItem} ${styles.navItemDisabled}`}
-                aria-disabled="true"
-                aria-label={compact ? item.label : undefined}
-              >
-                {content}
-              </div>
-            </Tooltip>
+            <div
+              key={item.label}
+              className={`${styles.navItem} ${styles.navItemDisabled}`}
+              aria-disabled="true"
+            >
+              {content}
+            </div>
           );
         }
 
@@ -85,7 +88,6 @@ function NavGroup({
               href={item.href}
               className={`${styles.navItem} ${item.active ? styles.navItemActive : ''}`}
               aria-current={item.active ? 'page' : undefined}
-              aria-label={compact ? item.label : undefined}
             >
               {content}
             </Link>
@@ -99,10 +101,12 @@ function NavGroup({
 function WorkspaceNavigation({
   compact = false,
   pathname,
+  unreadCount = 0,
   workspaceId,
 }: {
   compact?: boolean;
   pathname: string;
+  unreadCount?: number;
   workspaceId?: string;
 }) {
   const workspaceItems: NavItem[] = [
@@ -123,7 +127,13 @@ function WorkspaceNavigation({
   ];
 
   const activityItems: NavItem[] = [
-    { label: 'Notifications', icon: IconBell },
+    {
+      label: 'Notifications',
+      icon: IconBell,
+      href: '/notifications',
+      active: pathname.startsWith('/notifications'),
+      badge: unreadCount,
+    },
     { label: 'Recent activity', icon: IconHistory },
     { label: 'Mentions', icon: IconAt },
   ];
@@ -150,27 +160,28 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
   const workspace = useWorkspace(workspaceId);
   const members = useWorkspaceMembers(workspaceId);
   const { data: user } = useCurrentUser();
+  const unreadNotifications = useUnreadNotificationCount();
   const logout = useLogout();
   const navigationOpen = useUiStore((state) => state.navigationOpen);
   const setNavigationOpen = useUiStore((state) => state.setNavigationOpen);
-  const sidebarCollapsed = useUiStore((state) => state.sidebarCollapsed);
-  const setSidebarCollapsed = useUiStore((state) => state.setSidebarCollapsed);
   const displayName = user?.display_name ?? 'ForkRoom user';
-  const initials =
-    displayName
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join('') || 'FR';
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('') || 'FR';
 
-  const section = pathname.includes('/decisions/')
-    ? 'Decision'
-    : pathname.endsWith('/decisions')
-      ? 'Decisions'
-      : workspaceId
-        ? 'Overview'
-        : 'Workspaces';
+  const unreadCount = unreadNotifications.data?.unread ?? 0;
+  const section = pathname.startsWith('/notifications')
+    ? 'Notifications'
+    : pathname.includes('/decisions/')
+      ? 'Decision'
+      : pathname.endsWith('/decisions')
+        ? 'Decisions'
+        : workspaceId
+          ? 'Overview'
+          : 'Workspaces';
 
   const signOut = async () => {
     await logout.mutateAsync();
@@ -178,26 +189,10 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
   };
 
   return (
-    <div className={`${styles.shell} ${sidebarCollapsed ? styles.shellCollapsed : ''}`}>
-      <aside className={`${styles.sidebar} ${sidebarCollapsed ? styles.sidebarCollapsed : ''}`}>
+    <div className={styles.shell}>
+      <aside className={styles.sidebar}>
         <div>
           <div className={styles.sidebarBrand}>
-            <Tooltip
-              label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              position="right"
-            >
-              <ActionIcon
-                className={styles.sidebarToggle}
-                variant="subtle"
-                color="dark"
-                size={36}
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                aria-expanded={!sidebarCollapsed}
-              >
-                <IconMenu2 size={20} stroke={1.8} />
-              </ActionIcon>
-            </Tooltip>
             <Link href="/" className={styles.brand} aria-label="ForkRoom home">
               <span className={styles.brandName}>FORKROOM</span>
               <span className={styles.brandTagline}>DECISION WORKSPACE</span>
@@ -205,12 +200,6 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
           </div>
 
           <Link href="/workspaces" className={styles.workspaceSwitcher}>
-            <IconBuildingCommunity
-              className={styles.workspaceSwitcherIcon}
-              size={20}
-              stroke={1.75}
-              aria-hidden="true"
-            />
             <span>
               <strong>{workspace.data?.name ?? 'Choose workspace'}</strong>
               <small>
@@ -221,8 +210,8 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
           </Link>
 
           <WorkspaceNavigation
-            compact={sidebarCollapsed}
             pathname={pathname}
+            unreadCount={unreadCount}
             workspaceId={workspaceId}
           />
         </div>
@@ -263,12 +252,35 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
         </button>
 
         <div className={styles.headerActions}>
-          <Indicator color="rust" size={7} offset={5}>
-            <ActionIcon variant="subtle" color="dark" size={38} aria-label="Notifications">
+          <Indicator
+            color="rust"
+            size={16}
+            offset={5}
+            label={unreadCount > 99 ? '99+' : unreadCount}
+            disabled={unreadCount === 0}
+          >
+            <ActionIcon
+              component={Link}
+              href="/notifications"
+              variant="subtle"
+              color="dark"
+              size={38}
+              aria-label={
+                unreadNotifications.isError
+                  ? 'Notifications; unread count unavailable'
+                  : `${unreadCount} unread notifications`
+              }
+            >
               <IconBell size={19} stroke={1.8} />
             </ActionIcon>
           </Indicator>
-          <ActionIcon variant="subtle" color="dark" size={38} aria-label="Help">
+          <ActionIcon
+            className={styles.helpAction}
+            variant="subtle"
+            color="dark"
+            size={38}
+            aria-label="Help"
+          >
             <IconHelpCircle size={19} stroke={1.8} />
           </ActionIcon>
           <Menu position="bottom-end" width={220} shadow="md">
@@ -301,7 +313,11 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
         size="min(320px, 88vw)"
         padding="md"
       >
-        <WorkspaceNavigation pathname={pathname} workspaceId={workspaceId} />
+        <WorkspaceNavigation
+          pathname={pathname}
+          unreadCount={unreadCount}
+          workspaceId={workspaceId}
+        />
       </Drawer>
     </div>
   );

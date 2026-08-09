@@ -1,17 +1,14 @@
 .page,
 .formPage {
-  width: min(1480px, 100%);
+  width: min(1180px, 100%);
   margin: 0 auto;
-  padding: 8px 8px 48px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  padding: 32px 24px 56px;
 }
 
 .dashboardPage {
   width: min(1480px, 100%);
   margin: 0 auto;
-  padding: 8px 8px 48px;
+  padding: 12px 12px 48px;
 }
 
 .centerState {
@@ -29,11 +26,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
-  margin: 0;
-  padding: 28px 30px;
-  background: var(--fr-raised);
-  border: 1px solid var(--fr-border-strong);
-  border-radius: 8px;
+  margin-bottom: 28px;
 }
 
 .pageHeader h1,
@@ -62,14 +55,7 @@
 
 .search {
   max-width: 420px;
-  margin: 0;
-}
-
-.toolbarPanel {
-  padding: 14px 16px;
-  background: var(--fr-raised);
-  border: 1px solid var(--fr-border-strong);
-  border-radius: 8px;
+  margin-bottom: 16px;
 }
 
 .workspaceList,
@@ -161,14 +147,8 @@
 .emptyState h2 { margin: 16px 0 8px; font-size: 22px; }
 .emptyState p { max-width: 620px; margin: 0 0 20px; color: var(--fr-text-muted); line-height: 1.65; }
 
-.formPage { max-width: 920px; padding-top: 8px; }
-.formIntro {
-  margin: 0;
-  padding: 28px 30px;
-  background: var(--fr-raised);
-  border: 1px solid var(--fr-border-strong);
-  border-radius: 8px;
-}
+.formPage { max-width: 760px; padding-top: 54px; }
+.formIntro { margin-bottom: 24px; }
 .formCard { display: grid; gap: 20px; padding: 24px; }
 .formActions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 4px; }
 .formError { margin: 0; color: var(--fr-danger); font-size: 13px; }
@@ -229,7 +209,7 @@
 .metricStrip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: 8px;
+  margin-top: 10px;
   padding: 20px 10px;
 }
 
@@ -262,8 +242,8 @@
 .overviewGrid {
   display: grid;
   grid-template-columns: minmax(0, 2.1fr) minmax(300px, 0.95fr);
-  gap: 8px;
-  margin-top: 8px;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .overviewPrimary,
@@ -271,7 +251,7 @@
   min-width: 0;
   display: grid;
   align-content: start;
-  gap: 8px;
+  gap: 10px;
 }
 
 .dashboardCard {
@@ -420,6 +400,72 @@
   line-height: 1.55;
 }
 
+.dashboardLoadingSmall {
+  min-height: 108px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 8px 8px;
+  color: var(--fr-text-muted);
+  font-size: 11px;
+}
+
+.attentionList {
+  display: grid;
+}
+
+.attentionRow {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 3px;
+  border-bottom: 1px solid var(--fr-border);
+  color: var(--fr-text);
+}
+
+.attentionRow:last-child {
+  border-bottom: 0;
+}
+
+.attentionRow:hover strong {
+  color: var(--fr-primary);
+}
+
+.attentionIcon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--fr-primary);
+  background: var(--fr-primary-soft);
+}
+
+.attentionRow > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.attentionRow strong,
+.attentionRow small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attentionRow strong {
+  font-size: 11px;
+}
+
+.attentionRow small {
+  color: var(--fr-text-muted);
+  font-family: 'JetBrains Mono Variable', monospace;
+  font-size: 8px;
+}
+
 .memberRow {
   display: flex;
   align-items: center;
@@ -530,10 +576,8 @@
 
 @media (max-width: 640px) {
   .page,
-  .formPage { padding: 8px 8px 32px; }
+  .formPage { padding: 22px 16px 40px; }
   .dashboardPage { padding: 8px 8px 32px; }
-  .pageHeader,
-  .formIntro { padding: 22px 20px; }
   .dashboardHero { min-height: auto; padding: 24px 20px; }
   .dashboardHero h1 { font-size: 32px; }
   .dashboardHero p { font-size: 13px; }
