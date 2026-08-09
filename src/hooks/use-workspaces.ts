@@ -3,20 +3,28 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createDecision,
+  createObjection,
   createProposal,
   createWorkspace,
   deleteProposal,
   getDecision,
   getWorkspace,
   listCriteria,
+  listObjections,
   listProposals,
   listWorkspaceDecisions,
   listWorkspaceMembers,
   listWorkspaces,
+  transitionObjection,
   transitionProposal,
+  updateObjection,
   updateProposal,
-  type DecisionStatus,
   type DecisionCreateRequest,
+  type DecisionStatus,
+  type ObjectionCreateRequest,
+  type ObjectionFilters,
+  type ObjectionTransitionRequest,
+  type ObjectionUpdateRequest,
   type ProposalCreateRequest,
   type ProposalStatus,
   type ProposalUpdateRequest,
@@ -36,6 +44,34 @@ export const workspaceKeys = {
     [...workspaceKeys.all, 'proposals', workspaceId, decisionId] as const,
   criteria: (workspaceId: string, decisionId: string) =>
     [...workspaceKeys.all, 'criteria', workspaceId, decisionId] as const,
+  objectionsRoot: (
+  workspaceId: string,
+  decisionId: string,
+  proposalId: string,
+) =>
+  [
+    ...workspaceKeys.all,
+    'objections',
+    workspaceId,
+    decisionId,
+    proposalId,
+  ] as const,
+
+objections: (
+  workspaceId: string,
+  decisionId: string,
+  proposalId: string,
+  filters?: ObjectionFilters,
+) =>
+  [
+    ...workspaceKeys.objectionsRoot(
+      workspaceId,
+      decisionId,
+      proposalId,
+    ),
+    filters?.severity ?? 'all-severities',
+    filters?.status ?? 'all-statuses',
+  ] as const,
 };
 
 export function useWorkspaces() {
@@ -202,5 +238,136 @@ export function useDecisionCriteria(
     queryFn: () =>
       listCriteria(workspaceId!, decisionId!),
     enabled: Boolean(workspaceId && decisionId),
+  });
+}
+
+export function useProposalObjections(
+  workspaceId?: string,
+  decisionId?: string,
+  proposalId?: string,
+  filters?: ObjectionFilters,
+) {
+  return useQuery({
+    queryKey: workspaceKeys.objections(
+      workspaceId ?? '',
+      decisionId ?? '',
+      proposalId ?? '',
+      filters,
+    ),
+    queryFn: () =>
+      listObjections(
+        workspaceId!,
+        decisionId!,
+        proposalId!,
+        filters,
+      ),
+    enabled: Boolean(
+      workspaceId &&
+        decisionId &&
+        proposalId,
+    ),
+  });
+}
+
+export function useCreateObjection(
+  workspaceId: string,
+  decisionId: string,
+  proposalId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (
+      payload: ObjectionCreateRequest,
+    ) =>
+      createObjection(
+        workspaceId,
+        decisionId,
+        proposalId,
+        payload,
+      ),
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey:
+          workspaceKeys.objectionsRoot(
+            workspaceId,
+            decisionId,
+            proposalId,
+          ),
+      });
+    },
+  });
+}
+
+export function useUpdateObjection(
+  workspaceId: string,
+  decisionId: string,
+  proposalId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      objectionId,
+      payload,
+    }: {
+      objectionId: string;
+      payload: ObjectionUpdateRequest;
+    }) =>
+      updateObjection(
+        workspaceId,
+        decisionId,
+        proposalId,
+        objectionId,
+        payload,
+      ),
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey:
+          workspaceKeys.objectionsRoot(
+            workspaceId,
+            decisionId,
+            proposalId,
+          ),
+      });
+    },
+  });
+}
+
+export function useTransitionObjection(
+  workspaceId: string,
+  decisionId: string,
+  proposalId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      objectionId,
+      payload,
+    }: {
+      objectionId: string;
+      payload: ObjectionTransitionRequest;
+    }) =>
+      transitionObjection(
+        workspaceId,
+        decisionId,
+        proposalId,
+        objectionId,
+        payload,
+      ),
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey:
+          workspaceKeys.objectionsRoot(
+            workspaceId,
+            decisionId,
+            proposalId,
+          ),
+      });
+    },
   });
 }

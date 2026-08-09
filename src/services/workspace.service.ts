@@ -13,6 +13,22 @@ export type ProposalCreateRequest = components['schemas']['ProposalCreateRequest
 export type ProposalUpdateRequest = components['schemas']['ProposalUpdateRequest'];
 export type ProposalStatus = components['schemas']['ProposalStatus'];
 export type Criterion = components['schemas']['CriterionResponse'];
+export type Objection = components['schemas']['ObjectionResponse'];
+export type ObjectionCreateRequest =
+  components['schemas']['ObjectionCreateRequest'];
+export type ObjectionUpdateRequest =
+  components['schemas']['ObjectionUpdateRequest'];
+export type ObjectionSeverity =
+  components['schemas']['ObjectionSeverity'];
+export type ObjectionStatus =
+  components['schemas']['ObjectionStatus'];
+export type ObjectionTransitionRequest =
+  components['schemas']['ObjectionTransitionRequest'];
+
+export type ObjectionFilters = {
+  severity?: ObjectionSeverity;
+  status?: ObjectionStatus;
+};
 
 export async function listWorkspaces() {
   const { data } = await apiClient.get<Workspace[]>('/workspaces');
@@ -133,6 +149,64 @@ export async function listCriteria(
 ) {
   const { data } = await apiClient.get<Criterion[]>(
     `/workspaces/${workspaceId}/decisions/${decisionId}/criteria`,
+  );
+
+  return data;
+}
+
+export async function listObjections(
+  workspaceId: string,
+  decisionId: string,
+  proposalId: string,
+  filters?: ObjectionFilters,
+) {
+  const { data } = await apiClient.get<Objection[]>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/proposals/${proposalId}/objections`,
+    { params: filters },
+  );
+
+  return data;
+}
+
+export async function createObjection(
+  workspaceId: string,
+  decisionId: string,
+  proposalId: string,
+  payload: ObjectionCreateRequest,
+) {
+  const { data } = await apiClient.post<Objection>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/proposals/${proposalId}/objections`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function updateObjection(
+  workspaceId: string,
+  decisionId: string,
+  proposalId: string,
+  objectionId: string,
+  payload: ObjectionUpdateRequest,
+) {
+  const { data } = await apiClient.patch<Objection>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/proposals/${proposalId}/objections/${objectionId}`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function transitionObjection(
+  workspaceId: string,
+  decisionId: string,
+  proposalId: string,
+  objectionId: string,
+  payload: ObjectionTransitionRequest,
+) {
+  const { data } = await apiClient.post<Objection>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/proposals/${proposalId}/objections/${objectionId}/transitions`,
+    payload,
   );
 
   return data;
