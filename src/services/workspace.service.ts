@@ -111,6 +111,10 @@ export async function updateWorkspace(
   return data;
 }
 
+export async function deleteWorkspace(workspaceId: string) {
+  await apiClient.delete(`/workspaces/${workspaceId}`);
+}
+
 export async function listWorkspaceMembers(workspaceId: string) {
   const { data } = await apiClient.get<WorkspaceMember[]>(
     `/workspaces/${workspaceId}/members`,

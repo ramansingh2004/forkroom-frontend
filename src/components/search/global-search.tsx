@@ -16,6 +16,7 @@ import {
   IconHome,
   IconPlus,
   IconSearch,
+  IconSettings,
   IconSwitchHorizontal,
   IconUsers,
   IconVocabulary,
@@ -31,6 +32,7 @@ type RecentSearches = Record<string, string[]>;
 
 type GlobalSearchProps = {
   canCreateDecision: boolean;
+  canManageWorkspace: boolean;
   workspaceId?: string;
   workspaceName?: string;
 };
@@ -167,6 +169,7 @@ function SearchState({
 
 export function GlobalSearch({
   canCreateDecision,
+  canManageWorkspace,
   workspaceId,
   workspaceName,
 }: GlobalSearchProps) {
@@ -237,6 +240,18 @@ export function GlobalSearch({
               leftSection: <IconPlus size={18} />,
               keywords: ['new', 'add', 'decision'],
               onClick: () => navigate(`/w/${workspaceId}/decisions/new`),
+            },
+          ]
+        : []),
+      ...(workspaceId && canManageWorkspace
+        ? [
+            {
+              id: 'workspace-settings',
+              label: 'Open workspace settings',
+              description: `Manage ${workspaceName ?? 'this workspace'}`,
+              leftSection: <IconSettings size={18} />,
+              keywords: ['settings', 'governance', 'workspace', 'delete'],
+              onClick: () => navigate(`/w/${workspaceId}/settings`),
             },
           ]
         : []),

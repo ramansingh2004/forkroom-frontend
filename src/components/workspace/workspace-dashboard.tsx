@@ -8,6 +8,7 @@ import {
   IconArrowRight,
   IconClock,
   IconPlus,
+  IconSettings,
   IconUserPlus,
   IconUsers,
 } from '@tabler/icons-react';
@@ -101,6 +102,16 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
         </div>
 
         <div className={styles.heroActions}>
+          {canManageMembership && (
+            <Button
+              component={Link}
+              href={`/w/${workspaceId}/settings`}
+              variant="default"
+              leftSection={<IconSettings size={17} />}
+            >
+              Settings
+            </Button>
+          )}
           <Button
             component={Link}
             href={`/w/${workspaceId}/members`}

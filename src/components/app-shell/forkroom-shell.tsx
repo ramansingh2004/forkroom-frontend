@@ -101,11 +101,13 @@ function NavGroup({
 }
 
 function WorkspaceNavigation({
+  canManageWorkspace = false,
   compact = false,
   pathname,
   unreadCount = 0,
   workspaceId,
 }: {
+  canManageWorkspace?: boolean;
   compact?: boolean;
   pathname: string;
   unreadCount?: number;
@@ -149,7 +151,16 @@ function WorkspaceNavigation({
 
   const systemItems: NavItem[] = [
     { label: 'Integrations', icon: IconPlug },
-    { label: 'Workspace settings', icon: IconSettings },
+    ...(canManageWorkspace && workspaceId
+      ? [
+          {
+            label: 'Workspace settings',
+            icon: IconSettings,
+            href: `/w/${workspaceId}/settings`,
+            active: pathname.startsWith(`/w/${workspaceId}/settings`),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -187,10 +198,15 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
   const canCreateDecision = ['owner', 'admin', 'member'].includes(
     currentMember?.role ?? 'viewer',
   );
+  const canManageWorkspace = ['owner', 'admin'].includes(
+    currentMember?.role ?? 'viewer',
+  );
 
   const unreadCount = unreadNotifications.data?.unread ?? 0;
   const section = pathname.startsWith('/notifications')
     ? 'Notifications'
+    : pathname.includes('/settings')
+      ? 'Settings'
     : pathname.includes('/members')
       ? 'Members'
     : pathname.includes('/decisions/')
@@ -228,6 +244,7 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
           </Link>
 
           <WorkspaceNavigation
+            canManageWorkspace={canManageWorkspace}
             pathname={pathname}
             unreadCount={unreadCount}
             workspaceId={workspaceId}
@@ -351,6 +368,7 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
         workspaceId={workspaceId}
         workspaceName={workspace.data?.name}
         canCreateDecision={canCreateDecision}
+        canManageWorkspace={canManageWorkspace}
       />
 
       <Drawer
@@ -361,6 +379,7 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
         padding="md"
       >
         <WorkspaceNavigation
+          canManageWorkspace={canManageWorkspace}
           pathname={pathname}
           unreadCount={unreadCount}
           workspaceId={workspaceId}

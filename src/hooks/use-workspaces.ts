@@ -26,6 +26,7 @@ import {
   createVotingSession,
   createWorkspace,
   deleteAttachment,
+  deleteWorkspace,
   deleteProposal,
   getDecision,
   getDecisionExport,
@@ -52,6 +53,7 @@ import {
   transitionObjection,
   updateDecisionAction,
   updateDecisionReview,
+  updateWorkspace,
   updateWorkspaceMember,
   updateObjection,
   updateProposal,
@@ -76,10 +78,12 @@ import {
   type ReviewUpdateRequest,
   type VoteCastRequest,
   type VotingSessionCreateRequest,
+  type Workspace,
   type WorkspaceCreateRequest,
   type WorkspaceMember,
   type WorkspaceMemberCreateRequest,
   type WorkspaceMemberUpdateRequest,
+  type WorkspaceUpdateRequest,
 } from "@/services/workspace.service";
 import { getApiStatus } from "@/services/auth.service";
 
@@ -267,6 +271,48 @@ export function useCreateWorkspace() {
     onSuccess: async (workspace) => {
       queryClient.setQueryData(workspaceKeys.detail(workspace.id), workspace);
       await queryClient.invalidateQueries({ queryKey: workspaceKeys.list() });
+    },
+  });
+}
+
+export function useUpdateWorkspace(workspaceId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: WorkspaceUpdateRequest) =>
+      updateWorkspace(workspaceId, payload),
+    onSuccess: async (workspace) => {
+      queryClient.setQueryData(workspaceKeys.detail(workspaceId), workspace);
+      queryClient.setQueryData(
+        workspaceKeys.list(),
+        (current: Workspace[] | undefined) =>
+          current?.map((item) =>
+            item.id === workspace.id ? workspace : item,
+          ),
+      );
+      await queryClient.invalidateQueries({ queryKey: workspaceKeys.list() });
+    },
+  });
+}
+
+export function useDeleteWorkspace(workspaceId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => deleteWorkspace(workspaceId),
+    onSuccess: async () => {
+      queryClient.setQueryData(
+        workspaceKeys.list(),
+        (current: Workspace[] | undefined) =>
+          current?.filter((workspace) => workspace.id !== workspaceId),
+      );
+      queryClient.removeQueries({
+        predicate: (query) => query.queryKey.includes(workspaceId),
+      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: workspaceKeys.list() }),
+        queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+      ]);
     },
   });
 }
