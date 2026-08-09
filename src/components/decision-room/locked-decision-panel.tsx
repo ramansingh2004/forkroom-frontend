@@ -17,6 +17,7 @@ import type {
 } from '@/services/workspace.service';
 
 import styles from './decision-room.module.css';
+import { DecisionExportPanel } from './decision-export-panel';
 
 type LockedDecisionPanelProps = {
   workspaceId: string;
@@ -26,6 +27,7 @@ type LockedDecisionPanelProps = {
   decisionLock: DecisionLock;
   proposals: Proposal[];
   members: WorkspaceMember[];
+  canRequestExport: boolean;
 };
 
 const formatDateTime = (value: string) =>
@@ -42,6 +44,7 @@ export function LockedDecisionPanel({
   decisionLock,
   proposals,
   members,
+  canRequestExport,
 }: LockedDecisionPanelProps) {
   const verification = useDecisionLockVerification(workspaceId, decisionId);
   const winner = proposals.find(
@@ -161,6 +164,15 @@ export function LockedDecisionPanel({
           </div>
         )}
       </section>
+
+      <DecisionExportPanel
+        workspaceId={workspaceId}
+        decisionId={decisionId}
+        documentHash={decisionLock.document_hash}
+        verificationPending={verification.isPending}
+        verificationValid={verification.data?.valid === true}
+        canRequestExport={canRequestExport}
+      />
 
       <Group className={styles.lockedRecordNote}>
         <IconLock size={17} />

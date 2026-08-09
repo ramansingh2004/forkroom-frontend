@@ -1409,6 +1409,194 @@
   color: var(--fr-text);
 }
 
+.exportSection {
+  display: grid;
+  gap: 14px;
+  padding-top: 28px;
+  border-top: 1px solid var(--fr-border-strong);
+}
+
+.exportHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.exportHeading > div {
+  min-width: 0;
+}
+
+.exportHeading h2 {
+  margin: 5px 0 5px;
+  color: var(--fr-text);
+  font-size: 21px;
+  letter-spacing: -0.02em;
+}
+
+.exportHeading p {
+  max-width: 70ch;
+  margin: 0;
+  color: var(--fr-text-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.exportLiveRegion,
+.exportRecord {
+  display: grid;
+  gap: 12px;
+}
+
+.exportAsyncState {
+  min-height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px dashed var(--fr-border-strong);
+  border-radius: 8px;
+  color: var(--fr-text-muted);
+  background: var(--fr-raised);
+  font-size: 11px;
+}
+
+.exportEmpty {
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 9px;
+  padding: 28px;
+  border: 1px dashed var(--fr-border-strong);
+  border-radius: 8px;
+  color: var(--fr-text-muted);
+  background: var(--fr-raised);
+  text-align: center;
+}
+
+.exportEmpty > svg {
+  color: var(--fr-primary);
+}
+
+.exportEmpty > strong {
+  color: var(--fr-text);
+  font-size: 14px;
+}
+
+.exportEmpty > p {
+  max-width: 60ch;
+  margin: 0 0 5px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.exportEmpty > :global(.mantine-Alert-root) {
+  width: min(100%, 560px);
+  text-align: left;
+}
+
+.exportStatusCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: flex-start;
+  gap: 13px;
+  padding: 16px;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: 8px;
+  background: var(--fr-surface);
+}
+
+.exportStatusIcon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--fr-border);
+  border-radius: 50%;
+  color: var(--fr-primary);
+  background: var(--fr-raised);
+}
+
+.exportStatusCard > div:last-child {
+  min-width: 0;
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+}
+
+.exportStatusCard strong {
+  color: var(--fr-text);
+  font-size: 14px;
+}
+
+.exportStatusCard p {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--fr-text-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.exportMetadata {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: 8px;
+  background: var(--fr-raised);
+}
+
+.exportMetadata > div {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  padding: 12px 14px;
+  border-right: 1px solid var(--fr-border);
+  border-bottom: 1px solid var(--fr-border);
+}
+
+.exportMetadata > div:nth-child(3n) {
+  border-right: 0;
+}
+
+.exportMetadata > div:nth-last-child(-n + 3) {
+  border-bottom: 0;
+}
+
+.exportMetadata span {
+  color: var(--fr-text-muted);
+  font-family: 'JetBrains Mono Variable', monospace;
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+}
+
+.exportMetadata strong {
+  overflow-wrap: anywhere;
+  color: var(--fr-text);
+  font-size: 11px;
+}
+
+.exportActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: 8px;
+  background: var(--fr-surface);
+}
+
+.exportActions > span {
+  max-width: 58ch;
+  color: var(--fr-text-muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
 .responsiveWorkspace,
 .responsiveWorkspace > :global(.mantine-Tabs-root) {
   height: 100%;
@@ -1582,7 +1770,33 @@
   }
 
   .lockedHeading,
-  .lockVerificationHeading {
+  .lockVerificationHeading,
+  .exportHeading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .exportHeading :global(.mantine-Button-root),
+  .exportActions :global(.mantine-Button-root) {
+    width: 100%;
+  }
+
+  .exportMetadata {
+    grid-template-columns: 1fr;
+  }
+
+  .exportMetadata > div,
+  .exportMetadata > div:nth-child(3n),
+  .exportMetadata > div:nth-last-child(-n + 3) {
+    border-right: 0;
+    border-bottom: 1px solid var(--fr-border);
+  }
+
+  .exportMetadata > div:last-child {
+    border-bottom: 0;
+  }
+
+  .exportActions {
     align-items: stretch;
     flex-direction: column;
   }

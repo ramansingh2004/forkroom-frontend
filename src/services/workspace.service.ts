@@ -29,6 +29,9 @@ export type DecisionLock = components['schemas']['DecisionLockResponse'];
 export type DecisionLockCreateRequest = components['schemas']['DecisionLockCreateRequest'];
 export type DecisionLockVerification =
   components['schemas']['DecisionLockVerificationResponse'];
+export type DecisionExport = components['schemas']['DecisionExportResponse'];
+export type DecisionExportDownload =
+  components['schemas']['DecisionExportDownloadResponse'];
 
 export type ObjectionFilters = {
   severity?: ObjectionSeverity;
@@ -333,6 +336,39 @@ export async function verifyDecisionLock(
 ) {
   const { data } = await apiClient.get<DecisionLockVerification>(
     `/workspaces/${workspaceId}/decisions/${decisionId}/lock/verify`,
+  );
+
+  return data;
+}
+
+export async function getDecisionExport(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const { data } = await apiClient.get<DecisionExport>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/exports`,
+  );
+
+  return data;
+}
+
+export async function requestDecisionExport(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const { data } = await apiClient.post<DecisionExport>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/exports`,
+  );
+
+  return data;
+}
+
+export async function createDecisionExportDownload(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const { data } = await apiClient.post<DecisionExportDownload>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/exports/download`,
   );
 
   return data;

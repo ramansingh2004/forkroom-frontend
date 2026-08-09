@@ -5,6 +5,7 @@ import {
   cancelVotingSession,
   castVote,
   closeVotingSession,
+  createDecisionExportDownload,
   createDecisionLock,
   createObjection,
   createDecision,
@@ -13,6 +14,7 @@ import {
   createWorkspace,
   deleteProposal,
   getDecision,
+  getDecisionExport,
   getDecisionLock,
   getVotingResult,
   getWorkspace,
@@ -24,6 +26,7 @@ import {
   listWorkspaceMembers,
   listWorkspaces,
   openVotingSession,
+  requestDecisionExport,
   transitionProposal,
   transitionObjection,
   updateObjection,
@@ -43,6 +46,7 @@ import {
   type VotingSessionCreateRequest,
   type WorkspaceCreateRequest,
 } from '@/services/workspace.service';
+import { getApiStatus } from '@/services/auth.service';
 
 export const workspaceKeys = {
   all: ['workspaces'] as const,
@@ -82,6 +86,8 @@ export const workspaceKeys = {
     [...workspaceKeys.decision(workspaceId, decisionId), 'lock'] as const,
   decisionLockVerification: (workspaceId: string, decisionId: string) =>
     [...workspaceKeys.decisionLock(workspaceId, decisionId), 'verification'] as const,
+  decisionExport: (workspaceId: string, decisionId: string) =>
+    [...workspaceKeys.decisionLock(workspaceId, decisionId), 'export'] as const,
 };
 
 export function useWorkspaces() {
@@ -537,5 +543,56 @@ export function useDecisionLockVerification(
     ),
     queryFn: () => verifyDecisionLock(workspaceId!, decisionId!),
     enabled: Boolean(workspaceId && decisionId && enabled),
+  });
+}
+
+export function useDecisionExport(
+  workspaceId?: string,
+  decisionId?: string,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: workspaceKeys.decisionExport(
+      workspaceId ?? '',
+      decisionId ?? '',
+    ),
+    queryFn: () => getDecisionExport(workspaceId!, decisionId!),
+    enabled: Boolean(workspaceId && decisionId && enabled),
+    retry: (failureCount, error) =>
+      getApiStatus(error) !== 404 && failureCount < 2,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === 'pending' || status === 'processing' ? 2_500 : false;
+    },
+  });
+}
+
+export function useRequestDecisionExport(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => requestDecisionExport(workspaceId, decisionId),
+    onSuccess: async (decisionExport) => {
+      queryClient.setQueryData(
+        workspaceKeys.decisionExport(workspaceId, decisionId),
+        decisionExport,
+      );
+
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.decisionExport(workspaceId, decisionId),
+      });
+    },
+  });
+}
+
+export function useDecisionExportDownload(
+  workspaceId: string,
+  decisionId: string,
+) {
+  return useMutation({
+    mutationFn: () => createDecisionExportDownload(workspaceId, decisionId),
   });
 }

@@ -545,6 +545,7 @@ function DocumentPanel({
   mode,
   canEdit,
   canManageVoting,
+  canRequestExport,
   transitionPending,
   onModeChange,
   onCreateProposal,
@@ -565,6 +566,7 @@ function DocumentPanel({
   mode: WorkMode;
   canEdit: boolean;
   canManageVoting: boolean;
+  canRequestExport: boolean;
   transitionPending: boolean;
   onModeChange: (mode: WorkMode) => void;
   onCreateProposal: () => void;
@@ -603,6 +605,7 @@ function DocumentPanel({
             decisionLock={decisionLock}
             proposals={proposals}
             members={members}
+            canRequestExport={canRequestExport}
           />
         ) : mode === 'vote' ? (
           <VotingPanel
@@ -1020,6 +1023,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
       mode={workMode}
       canEdit={canEditProposals}
       canManageVoting={canManageVoting}
+      canRequestExport={canContribute}
       transitionPending={transitionProposal.isPending}
       onModeChange={setWorkMode}
       onCreateProposal={() => setEditorProposal(null)}
