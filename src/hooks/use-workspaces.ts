@@ -1,6 +1,11 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {
   createDecision,
   createObjection,
@@ -19,6 +24,13 @@ import {
   transitionProposal,
   updateObjection,
   updateProposal,
+  cancelVotingSession,
+  castVote,
+  closeVotingSession,
+  createVotingSession,
+  getVotingResult,
+  listVotingSessions,
+  openVotingSession,
   type DecisionCreateRequest,
   type DecisionStatus,
   type ObjectionCreateRequest,
@@ -29,6 +41,8 @@ import {
   type ProposalStatus,
   type ProposalUpdateRequest,
   type WorkspaceCreateRequest,
+  type VoteCastRequest,
+  type VotingSessionCreateRequest,
 } from '@/services/workspace.service';
 
 export const workspaceKeys = {
@@ -71,6 +85,31 @@ objections: (
     ),
     filters?.severity ?? 'all-severities',
     filters?.status ?? 'all-statuses',
+  ] as const,
+
+  votingSessions: (
+  workspaceId: string,
+  decisionId: string,
+) =>
+  [
+    ...workspaceKeys.all,
+    'voting-sessions',
+    workspaceId,
+    decisionId,
+  ] as const,
+
+votingResult: (
+  workspaceId: string,
+  decisionId: string,
+  votingSessionId: string,
+) =>
+  [
+    ...workspaceKeys.votingSessions(
+      workspaceId,
+      decisionId,
+    ),
+    votingSessionId,
+    'result',
   ] as const,
 };
 
@@ -369,5 +408,248 @@ export function useTransitionObjection(
           ),
       });
     },
+  });
+}
+
+export function useOpenBlockingObjections(
+  workspaceId: string,
+  decisionId: string,
+  proposalIds: string[],
+) {
+  const queries = useQueries({
+    queries: proposalIds.map(
+      (proposalId) => ({
+        queryKey:
+          workspaceKeys.objections(
+            workspaceId,
+            decisionId,
+            proposalId,
+            {
+              severity: 'blocking',
+              status: 'open',
+            },
+          ),
+
+        queryFn: () =>
+          listObjections(
+            workspaceId,
+            decisionId,
+            proposalId,
+            {
+              severity: 'blocking',
+              status: 'open',
+            },
+          ),
+
+        enabled: Boolean(
+          workspaceId &&
+            decisionId &&
+            proposalId,
+        ),
+      }),
+    ),
+  });
+
+  return {
+    objections: queries.flatMap(
+      (query) => query.data ?? [],
+    ),
+
+    isPending: queries.some(
+      (query) => query.isPending,
+    ),
+
+    isError: queries.some(
+      (query) => query.isError,
+    ),
+  };
+}
+
+export function useVotingSessions(
+  workspaceId?: string,
+  decisionId?: string,
+) {
+  return useQuery({
+    queryKey:
+      workspaceKeys.votingSessions(
+        workspaceId ?? '',
+        decisionId ?? '',
+      ),
+
+    queryFn: () =>
+      listVotingSessions(
+        workspaceId!,
+        decisionId!,
+      ),
+
+    enabled: Boolean(
+      workspaceId && decisionId,
+    ),
+  });
+}
+
+export function useCreateVotingSession(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (
+      payload: VotingSessionCreateRequest,
+    ) =>
+      createVotingSession(
+        workspaceId,
+        decisionId,
+        payload,
+      ),
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey:
+          workspaceKeys.votingSessions(
+            workspaceId,
+            decisionId,
+          ),
+      });
+    },
+  });
+}
+
+export function useOpenVotingSession(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (
+      votingSessionId: string,
+    ) =>
+      openVotingSession(
+        workspaceId,
+        decisionId,
+        votingSessionId,
+      ),
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey:
+          workspaceKeys.votingSessions(
+            workspaceId,
+            decisionId,
+          ),
+      });
+    },
+  });
+}
+
+export function useCastVote(
+  workspaceId: string,
+  decisionId: string,
+  votingSessionId: string,
+) {
+  return useMutation({
+    mutationFn: (
+      payload: VoteCastRequest,
+    ) =>
+      castVote(
+        workspaceId,
+        decisionId,
+        votingSessionId,
+        payload,
+      ),
+  });
+}
+
+export function useCloseVotingSession(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (
+      votingSessionId: string,
+    ) =>
+      closeVotingSession(
+        workspaceId,
+        decisionId,
+        votingSessionId,
+      ),
+
+    onSuccess: async (session) => {
+      await queryClient.invalidateQueries({
+        queryKey:
+          workspaceKeys.votingSessions(
+            workspaceId,
+            decisionId,
+          ),
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey:
+          workspaceKeys.votingResult(
+            workspaceId,
+            decisionId,
+            session.id,
+          ),
+      });
+    },
+  });
+}
+
+export function useCancelVotingSession(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (
+      votingSessionId: string,
+    ) =>
+      cancelVotingSession(
+        workspaceId,
+        decisionId,
+        votingSessionId,
+      ),
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey:
+          workspaceKeys.votingSessions(
+            workspaceId,
+            decisionId,
+          ),
+      });
+    },
+  });
+}
+
+export function useVotingResult(
+  workspaceId: string,
+  decisionId: string,
+  votingSessionId?: string,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey:
+      workspaceKeys.votingResult(
+        workspaceId,
+        decisionId,
+        votingSessionId ?? '',
+      ),
+
+    queryFn: () =>
+      getVotingResult(
+        workspaceId,
+        decisionId,
+        votingSessionId!,
+      ),
+
+    enabled: Boolean(
+      votingSessionId && enabled,
+    ),
   });
 }

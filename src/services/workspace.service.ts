@@ -30,6 +30,19 @@ export type ObjectionFilters = {
   status?: ObjectionStatus;
 };
 
+export type VotingSession =
+  components['schemas']['VotingSessionResponse'];
+export type VotingSessionCreateRequest =
+  components['schemas']['VotingSessionCreateRequest'];
+export type VotingSessionStatus =
+  components['schemas']['VotingSessionStatus'];
+export type VoteCastRequest =
+  components['schemas']['VoteCastRequest'];
+export type Vote =
+  components['schemas']['VoteResponse'];
+export type VotingResult =
+  components['schemas']['VotingResultResponse'];
+
 export async function listWorkspaces() {
   const { data } = await apiClient.get<Workspace[]>('/workspaces');
   return data;
@@ -207,6 +220,92 @@ export async function transitionObjection(
   const { data } = await apiClient.post<Objection>(
     `/workspaces/${workspaceId}/decisions/${decisionId}/proposals/${proposalId}/objections/${objectionId}/transitions`,
     payload,
+  );
+
+  return data;
+}
+
+export async function listVotingSessions(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const { data } = await apiClient.get<VotingSession[]>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/voting-sessions`,
+  );
+
+  return data;
+}
+
+export async function createVotingSession(
+  workspaceId: string,
+  decisionId: string,
+  payload: VotingSessionCreateRequest,
+) {
+  const { data } = await apiClient.post<VotingSession>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/voting-sessions`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function openVotingSession(
+  workspaceId: string,
+  decisionId: string,
+  votingSessionId: string,
+) {
+  const { data } = await apiClient.post<VotingSession>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/voting-sessions/${votingSessionId}/open`,
+  );
+
+  return data;
+}
+
+export async function castVote(
+  workspaceId: string,
+  decisionId: string,
+  votingSessionId: string,
+  payload: VoteCastRequest,
+) {
+  const { data } = await apiClient.post<Vote>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/voting-sessions/${votingSessionId}/votes`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function closeVotingSession(
+  workspaceId: string,
+  decisionId: string,
+  votingSessionId: string,
+) {
+  const { data } = await apiClient.post<VotingSession>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/voting-sessions/${votingSessionId}/close`,
+  );
+
+  return data;
+}
+
+export async function cancelVotingSession(
+  workspaceId: string,
+  decisionId: string,
+  votingSessionId: string,
+) {
+  const { data } = await apiClient.post<VotingSession>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/voting-sessions/${votingSessionId}/cancel`,
+  );
+
+  return data;
+}
+
+export async function getVotingResult(
+  workspaceId: string,
+  decisionId: string,
+  votingSessionId: string,
+) {
+  const { data } = await apiClient.get<VotingResult>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/voting-sessions/${votingSessionId}/result`,
   );
 
   return data;
