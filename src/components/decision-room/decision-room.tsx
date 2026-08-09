@@ -540,12 +540,15 @@ function DocumentPanel({
   votingSessions,
   decisionLock,
   members,
+  currentUserId,
   isLocked,
   selectedProposal,
   mode,
   canEdit,
   canManageVoting,
   canRequestExport,
+  canCreateActions,
+  canManageFollowThrough,
   transitionPending,
   onModeChange,
   onCreateProposal,
@@ -561,12 +564,15 @@ function DocumentPanel({
   votingSessions: VotingSession[];
   decisionLock: DecisionLock | null;
   members: WorkspaceMember[];
+  currentUserId: string;
   isLocked: boolean;
   selectedProposal: Proposal | null;
   mode: WorkMode;
   canEdit: boolean;
   canManageVoting: boolean;
   canRequestExport: boolean;
+  canCreateActions: boolean;
+  canManageFollowThrough: boolean;
   transitionPending: boolean;
   onModeChange: (mode: WorkMode) => void;
   onCreateProposal: () => void;
@@ -605,7 +611,10 @@ function DocumentPanel({
             decisionLock={decisionLock}
             proposals={proposals}
             members={members}
+            currentUserId={currentUserId}
             canRequestExport={canRequestExport}
+            canCreateActions={canCreateActions}
+            canManageFollowThrough={canManageFollowThrough}
           />
         ) : mode === 'vote' ? (
           <VotingPanel
@@ -1018,12 +1027,15 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
       votingSessions={votingSessions.data}
       decisionLock={decisionLock.data ?? null}
       members={members.data}
+      currentUserId={currentUser.data.id}
       isLocked={decision.data.status === 'locked'}
       selectedProposal={selectedProposal}
       mode={workMode}
       canEdit={canEditProposals}
       canManageVoting={canManageVoting}
       canRequestExport={canContribute}
+      canCreateActions={canContribute}
+      canManageFollowThrough={canManageVoting}
       transitionPending={transitionProposal.isPending}
       onModeChange={setWorkMode}
       onCreateProposal={() => setEditorProposal(null)}

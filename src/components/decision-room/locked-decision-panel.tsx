@@ -1,6 +1,6 @@
 'use client';
 
-import { Alert, Badge, Button, Group, Loader } from '@mantine/core';
+import { Alert, Badge, Button, Group, Loader, Tabs } from '@mantine/core';
 import {
   IconAlertTriangle,
   IconCircleCheck,
@@ -17,7 +17,9 @@ import type {
 } from '@/services/workspace.service';
 
 import styles from './decision-room.module.css';
+import { DecisionActionsPanel } from './decision-actions-panel';
 import { DecisionExportPanel } from './decision-export-panel';
+import { DecisionReviewsPanel } from './decision-reviews-panel';
 
 type LockedDecisionPanelProps = {
   workspaceId: string;
@@ -27,7 +29,10 @@ type LockedDecisionPanelProps = {
   decisionLock: DecisionLock;
   proposals: Proposal[];
   members: WorkspaceMember[];
+  currentUserId: string;
   canRequestExport: boolean;
+  canCreateActions: boolean;
+  canManageFollowThrough: boolean;
 };
 
 const formatDateTime = (value: string) =>
@@ -44,7 +49,10 @@ export function LockedDecisionPanel({
   decisionLock,
   proposals,
   members,
+  currentUserId,
   canRequestExport,
+  canCreateActions,
+  canManageFollowThrough,
 }: LockedDecisionPanelProps) {
   const verification = useDecisionLockVerification(workspaceId, decisionId);
   const winner = proposals.find(
@@ -74,14 +82,27 @@ export function LockedDecisionPanel({
         </Badge>
       </div>
 
-      <section className={styles.lockedOutcome}>
-        <div className={styles.sectionIndex}>01 / CHOSEN OUTCOME</div>
-        <h2>{winner?.title ?? 'Selected proposal'}</h2>
-        <p>
-          {winner?.summary ||
-            'The selected proposal is preserved in the immutable decision snapshot.'}
-        </p>
-      </section>
+      <Tabs
+        defaultValue="record"
+        variant="unstyled"
+        className={styles.lockedRecordTabs}
+        classNames={{ list: styles.lockedTabList, tab: styles.lockedTab }}
+      >
+        <Tabs.List aria-label="Locked decision views">
+          <Tabs.Tab value="record">Record</Tabs.Tab>
+          <Tabs.Tab value="actions">Actions</Tabs.Tab>
+          <Tabs.Tab value="reviews">Reviews</Tabs.Tab>
+        </Tabs.List>
+
+        <Tabs.Panel value="record" className={styles.lockedTabPanel}>
+          <section className={styles.lockedOutcome}>
+            <div className={styles.sectionIndex}>01 / CHOSEN OUTCOME</div>
+            <h2>{winner?.title ?? 'Selected proposal'}</h2>
+            <p>
+              {winner?.summary ||
+                'The selected proposal is preserved in the immutable decision snapshot.'}
+            </p>
+          </section>
 
       <div className={styles.lockMetadata}>
         <div>
@@ -174,13 +195,35 @@ export function LockedDecisionPanel({
         canRequestExport={canRequestExport}
       />
 
-      <Group className={styles.lockedRecordNote}>
-        <IconLock size={17} />
-        <span>
-          Core content is read-only. Future changes must be recorded through a
-          review or revision so this decision remains historically accurate.
-        </span>
-      </Group>
+          <Group className={styles.lockedRecordNote}>
+            <IconLock size={17} />
+            <span>
+              Core content is read-only. Future changes must be recorded through a
+              review or revision so this decision remains historically accurate.
+            </span>
+          </Group>
+        </Tabs.Panel>
+
+        <Tabs.Panel value="actions" className={styles.lockedTabPanel}>
+          <DecisionActionsPanel
+            workspaceId={workspaceId}
+            decisionId={decisionId}
+            members={members}
+            currentUserId={currentUserId}
+            canCreateActions={canCreateActions}
+            canManageActions={canManageFollowThrough}
+          />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="reviews" className={styles.lockedTabPanel}>
+          <DecisionReviewsPanel
+            workspaceId={workspaceId}
+            decisionId={decisionId}
+            members={members}
+            canManageReviews={canManageFollowThrough}
+          />
+        </Tabs.Panel>
+      </Tabs>
     </article>
   );
 }
