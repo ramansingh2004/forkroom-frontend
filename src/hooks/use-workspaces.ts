@@ -1,12 +1,20 @@
-'use client';
+"use client";
 
-import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   cancelDecisionReview,
   cancelVotingSession,
   castVote,
   closeVotingSession,
   completeDecisionReview,
+  completeAttachmentUpload,
+  createAttachmentDownload,
+  createAttachmentUpload,
   createDecisionAction,
   createDecisionExportDownload,
   createDecisionLock,
@@ -16,6 +24,7 @@ import {
   createDecisionReview,
   createVotingSession,
   createWorkspace,
+  deleteAttachment,
   deleteProposal,
   getDecision,
   getDecisionExport,
@@ -27,6 +36,7 @@ import {
   listDecisionActions,
   listDecisionReviews,
   listDecisionRevisions,
+  listAttachments,
   listObjections,
   listProposals,
   listVotingSessions,
@@ -42,8 +52,10 @@ import {
   updateDecisionReview,
   updateObjection,
   updateProposal,
+  uploadAttachmentObject,
   verifyDecisionLock,
   type DecisionLockCreateRequest,
+  type Attachment,
   type ActionCreateRequest,
   type ActionTransitionRequest,
   type ActionUpdateRequest,
@@ -62,24 +74,36 @@ import {
   type VoteCastRequest,
   type VotingSessionCreateRequest,
   type WorkspaceCreateRequest,
-} from '@/services/workspace.service';
-import { getApiStatus } from '@/services/auth.service';
+} from "@/services/workspace.service";
+import { getApiStatus } from "@/services/auth.service";
 
 export const workspaceKeys = {
-  all: ['workspaces'] as const,
-  list: () => [...workspaceKeys.all, 'list'] as const,
-  detail: (workspaceId: string) => [...workspaceKeys.all, 'detail', workspaceId] as const,
-  members: (workspaceId: string) => [...workspaceKeys.all, 'members', workspaceId] as const,
+  all: ["workspaces"] as const,
+  list: () => [...workspaceKeys.all, "list"] as const,
+  detail: (workspaceId: string) =>
+    [...workspaceKeys.all, "detail", workspaceId] as const,
+  members: (workspaceId: string) =>
+    [...workspaceKeys.all, "members", workspaceId] as const,
   decisions: (workspaceId: string, status?: DecisionStatus) =>
-    [...workspaceKeys.all, 'decisions', workspaceId, status ?? 'all'] as const,
+    [...workspaceKeys.all, "decisions", workspaceId, status ?? "all"] as const,
   decision: (workspaceId: string, decisionId: string) =>
-    [...workspaceKeys.all, 'decision', workspaceId, decisionId] as const,
+    [...workspaceKeys.all, "decision", workspaceId, decisionId] as const,
   proposals: (workspaceId: string, decisionId: string) =>
-    [...workspaceKeys.all, 'proposals', workspaceId, decisionId] as const,
+    [...workspaceKeys.all, "proposals", workspaceId, decisionId] as const,
   criteria: (workspaceId: string, decisionId: string) =>
-    [...workspaceKeys.all, 'criteria', workspaceId, decisionId] as const,
-  objectionsRoot: (workspaceId: string, decisionId: string, proposalId: string) =>
-    [...workspaceKeys.all, 'objections', workspaceId, decisionId, proposalId] as const,
+    [...workspaceKeys.all, "criteria", workspaceId, decisionId] as const,
+  objectionsRoot: (
+    workspaceId: string,
+    decisionId: string,
+    proposalId: string,
+  ) =>
+    [
+      ...workspaceKeys.all,
+      "objections",
+      workspaceId,
+      decisionId,
+      proposalId,
+    ] as const,
   objections: (
     workspaceId: string,
     decisionId: string,
@@ -88,29 +112,36 @@ export const workspaceKeys = {
   ) =>
     [
       ...workspaceKeys.objectionsRoot(workspaceId, decisionId, proposalId),
-      filters?.severity ?? 'all-severities',
-      filters?.status ?? 'all-statuses',
+      filters?.severity ?? "all-severities",
+      filters?.status ?? "all-statuses",
     ] as const,
   votingSessions: (workspaceId: string, decisionId: string) =>
-    [...workspaceKeys.all, 'voting-sessions', workspaceId, decisionId] as const,
-  votingResult: (workspaceId: string, decisionId: string, votingSessionId: string) =>
+    [...workspaceKeys.all, "voting-sessions", workspaceId, decisionId] as const,
+  votingResult: (
+    workspaceId: string,
+    decisionId: string,
+    votingSessionId: string,
+  ) =>
     [
       ...workspaceKeys.votingSessions(workspaceId, decisionId),
       votingSessionId,
-      'result',
+      "result",
     ] as const,
   decisionLock: (workspaceId: string, decisionId: string) =>
-    [...workspaceKeys.decision(workspaceId, decisionId), 'lock'] as const,
+    [...workspaceKeys.decision(workspaceId, decisionId), "lock"] as const,
   decisionLockVerification: (workspaceId: string, decisionId: string) =>
-    [...workspaceKeys.decisionLock(workspaceId, decisionId), 'verification'] as const,
+    [
+      ...workspaceKeys.decisionLock(workspaceId, decisionId),
+      "verification",
+    ] as const,
   decisionExport: (workspaceId: string, decisionId: string) =>
-    [...workspaceKeys.decisionLock(workspaceId, decisionId), 'export'] as const,
+    [...workspaceKeys.decisionLock(workspaceId, decisionId), "export"] as const,
   decisionActions: (workspaceId: string, decisionId: string) =>
-    [...workspaceKeys.decision(workspaceId, decisionId), 'actions'] as const,
+    [...workspaceKeys.decision(workspaceId, decisionId), "actions"] as const,
   decisionReviews: (workspaceId: string, decisionId: string) =>
-    [...workspaceKeys.decision(workspaceId, decisionId), 'reviews'] as const,
+    [...workspaceKeys.decision(workspaceId, decisionId), "reviews"] as const,
   decisionRevisions: (workspaceId: string, decisionId: string) =>
-    [...workspaceKeys.decision(workspaceId, decisionId), 'revisions'] as const,
+    [...workspaceKeys.decision(workspaceId, decisionId), "revisions"] as const,
   decisionRevision: (
     workspaceId: string,
     decisionId: string,
@@ -119,6 +150,11 @@ export const workspaceKeys = {
     [
       ...workspaceKeys.decisionRevisions(workspaceId, decisionId),
       revisionId,
+    ] as const,
+  decisionAttachments: (workspaceId: string, decisionId: string) =>
+    [
+      ...workspaceKeys.decision(workspaceId, decisionId),
+      "attachments",
     ] as const,
 };
 
@@ -131,7 +167,7 @@ export function useWorkspaces() {
 
 export function useWorkspace(workspaceId?: string) {
   return useQuery({
-    queryKey: workspaceKeys.detail(workspaceId ?? ''),
+    queryKey: workspaceKeys.detail(workspaceId ?? ""),
     queryFn: () => getWorkspace(workspaceId!),
     enabled: Boolean(workspaceId),
   });
@@ -139,15 +175,18 @@ export function useWorkspace(workspaceId?: string) {
 
 export function useWorkspaceMembers(workspaceId?: string) {
   return useQuery({
-    queryKey: workspaceKeys.members(workspaceId ?? ''),
+    queryKey: workspaceKeys.members(workspaceId ?? ""),
     queryFn: () => listWorkspaceMembers(workspaceId!),
     enabled: Boolean(workspaceId),
   });
 }
 
-export function useWorkspaceDecisions(workspaceId?: string, status?: DecisionStatus) {
+export function useWorkspaceDecisions(
+  workspaceId?: string,
+  status?: DecisionStatus,
+) {
   return useQuery({
-    queryKey: workspaceKeys.decisions(workspaceId ?? '', status),
+    queryKey: workspaceKeys.decisions(workspaceId ?? "", status),
     queryFn: () => listWorkspaceDecisions(workspaceId!, status),
     enabled: Boolean(workspaceId),
   });
@@ -169,26 +208,20 @@ export function useCreateDecision(workspaceId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: DecisionCreateRequest) => createDecision(workspaceId, payload),
+    mutationFn: (payload: DecisionCreateRequest) =>
+      createDecision(workspaceId, payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: [...workspaceKeys.all, 'decisions', workspaceId],
+        queryKey: [...workspaceKeys.all, "decisions", workspaceId],
       });
     },
   });
 }
 
-export function useDecision(
-  workspaceId?: string,
-  decisionId?: string,
-) {
+export function useDecision(workspaceId?: string, decisionId?: string) {
   return useQuery({
-    queryKey: workspaceKeys.decision(
-      workspaceId ?? '',
-      decisionId ?? '',
-    ),
-    queryFn: () =>
-      getDecision(workspaceId!, decisionId!),
+    queryKey: workspaceKeys.decision(workspaceId ?? "", decisionId ?? ""),
+    queryFn: () => getDecision(workspaceId!, decisionId!),
     enabled: Boolean(workspaceId && decisionId),
   });
 }
@@ -198,12 +231,8 @@ export function useDecisionProposals(
   decisionId?: string,
 ) {
   return useQuery({
-    queryKey: workspaceKeys.proposals(
-      workspaceId ?? '',
-      decisionId ?? '',
-    ),
-    queryFn: () =>
-      listProposals(workspaceId!, decisionId!),
+    queryKey: workspaceKeys.proposals(workspaceId ?? "", decisionId ?? ""),
+    queryFn: () => listProposals(workspaceId!, decisionId!),
     enabled: Boolean(workspaceId && decisionId),
   });
 }
@@ -274,17 +303,10 @@ export function useTransitionProposal(workspaceId: string, decisionId: string) {
   });
 }
 
-export function useDecisionCriteria(
-  workspaceId?: string,
-  decisionId?: string,
-) {
+export function useDecisionCriteria(workspaceId?: string, decisionId?: string) {
   return useQuery({
-    queryKey: workspaceKeys.criteria(
-      workspaceId ?? '',
-      decisionId ?? '',
-    ),
-    queryFn: () =>
-      listCriteria(workspaceId!, decisionId!),
+    queryKey: workspaceKeys.criteria(workspaceId ?? "", decisionId ?? ""),
+    queryFn: () => listCriteria(workspaceId!, decisionId!),
     enabled: Boolean(workspaceId && decisionId),
   });
 }
@@ -297,12 +319,13 @@ export function useProposalObjections(
 ) {
   return useQuery({
     queryKey: workspaceKeys.objections(
-      workspaceId ?? '',
-      decisionId ?? '',
-      proposalId ?? '',
+      workspaceId ?? "",
+      decisionId ?? "",
+      proposalId ?? "",
       filters,
     ),
-    queryFn: () => listObjections(workspaceId!, decisionId!, proposalId!, filters),
+    queryFn: () =>
+      listObjections(workspaceId!, decisionId!, proposalId!, filters),
     enabled: Boolean(workspaceId && decisionId && proposalId),
   });
 }
@@ -319,7 +342,11 @@ export function useCreateObjection(
       createObjection(workspaceId, decisionId, proposalId, payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: workspaceKeys.objectionsRoot(workspaceId, decisionId, proposalId),
+        queryKey: workspaceKeys.objectionsRoot(
+          workspaceId,
+          decisionId,
+          proposalId,
+        ),
       });
     },
   });
@@ -339,10 +366,21 @@ export function useUpdateObjection(
     }: {
       objectionId: string;
       payload: ObjectionUpdateRequest;
-    }) => updateObjection(workspaceId, decisionId, proposalId, objectionId, payload),
+    }) =>
+      updateObjection(
+        workspaceId,
+        decisionId,
+        proposalId,
+        objectionId,
+        payload,
+      ),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: workspaceKeys.objectionsRoot(workspaceId, decisionId, proposalId),
+        queryKey: workspaceKeys.objectionsRoot(
+          workspaceId,
+          decisionId,
+          proposalId,
+        ),
       });
     },
   });
@@ -362,10 +400,21 @@ export function useTransitionObjection(
     }: {
       objectionId: string;
       payload: ObjectionTransitionRequest;
-    }) => transitionObjection(workspaceId, decisionId, proposalId, objectionId, payload),
+    }) =>
+      transitionObjection(
+        workspaceId,
+        decisionId,
+        proposalId,
+        objectionId,
+        payload,
+      ),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: workspaceKeys.objectionsRoot(workspaceId, decisionId, proposalId),
+        queryKey: workspaceKeys.objectionsRoot(
+          workspaceId,
+          decisionId,
+          proposalId,
+        ),
       });
     },
   });
@@ -379,13 +428,13 @@ export function useOpenBlockingObjections(
   const queries = useQueries({
     queries: proposalIds.map((proposalId) => ({
       queryKey: workspaceKeys.objections(workspaceId, decisionId, proposalId, {
-        severity: 'blocking',
-        status: 'open',
+        severity: "blocking",
+        status: "open",
       }),
       queryFn: () =>
         listObjections(workspaceId, decisionId, proposalId, {
-          severity: 'blocking',
-          status: 'open',
+          severity: "blocking",
+          status: "open",
         }),
       enabled: Boolean(workspaceId && decisionId && proposalId),
     })),
@@ -406,11 +455,11 @@ export function useDecisionOpenObjections(
   const queries = useQueries({
     queries: proposalIds.map((proposalId) => ({
       queryKey: workspaceKeys.objections(workspaceId, decisionId, proposalId, {
-        status: 'open',
+        status: "open",
       }),
       queryFn: () =>
         listObjections(workspaceId, decisionId, proposalId, {
-          status: 'open',
+          status: "open",
         }),
       enabled: Boolean(workspaceId && decisionId && proposalId),
     })),
@@ -425,13 +474,16 @@ export function useDecisionOpenObjections(
 
 export function useVotingSessions(workspaceId?: string, decisionId?: string) {
   return useQuery({
-    queryKey: workspaceKeys.votingSessions(workspaceId ?? '', decisionId ?? ''),
+    queryKey: workspaceKeys.votingSessions(workspaceId ?? "", decisionId ?? ""),
     queryFn: () => listVotingSessions(workspaceId!, decisionId!),
     enabled: Boolean(workspaceId && decisionId),
   });
 }
 
-export function useCreateVotingSession(workspaceId: string, decisionId: string) {
+export function useCreateVotingSession(
+  workspaceId: string,
+  decisionId: string,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -481,13 +533,20 @@ export function useCloseVotingSession(workspaceId: string, decisionId: string) {
         queryKey: workspaceKeys.votingSessions(workspaceId, decisionId),
       });
       await queryClient.invalidateQueries({
-        queryKey: workspaceKeys.votingResult(workspaceId, decisionId, session.id),
+        queryKey: workspaceKeys.votingResult(
+          workspaceId,
+          decisionId,
+          session.id,
+        ),
       });
     },
   });
 }
 
-export function useCancelVotingSession(workspaceId: string, decisionId: string) {
+export function useCancelVotingSession(
+  workspaceId: string,
+  decisionId: string,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -511,7 +570,7 @@ export function useVotingResult(
     queryKey: workspaceKeys.votingResult(
       workspaceId,
       decisionId,
-      votingSessionId ?? '',
+      votingSessionId ?? "",
     ),
     queryFn: () => getVotingResult(workspaceId, decisionId, votingSessionId!),
     enabled: Boolean(votingSessionId && enabled),
@@ -524,16 +583,13 @@ export function useDecisionLock(
   enabled = true,
 ) {
   return useQuery({
-    queryKey: workspaceKeys.decisionLock(workspaceId ?? '', decisionId ?? ''),
+    queryKey: workspaceKeys.decisionLock(workspaceId ?? "", decisionId ?? ""),
     queryFn: () => getDecisionLock(workspaceId!, decisionId!),
     enabled: Boolean(workspaceId && decisionId && enabled),
   });
 }
 
-export function useCreateDecisionLock(
-  workspaceId: string,
-  decisionId: string,
-) {
+export function useCreateDecisionLock(workspaceId: string, decisionId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -556,7 +612,10 @@ export function useCreateDecisionLock(
           queryKey: workspaceKeys.votingSessions(workspaceId, decisionId),
         }),
         queryClient.invalidateQueries({
-          queryKey: workspaceKeys.decisionLockVerification(workspaceId, decisionId),
+          queryKey: workspaceKeys.decisionLockVerification(
+            workspaceId,
+            decisionId,
+          ),
         }),
       ]);
     },
@@ -570,8 +629,8 @@ export function useDecisionLockVerification(
 ) {
   return useQuery({
     queryKey: workspaceKeys.decisionLockVerification(
-      workspaceId ?? '',
-      decisionId ?? '',
+      workspaceId ?? "",
+      decisionId ?? "",
     ),
     queryFn: () => verifyDecisionLock(workspaceId!, decisionId!),
     enabled: Boolean(workspaceId && decisionId && enabled),
@@ -584,17 +643,14 @@ export function useDecisionExport(
   enabled = true,
 ) {
   return useQuery({
-    queryKey: workspaceKeys.decisionExport(
-      workspaceId ?? '',
-      decisionId ?? '',
-    ),
+    queryKey: workspaceKeys.decisionExport(workspaceId ?? "", decisionId ?? ""),
     queryFn: () => getDecisionExport(workspaceId!, decisionId!),
     enabled: Boolean(workspaceId && decisionId && enabled),
     retry: (failureCount, error) =>
       getApiStatus(error) !== 404 && failureCount < 2,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
-      return status === 'pending' || status === 'processing' ? 2_500 : false;
+      return status === "pending" || status === "processing" ? 2_500 : false;
     },
   });
 }
@@ -629,14 +685,11 @@ export function useDecisionExportDownload(
   });
 }
 
-export function useDecisionActions(
-  workspaceId?: string,
-  decisionId?: string,
-) {
+export function useDecisionActions(workspaceId?: string, decisionId?: string) {
   return useQuery({
     queryKey: workspaceKeys.decisionActions(
-      workspaceId ?? '',
-      decisionId ?? '',
+      workspaceId ?? "",
+      decisionId ?? "",
     ),
     queryFn: () => listDecisionActions(workspaceId!, decisionId!),
     enabled: Boolean(workspaceId && decisionId),
@@ -704,14 +757,11 @@ export function useTransitionDecisionAction(
   });
 }
 
-export function useDecisionReviews(
-  workspaceId?: string,
-  decisionId?: string,
-) {
+export function useDecisionReviews(workspaceId?: string, decisionId?: string) {
   return useQuery({
     queryKey: workspaceKeys.decisionReviews(
-      workspaceId ?? '',
-      decisionId ?? '',
+      workspaceId ?? "",
+      decisionId ?? "",
     ),
     queryFn: () => listDecisionReviews(workspaceId!, decisionId!),
     enabled: Boolean(workspaceId && decisionId),
@@ -797,7 +847,7 @@ export function useCompleteDecisionReview(
           queryKey: workspaceKeys.decision(workspaceId, decisionId),
         }),
         queryClient.invalidateQueries({
-          queryKey: [...workspaceKeys.all, 'decisions', workspaceId],
+          queryKey: [...workspaceKeys.all, "decisions", workspaceId],
         }),
         queryClient.invalidateQueries({
           queryKey: workspaceKeys.decisionRevisions(workspaceId, decisionId),
@@ -813,8 +863,8 @@ export function useDecisionRevisions(
 ) {
   return useQuery({
     queryKey: workspaceKeys.decisionRevisions(
-      workspaceId ?? '',
-      decisionId ?? '',
+      workspaceId ?? "",
+      decisionId ?? "",
     ),
     queryFn: () => listDecisionRevisions(workspaceId!, decisionId!),
     enabled: Boolean(workspaceId && decisionId),
@@ -828,12 +878,98 @@ export function useDecisionRevision(
 ) {
   return useQuery({
     queryKey: workspaceKeys.decisionRevision(
-      workspaceId ?? '',
-      decisionId ?? '',
-      revisionId ?? '',
+      workspaceId ?? "",
+      decisionId ?? "",
+      revisionId ?? "",
+    ),
+    queryFn: () => getDecisionRevision(workspaceId!, decisionId!, revisionId!),
+    enabled: Boolean(workspaceId && decisionId && revisionId),
+  });
+}
+
+export type AttachmentUploadStage = "preparing" | "uploading" | "processing";
+
+type UploadAttachmentInput = {
+  file: File;
+  proposalId?: string | null;
+  onStageChange?: (stage: AttachmentUploadStage) => void;
+};
+
+export function useDecisionAttachments(
+  workspaceId?: string,
+  decisionId?: string,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: workspaceKeys.decisionAttachments(
+      workspaceId ?? "",
+      decisionId ?? "",
     ),
     queryFn: () =>
-      getDecisionRevision(workspaceId!, decisionId!, revisionId!),
-    enabled: Boolean(workspaceId && decisionId && revisionId),
+      listAttachments(workspaceId!, {
+        decisionId: decisionId!,
+      }),
+    enabled: Boolean(workspaceId && decisionId && enabled),
+    refetchInterval: (query) =>
+      query.state.data?.some(
+        (attachment) =>
+          attachment.status === "pending" || attachment.status === "processing",
+      )
+        ? 2_500
+        : false,
+  });
+}
+
+export function useUploadDecisionAttachment(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation<Attachment, Error, UploadAttachmentInput>({
+    mutationFn: async ({ file, proposalId, onStageChange }) => {
+      const mediaType = file.type || "application/octet-stream";
+
+      onStageChange?.("preparing");
+      const prepared = await createAttachmentUpload(workspaceId, {
+        filename: file.name,
+        media_type: mediaType,
+        size_bytes: file.size,
+        decision_id: decisionId,
+        proposal_id: proposalId ?? null,
+      });
+
+      onStageChange?.("uploading");
+      await uploadAttachmentObject(prepared.upload_url, file, mediaType);
+
+      onStageChange?.("processing");
+      return completeAttachmentUpload(workspaceId, prepared.attachment.id);
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.decisionAttachments(workspaceId, decisionId),
+      });
+    },
+  });
+}
+
+export function useDeleteAttachment(workspaceId: string, decisionId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (attachmentId: string) =>
+      deleteAttachment(workspaceId, attachmentId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.decisionAttachments(workspaceId, decisionId),
+      });
+    },
+  });
+}
+
+export function useAttachmentDownload(workspaceId: string) {
+  return useMutation({
+    mutationFn: (attachmentId: string) =>
+      createAttachmentDownload(workspaceId, attachmentId),
   });
 }

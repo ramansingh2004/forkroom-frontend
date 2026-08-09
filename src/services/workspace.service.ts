@@ -1,58 +1,66 @@
-import { apiClient } from '@/lib/api/client';
-import type { components } from '@/lib/api/generated/api-types';
+import { apiClient } from "@/lib/api/client";
+import type { components } from "@/lib/api/generated/api-types";
 
-export type Workspace = components['schemas']['WorkspaceResponse'];
-export type WorkspaceCreateRequest = components['schemas']['WorkspaceCreateRequest'];
-export type WorkspaceUpdateRequest = components['schemas']['WorkspaceUpdateRequest'];
-export type WorkspaceMember = components['schemas']['WorkspaceMemberResponse'];
-export type Decision = components['schemas']['DecisionResponse'];
-export type DecisionStatus = components['schemas']['DecisionStatus'];
-export type DecisionCreateRequest = components['schemas']['DecisionCreateRequest'];
-export type Proposal = components['schemas']['ProposalResponse'];
-export type ProposalCreateRequest = components['schemas']['ProposalCreateRequest'];
-export type ProposalUpdateRequest = components['schemas']['ProposalUpdateRequest'];
-export type ProposalStatus = components['schemas']['ProposalStatus'];
-export type Criterion = components['schemas']['CriterionResponse'];
-export type Objection = components['schemas']['ObjectionResponse'];
-export type ObjectionCreateRequest = components['schemas']['ObjectionCreateRequest'];
-export type ObjectionUpdateRequest = components['schemas']['ObjectionUpdateRequest'];
-export type ObjectionSeverity = components['schemas']['ObjectionSeverity'];
-export type ObjectionStatus = components['schemas']['ObjectionStatus'];
-export type ObjectionTransitionRequest = components['schemas']['ObjectionTransitionRequest'];
-export type VotingSession = components['schemas']['VotingSessionResponse'];
-export type VotingSessionCreateRequest = components['schemas']['VotingSessionCreateRequest'];
-export type VotingSessionStatus = components['schemas']['VotingSessionStatus'];
-export type VoteCastRequest = components['schemas']['VoteCastRequest'];
-export type Vote = components['schemas']['VoteResponse'];
-export type VotingResult = components['schemas']['VotingResultResponse'];
-export type DecisionLock = components['schemas']['DecisionLockResponse'];
-export type DecisionLockCreateRequest = components['schemas']['DecisionLockCreateRequest'];
-export type DecisionLockVerification =
-  components['schemas']['DecisionLockVerificationResponse'];
-export type DecisionExport = components['schemas']['DecisionExportResponse'];
-export type DecisionExportDownload =
-  components['schemas']['DecisionExportDownloadResponse'];
-export type DecisionAction = components['schemas']['ActionResponse'];
-export type ActionStatus = components['schemas']['ActionStatus'];
-export type ActionCreateRequest = components['schemas']['ActionCreateRequest'];
-export type ActionUpdateRequest = components['schemas']['ActionUpdateRequest'];
-export type ActionTransitionRequest = components['schemas']['ActionTransitionRequest'];
-export type DecisionReview = components['schemas']['ReviewResponse'];
-export type ReviewStatus = components['schemas']['ReviewStatus'];
-export type ReviewOutcome = components['schemas']['ReviewOutcome'];
-export type ReviewCreateRequest = components['schemas']['ReviewCreateRequest'];
-export type ReviewUpdateRequest = components['schemas']['ReviewUpdateRequest'];
-export type ReviewOutcomeRequest = components['schemas']['ReviewOutcomeRequest'];
-export type ReviewOutcomeResponse = components['schemas']['ReviewOutcomeResponse'];
-export type DecisionRevision = components['schemas']['DecisionRevisionResponse'];
+export type Workspace = components["schemas"]["WorkspaceResponse"];
+export type WorkspaceCreateRequest = components["schemas"]["WorkspaceCreateRequest"];
+export type WorkspaceUpdateRequest = components["schemas"]["WorkspaceUpdateRequest"];
+export type WorkspaceMember = components["schemas"]["WorkspaceMemberResponse"];
+export type Decision = components["schemas"]["DecisionResponse"];
+export type DecisionStatus = components["schemas"]["DecisionStatus"];
+export type DecisionCreateRequest = components["schemas"]["DecisionCreateRequest"];
+export type Proposal = components["schemas"]["ProposalResponse"];
+export type ProposalCreateRequest = components["schemas"]["ProposalCreateRequest"];
+export type ProposalUpdateRequest = components["schemas"]["ProposalUpdateRequest"];
+export type ProposalStatus = components["schemas"]["ProposalStatus"];
+export type Criterion = components["schemas"]["CriterionResponse"];
+export type Objection = components["schemas"]["ObjectionResponse"];
+export type ObjectionCreateRequest = components["schemas"]["ObjectionCreateRequest"];
+export type ObjectionUpdateRequest = components["schemas"]["ObjectionUpdateRequest"];
+export type ObjectionSeverity = components["schemas"]["ObjectionSeverity"];
+export type ObjectionStatus = components["schemas"]["ObjectionStatus"];
+export type ObjectionTransitionRequest = components["schemas"]["ObjectionTransitionRequest"];
+export type VotingSession = components["schemas"]["VotingSessionResponse"];
+export type VotingSessionCreateRequest = components["schemas"]["VotingSessionCreateRequest"];
+export type VotingSessionStatus = components["schemas"]["VotingSessionStatus"];
+export type VoteCastRequest = components["schemas"]["VoteCastRequest"];
+export type Vote = components["schemas"]["VoteResponse"];
+export type VotingResult = components["schemas"]["VotingResultResponse"];
+export type DecisionLock = components["schemas"]["DecisionLockResponse"];
+export type DecisionLockCreateRequest = components["schemas"]["DecisionLockCreateRequest"];
+export type DecisionLockVerification = components["schemas"]["DecisionLockVerificationResponse"];
+export type DecisionExport = components["schemas"]["DecisionExportResponse"];
+export type DecisionExportDownload = components["schemas"]["DecisionExportDownloadResponse"];
+export type DecisionAction = components["schemas"]["ActionResponse"];
+export type ActionStatus = components["schemas"]["ActionStatus"];
+export type ActionCreateRequest = components["schemas"]["ActionCreateRequest"];
+export type ActionUpdateRequest = components["schemas"]["ActionUpdateRequest"];
+export type ActionTransitionRequest = components["schemas"]["ActionTransitionRequest"];
+export type DecisionReview = components["schemas"]["ReviewResponse"];
+export type ReviewStatus = components["schemas"]["ReviewStatus"];
+export type ReviewOutcome = components["schemas"]["ReviewOutcome"];
+export type ReviewCreateRequest = components["schemas"]["ReviewCreateRequest"];
+export type ReviewUpdateRequest = components["schemas"]["ReviewUpdateRequest"];
+export type ReviewOutcomeRequest = components["schemas"]["ReviewOutcomeRequest"];
+export type ReviewOutcomeResponse = components["schemas"]["ReviewOutcomeResponse"];
+export type DecisionRevision = components["schemas"]["DecisionRevisionResponse"];
+export type Attachment = components["schemas"]["AttachmentResponse"];
+export type AttachmentStatus = components["schemas"]["AttachmentStatus"];
+export type AttachmentCreateRequest = components["schemas"]["AttachmentCreateRequest"];
+export type AttachmentUpload = components["schemas"]["AttachmentUploadResponse"];
+export type AttachmentDownload = components["schemas"]["AttachmentDownloadResponse"];
 
 export type ObjectionFilters = {
   severity?: ObjectionSeverity;
   status?: ObjectionStatus;
 };
 
+export type AttachmentFilters = {
+  decisionId?: string;
+  proposalId?: string;
+};
+
 export async function listWorkspaces() {
-  const { data } = await apiClient.get<Workspace[]>('/workspaces');
+  const { data } = await apiClient.get<Workspace[]>("/workspaces");
   return data;
 }
 
@@ -62,17 +70,25 @@ export async function getWorkspace(workspaceId: string) {
 }
 
 export async function createWorkspace(payload: WorkspaceCreateRequest) {
-  const { data } = await apiClient.post<Workspace>('/workspaces', payload);
+  const { data } = await apiClient.post<Workspace>("/workspaces", payload);
   return data;
 }
 
-export async function updateWorkspace(workspaceId: string, payload: WorkspaceUpdateRequest) {
-  const { data } = await apiClient.patch<Workspace>(`/workspaces/${workspaceId}`, payload);
+export async function updateWorkspace(
+  workspaceId: string,
+  payload: WorkspaceUpdateRequest,
+) {
+  const { data } = await apiClient.patch<Workspace>(
+    `/workspaces/${workspaceId}`,
+    payload,
+  );
   return data;
 }
 
 export async function listWorkspaceMembers(workspaceId: string) {
-  const { data } = await apiClient.get<WorkspaceMember[]>(`/workspaces/${workspaceId}/members`);
+  const { data } = await apiClient.get<WorkspaceMember[]>(
+    `/workspaces/${workspaceId}/members`,
+  );
   return data;
 }
 
@@ -80,21 +96,27 @@ export async function listWorkspaceDecisions(
   workspaceId: string,
   status?: DecisionStatus,
 ) {
-  const { data } = await apiClient.get<Decision[]>(`/workspaces/${workspaceId}/decisions`, {
-    params: status ? { status } : undefined,
-  });
+  const { data } = await apiClient.get<Decision[]>(
+    `/workspaces/${workspaceId}/decisions`,
+    {
+      params: status ? { status } : undefined,
+    },
+  );
   return data;
 }
 
-export async function createDecision(workspaceId: string, payload: DecisionCreateRequest) {
-  const { data } = await apiClient.post<Decision>(`/workspaces/${workspaceId}/decisions`, payload);
-  return data;
-}
-
-export async function getDecision(
+export async function createDecision(
   workspaceId: string,
-  decisionId: string,
+  payload: DecisionCreateRequest,
 ) {
+  const { data } = await apiClient.post<Decision>(
+    `/workspaces/${workspaceId}/decisions`,
+    payload,
+  );
+  return data;
+}
+
+export async function getDecision(workspaceId: string, decisionId: string) {
   const { data } = await apiClient.get<Decision>(
     `/workspaces/${workspaceId}/decisions/${decisionId}`,
   );
@@ -102,10 +124,7 @@ export async function getDecision(
   return data;
 }
 
-export async function listProposals(
-  workspaceId: string,
-  decisionId: string,
-) {
+export async function listProposals(workspaceId: string, decisionId: string) {
   const { data } = await apiClient.get<Proposal[]>(
     `/workspaces/${workspaceId}/decisions/${decisionId}/proposals`,
   );
@@ -164,10 +183,7 @@ export async function transitionProposal(
   return data;
 }
 
-export async function listCriteria(
-  workspaceId: string,
-  decisionId: string,
-) {
+export async function listCriteria(workspaceId: string, decisionId: string) {
   const { data } = await apiClient.get<Criterion[]>(
     `/workspaces/${workspaceId}/decisions/${decisionId}/criteria`,
   );
@@ -319,10 +335,7 @@ export async function getVotingResult(
   return data;
 }
 
-export async function getDecisionLock(
-  workspaceId: string,
-  decisionId: string,
-) {
+export async function getDecisionLock(workspaceId: string, decisionId: string) {
   const { data } = await apiClient.get<DecisionLock>(
     `/workspaces/${workspaceId}/decisions/${decisionId}/lock`,
   );
@@ -521,6 +534,86 @@ export async function getDecisionRevision(
 ) {
   const { data } = await apiClient.get<DecisionRevision>(
     `/workspaces/${workspaceId}/decisions/${decisionId}/revisions/${revisionId}`,
+  );
+
+  return data;
+}
+
+export async function listAttachments(
+  workspaceId: string,
+  filters?: AttachmentFilters,
+) {
+  const { data } = await apiClient.get<Attachment[]>(
+    `/workspaces/${workspaceId}/attachments`,
+    {
+      params: {
+        decision_id: filters?.decisionId,
+        proposal_id: filters?.proposalId,
+      },
+    },
+  );
+
+  return data;
+}
+
+export async function createAttachmentUpload(
+  workspaceId: string,
+  payload: AttachmentCreateRequest,
+) {
+  const { data } = await apiClient.post<AttachmentUpload>(
+    `/workspaces/${workspaceId}/attachments/uploads`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function uploadAttachmentObject(
+  uploadUrl: string,
+  file: File,
+  mediaType: string,
+) {
+  const response = await fetch(uploadUrl, {
+    method: "PUT",
+    body: file,
+    headers: {
+      "Content-Type": mediaType,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `The file transfer failed with status ${response.status}. Request a new upload URL and try again.`,
+    );
+  }
+}
+
+export async function completeAttachmentUpload(
+  workspaceId: string,
+  attachmentId: string,
+) {
+  const { data } = await apiClient.post<Attachment>(
+    `/workspaces/${workspaceId}/attachments/${attachmentId}/complete`,
+  );
+
+  return data;
+}
+
+export async function deleteAttachment(
+  workspaceId: string,
+  attachmentId: string,
+) {
+  await apiClient.delete(
+    `/workspaces/${workspaceId}/attachments/${attachmentId}`,
+  );
+}
+
+export async function createAttachmentDownload(
+  workspaceId: string,
+  attachmentId: string,
+) {
+  const { data } = await apiClient.post<AttachmentDownload>(
+    `/workspaces/${workspaceId}/attachments/${attachmentId}/download`,
   );
 
   return data;

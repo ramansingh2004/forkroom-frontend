@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import {
   ActionIcon,
   Alert,
@@ -11,10 +11,10 @@ import {
   ScrollArea,
   Tabs,
   Tooltip,
-} from '@mantine/core';
-import { modals } from '@mantine/modals';
-import { notifications } from '@mantine/notifications';
-import { useMediaQuery } from '@mantine/hooks';
+} from "@mantine/core";
+import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
+import { useMediaQuery } from "@mantine/hooks";
 import {
   IconArrowBackUp,
   IconAlertTriangle,
@@ -23,7 +23,6 @@ import {
   IconChevronRight,
   IconDotsVertical,
   IconEdit,
-  IconFileText,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarRightCollapse,
   IconLock,
@@ -34,19 +33,20 @@ import {
   IconSend,
   IconTrash,
   IconUsers,
-} from '@tabler/icons-react';
+} from "@tabler/icons-react";
 import {
   Group,
   Panel,
   Separator,
   useDefaultLayout,
   usePanelRef,
-} from 'react-resizable-panels';
+} from "react-resizable-panels";
 
-import { useCurrentUser } from '@/hooks/use-auth';
+import { useCurrentUser } from "@/hooks/use-auth";
 import {
   useDeleteProposal,
   useDecision,
+  useDecisionAttachments,
   useDecisionCriteria,
   useDecisionLock,
   useDecisionProposals,
@@ -55,8 +55,8 @@ import {
   useWorkspace,
   useWorkspaceMembers,
   useVotingSessions,
-} from '@/hooks/use-workspaces';
-import { getApiErrorMessage } from '@/services/auth.service';
+} from "@/hooks/use-workspaces";
+import { getApiErrorMessage } from "@/services/auth.service";
 import type {
   Criterion,
   DecisionLock,
@@ -65,17 +65,23 @@ import type {
   Proposal,
   VotingSession,
   WorkspaceMember,
-} from '@/services/workspace.service';
-import { useUiStore } from '@/stores/use-ui-store';
+} from "@/services/workspace.service";
+import { useUiStore } from "@/stores/use-ui-store";
 
-import styles from './decision-room.module.css';
-import { ObjectionEditorModal } from './objection-editor-modal';
-import { ObjectionStatusModal } from './objection-status-modal';
-import { LockedDecisionPanel } from './locked-decision-panel';
-import { ProposalEditorModal } from './proposal-editor-modal';
-import { VotingPanel } from './voting-panel';
+import styles from "./decision-room.module.css";
+import { ObjectionEditorModal } from "./objection-editor-modal";
+import { ObjectionStatusModal } from "./objection-status-modal";
+import { LockedDecisionPanel } from "./locked-decision-panel";
+import { EvidencePanel } from "./evidence-panel";
+import {
+  getSnapshotEvidence,
+  LockedEvidencePanel,
+} from "./locked-evidence-panel";
+import { ProposalEditorModal } from "./proposal-editor-modal";
+import { VotingPanel } from "./voting-panel";
 
-type WorkMode = 'document' | 'proposal' | 'compare' | 'vote';
+type WorkMode = "document" | "proposal" | "compare" | "vote";
+type CollaborationTab = "discussion" | "evidence" | "people";
 
 function ProposalObjectionCount({
   workspaceId,
@@ -86,9 +92,14 @@ function ProposalObjectionCount({
   decisionId: string;
   proposalId: string;
 }) {
-  const objections = useProposalObjections(workspaceId, decisionId, proposalId, {
-    status: 'open',
-  });
+  const objections = useProposalObjections(
+    workspaceId,
+    decisionId,
+    proposalId,
+    {
+      status: "open",
+    },
+  );
 
   if (!objections.data?.length) return null;
 
@@ -105,6 +116,7 @@ function OutlinePanel({
   decisionId,
   proposals,
   criteriaCount,
+  evidenceCount,
   selectedProposalId,
   canEdit,
   transitionPending,
@@ -113,19 +125,25 @@ function OutlinePanel({
   onEditProposal,
   onTransitionProposal,
   onDeleteProposal,
+  onOpenEvidence,
 }: {
   workspaceId: string;
   decisionId: string;
   proposals: Proposal[];
   criteriaCount: number;
+  evidenceCount: number;
   selectedProposalId: string | null;
   canEdit: boolean;
   transitionPending: boolean;
   onSelectProposal: (proposal: Proposal) => void;
   onCreateProposal: () => void;
   onEditProposal: (proposal: Proposal) => void;
-  onTransitionProposal: (proposal: Proposal, status: Proposal['status']) => void;
+  onTransitionProposal: (
+    proposal: Proposal,
+    status: Proposal["status"],
+  ) => void;
   onDeleteProposal: (proposal: Proposal) => void;
+  onOpenEvidence: () => void;
 }) {
   return (
     <section className={styles.panel} aria-label="Decision outline">
@@ -134,7 +152,9 @@ function OutlinePanel({
           <span className={styles.kicker}>OUTLINE</span>
           <h2>Decision context</h2>
         </div>
-        <Tooltip label={canEdit ? 'Add proposal' : 'This decision is read-only'}>
+        <Tooltip
+          label={canEdit ? "Add proposal" : "This decision is read-only"}
+        >
           <ActionIcon
             variant="subtle"
             color="dark"
@@ -149,9 +169,18 @@ function OutlinePanel({
 
       <ScrollArea className={styles.panelScroll} type="auto">
         <nav className={styles.outlineNav} aria-label="Decision sections">
-          <a href="#context" className={styles.outlineLinkActive}>Context</a>
-          <a href="#criteria">Criteria <span>{criteriaCount}</span></a>
-          <a href="#proposals">Proposals <span>{proposals.length}</span></a>
+          <a href="#context" className={styles.outlineLinkActive}>
+            Context
+          </a>
+          <a href="#criteria">
+            Criteria <span>{criteriaCount}</span>
+          </a>
+          <a href="#proposals">
+            Proposals <span>{proposals.length}</span>
+          </a>
+          <button type="button" onClick={onOpenEvidence}>
+            Evidence <span>{evidenceCount}</span>
+          </button>
         </nav>
 
         <div className={styles.sectionHeading}>
@@ -162,24 +191,27 @@ function OutlinePanel({
         {proposals.length > 0 ? (
           <div className={styles.proposalList}>
             {proposals.map((proposal, index) => (
-              <div
-                key={proposal.id}
-                className={styles.proposalItem}
-              >
+              <div key={proposal.id} className={styles.proposalItem}>
                 <button
                   type="button"
                   className={`${styles.proposal} ${
-                    proposal.id === selectedProposalId ? styles.proposalSelected : ''
+                    proposal.id === selectedProposalId
+                      ? styles.proposalSelected
+                      : ""
                   }`}
                   onClick={() => onSelectProposal(proposal)}
-                  aria-current={proposal.id === selectedProposalId ? 'true' : undefined}
+                  aria-current={
+                    proposal.id === selectedProposalId ? "true" : undefined
+                  }
                 >
                   <span className={styles.proposalNumber}>
-                    {String(index + 1).padStart(2, '0')}
+                    {String(index + 1).padStart(2, "0")}
                   </span>
                   <strong>{proposal.title}</strong>
                   <small>{proposal.summary || proposal.status}</small>
-                  <span className={styles.proposalStatus}>{proposal.status}</span>
+                  <span className={styles.proposalStatus}>
+                    {proposal.status}
+                  </span>
                   <ProposalObjectionCount
                     workspaceId={workspaceId}
                     decisionId={decisionId}
@@ -201,7 +233,7 @@ function OutlinePanel({
                       </ActionIcon>
                     </Menu.Target>
                     <Menu.Dropdown>
-                      {proposal.status === 'draft' && (
+                      {proposal.status === "draft" && (
                         <>
                           <Menu.Item
                             leftSection={<IconEdit size={15} />}
@@ -212,7 +244,9 @@ function OutlinePanel({
                           <Menu.Item
                             leftSection={<IconSend size={15} />}
                             disabled={transitionPending}
-                            onClick={() => onTransitionProposal(proposal, 'submitted')}
+                            onClick={() =>
+                              onTransitionProposal(proposal, "submitted")
+                            }
                           >
                             Submit proposal
                           </Menu.Item>
@@ -227,12 +261,14 @@ function OutlinePanel({
                         </>
                       )}
 
-                      {proposal.status === 'submitted' && (
+                      {proposal.status === "submitted" && (
                         <>
                           <Menu.Item
                             leftSection={<IconArrowBackUp size={15} />}
                             disabled={transitionPending}
-                            onClick={() => onTransitionProposal(proposal, 'draft')}
+                            onClick={() =>
+                              onTransitionProposal(proposal, "draft")
+                            }
                           >
                             Reopen as draft
                           </Menu.Item>
@@ -240,18 +276,22 @@ function OutlinePanel({
                             color="orange"
                             leftSection={<IconCircleOff size={15} />}
                             disabled={transitionPending}
-                            onClick={() => onTransitionProposal(proposal, 'withdrawn')}
+                            onClick={() =>
+                              onTransitionProposal(proposal, "withdrawn")
+                            }
                           >
                             Withdraw proposal
                           </Menu.Item>
                         </>
                       )}
 
-                      {proposal.status === 'withdrawn' && (
+                      {proposal.status === "withdrawn" && (
                         <Menu.Item
                           leftSection={<IconArrowBackUp size={15} />}
                           disabled={transitionPending}
-                          onClick={() => onTransitionProposal(proposal, 'draft')}
+                          onClick={() =>
+                            onTransitionProposal(proposal, "draft")
+                          }
                         >
                           Reopen as draft
                         </Menu.Item>
@@ -265,7 +305,10 @@ function OutlinePanel({
         ) : (
           <div className={styles.emptySection}>
             <strong>No proposals yet</strong>
-            <p>Add an alternative that the team can compare, challenge, and vote on.</p>
+            <p>
+              Add an alternative that the team can compare, challenge, and vote
+              on.
+            </p>
             <Button
               size="xs"
               variant="light"
@@ -294,13 +337,19 @@ function ProposalObjectionsSection({
   proposal: Proposal;
   canEdit: boolean;
 }) {
-  const objections = useProposalObjections(workspaceId, decisionId, proposal.id);
-  const [editorObjection, setEditorObjection] = useState<Objection | null | undefined>(undefined);
+  const objections = useProposalObjections(
+    workspaceId,
+    decisionId,
+    proposal.id,
+  );
+  const [editorObjection, setEditorObjection] = useState<
+    Objection | null | undefined
+  >(undefined);
   const [statusChange, setStatusChange] = useState<{
     objection: Objection;
     status: ObjectionStatus;
   } | null>(null);
-  const canRaiseObjection = canEdit && proposal.status === 'submitted';
+  const canRaiseObjection = canEdit && proposal.status === "submitted";
   const orderedObjections = [...(objections.data ?? [])].sort((left, right) => {
     const statusOrder = { open: 0, resolved: 1, dismissed: 2 } as const;
     const severityOrder = { blocking: 0, major: 1, informational: 2 } as const;
@@ -310,31 +359,38 @@ function ProposalObjectionsSection({
       severityOrder[left.severity] - severityOrder[right.severity]
     );
   });
-  const openCount = orderedObjections.filter((objection) => objection.status === 'open').length;
+  const openCount = orderedObjections.filter(
+    (objection) => objection.status === "open",
+  ).length;
   const openBlockingCount = orderedObjections.filter(
-    (objection) => objection.status === 'open' && objection.severity === 'blocking',
+    (objection) =>
+      objection.status === "open" && objection.severity === "blocking",
   ).length;
 
-  const statusColor = (status: Objection['status']) => {
-    if (status === 'resolved') return 'green';
-    if (status === 'dismissed') return 'orange';
-    return 'red';
+  const statusColor = (status: Objection["status"]) => {
+    if (status === "resolved") return "green";
+    if (status === "dismissed") return "orange";
+    return "red";
   };
 
-  const severityColor = (severity: Objection['severity']) => {
-    if (severity === 'blocking') return 'red';
-    if (severity === 'major') return 'orange';
-    return 'blue';
+  const severityColor = (severity: Objection["severity"]) => {
+    if (severity === "blocking") return "red";
+    if (severity === "major") return "orange";
+    return "blue";
   };
 
   return (
-    <section className={styles.objectionsSection} aria-labelledby="proposal-objections-title">
+    <section
+      className={styles.objectionsSection}
+      aria-labelledby="proposal-objections-title"
+    >
       <div className={styles.objectionsHeading}>
         <div>
           <div className={styles.sectionIndex}>02 / OBJECTIONS</div>
           <h2 id="proposal-objections-title">Challenges to this proposal</h2>
           <p>
-            Open concerns stay visible here so they cannot be lost in general discussion.
+            Open concerns stay visible here so they cannot be lost in general
+            discussion.
           </p>
         </div>
         <Button
@@ -348,9 +404,13 @@ function ProposalObjectionsSection({
         </Button>
       </div>
 
-      {!canRaiseObjection && proposal.status !== 'submitted' && (
-        <Alert color="gray" title="Submit this proposal before objections can be raised">
-          Objections belong to review-ready proposals. Existing objections remain visible.
+      {!canRaiseObjection && proposal.status !== "submitted" && (
+        <Alert
+          color="gray"
+          title="Submit this proposal before objections can be raised"
+        >
+          Objections belong to review-ready proposals. Existing objections
+          remain visible.
         </Alert>
       )}
 
@@ -359,9 +419,12 @@ function ProposalObjectionsSection({
           <IconAlertTriangle size={18} />
           <div>
             <strong>
-              {openBlockingCount} blocking objection{openBlockingCount === 1 ? '' : 's'} open
+              {openBlockingCount} blocking objection
+              {openBlockingCount === 1 ? "" : "s"} open
             </strong>
-            <span>These concerns must be resolved or dismissed before commitment.</span>
+            <span>
+              These concerns must be resolved or dismissed before commitment.
+            </span>
           </div>
         </div>
       )}
@@ -379,15 +442,18 @@ function ProposalObjectionsSection({
         </Alert>
       )}
 
-      {!objections.isPending && !objections.isError && orderedObjections.length === 0 && (
-        <div className={styles.emptySection}>
-          <strong>No objections have been raised</strong>
-          <p>
-            The proposal has no recorded concerns yet. Team members can add informational,
-            major, or blocking objections after it is submitted.
-          </p>
-        </div>
-      )}
+      {!objections.isPending &&
+        !objections.isError &&
+        orderedObjections.length === 0 && (
+          <div className={styles.emptySection}>
+            <strong>No objections have been raised</strong>
+            <p>
+              The proposal has no recorded concerns yet. Team members can add
+              informational, major, or blocking objections after it is
+              submitted.
+            </p>
+          </div>
+        )}
 
       {orderedObjections.length > 0 && (
         <div className={styles.objectionList}>
@@ -400,15 +466,23 @@ function ProposalObjectionsSection({
             <article
               key={objection.id}
               className={`${styles.objectionCard} ${
-                objection.status !== 'open' ? styles.objectionCardClosed : ''
+                objection.status !== "open" ? styles.objectionCardClosed : ""
               }`}
             >
               <div className={styles.objectionCardHeader}>
                 <div className={styles.objectionBadges}>
-                  <Badge variant="light" color={severityColor(objection.severity)} size="sm">
+                  <Badge
+                    variant="light"
+                    color={severityColor(objection.severity)}
+                    size="sm"
+                  >
                     {objection.severity}
                   </Badge>
-                  <Badge variant="outline" color={statusColor(objection.status)} size="sm">
+                  <Badge
+                    variant="outline"
+                    color={statusColor(objection.status)}
+                    size="sm"
+                  >
                     {objection.status}
                   </Badge>
                 </div>
@@ -425,7 +499,7 @@ function ProposalObjectionsSection({
                       </ActionIcon>
                     </Menu.Target>
                     <Menu.Dropdown>
-                      {objection.status === 'open' ? (
+                      {objection.status === "open" ? (
                         <>
                           <Menu.Item
                             leftSection={<IconEdit size={15} />}
@@ -437,7 +511,7 @@ function ProposalObjectionsSection({
                             color="green"
                             leftSection={<IconCheck size={15} />}
                             onClick={() =>
-                              setStatusChange({ objection, status: 'resolved' })
+                              setStatusChange({ objection, status: "resolved" })
                             }
                           >
                             Mark resolved
@@ -446,7 +520,10 @@ function ProposalObjectionsSection({
                             color="orange"
                             leftSection={<IconCircleOff size={15} />}
                             onClick={() =>
-                              setStatusChange({ objection, status: 'dismissed' })
+                              setStatusChange({
+                                objection,
+                                status: "dismissed",
+                              })
                             }
                           >
                             Dismiss with note
@@ -455,7 +532,9 @@ function ProposalObjectionsSection({
                       ) : (
                         <Menu.Item
                           leftSection={<IconRestore size={15} />}
-                          onClick={() => setStatusChange({ objection, status: 'open' })}
+                          onClick={() =>
+                            setStatusChange({ objection, status: "open" })
+                          }
                         >
                           Reopen objection
                         </Menu.Item>
@@ -471,15 +550,17 @@ function ProposalObjectionsSection({
               {objection.resolution_note && (
                 <div className={styles.resolutionNote}>
                   <strong>
-                    {objection.status === 'resolved' ? 'Resolution' : 'Dismissal note'}
+                    {objection.status === "resolved"
+                      ? "Resolution"
+                      : "Dismissal note"}
                   </strong>
                   <span>{objection.resolution_note}</span>
                 </div>
               )}
 
               <footer>
-                Raised{' '}
-                {new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(
+                Raised{" "}
+                {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(
                   new Date(objection.created_at),
                 )}
               </footer>
@@ -497,12 +578,12 @@ function ProposalObjectionsSection({
         onClose={() => setEditorObjection(undefined)}
         onSaved={(savedObjection) => {
           notifications.show({
-            color: 'green',
-            title: editorObjection ? 'Objection saved' : 'Objection raised',
+            color: "green",
+            title: editorObjection ? "Objection saved" : "Objection raised",
             message:
-              savedObjection.severity === 'blocking'
-                ? 'This blocking concern is now visible in the decision record.'
-                : 'The concern is now visible on this proposal.',
+              savedObjection.severity === "blocking"
+                ? "This blocking concern is now visible in the decision record."
+                : "The concern is now visible on this proposal.",
           });
         }}
       />
@@ -517,11 +598,11 @@ function ProposalObjectionsSection({
         onClose={() => setStatusChange(null)}
         onTransitioned={(updatedObjection) => {
           notifications.show({
-            color: updatedObjection.status === 'resolved' ? 'green' : 'orange',
-            title: 'Objection updated',
+            color: updatedObjection.status === "resolved" ? "green" : "orange",
+            title: "Objection updated",
             message:
-              updatedObjection.status === 'open'
-                ? 'The objection is open for review again.'
+              updatedObjection.status === "open"
+                ? "The objection is open for review again."
                 : `The objection was marked ${updatedObjection.status}.`,
           });
         }}
@@ -577,23 +658,35 @@ function DocumentPanel({
   onModeChange: (mode: WorkMode) => void;
   onCreateProposal: () => void;
   onEditProposal: (proposal: Proposal) => void;
-  onTransitionProposal: (proposal: Proposal, status: Proposal['status']) => void;
+  onTransitionProposal: (
+    proposal: Proposal,
+    status: Proposal["status"],
+  ) => void;
 }) {
   return (
-    <section className={`${styles.panel} ${styles.documentPanel}`} aria-label="Decision document">
+    <section
+      className={`${styles.panel} ${styles.documentPanel}`}
+      aria-label="Decision document"
+    >
       <div className={styles.documentToolbar}>
         <Tabs
-          value={isLocked ? 'document' : mode}
+          value={isLocked ? "document" : mode}
           onChange={(value) => value && onModeChange(value as WorkMode)}
           variant="unstyled"
           classNames={{ list: styles.modeTabs, tab: styles.modeTab }}
         >
           <Tabs.List aria-label="Decision work mode">
-            <Tabs.Tab value="document">{isLocked ? 'Locked record' : 'Document'}</Tabs.Tab>
+            <Tabs.Tab value="document">
+              {isLocked ? "Locked record" : "Document"}
+            </Tabs.Tab>
             {!isLocked && (
               <>
-                <Tabs.Tab value="proposal" disabled={!selectedProposal}>Proposal</Tabs.Tab>
-                <Tabs.Tab value="compare" disabled>Compare</Tabs.Tab>
+                <Tabs.Tab value="proposal" disabled={!selectedProposal}>
+                  Proposal
+                </Tabs.Tab>
+                <Tabs.Tab value="compare" disabled>
+                  Compare
+                </Tabs.Tab>
                 <Tabs.Tab value="vote">Vote</Tabs.Tab>
               </>
             )}
@@ -616,7 +709,7 @@ function DocumentPanel({
             canCreateActions={canCreateActions}
             canManageFollowThrough={canManageFollowThrough}
           />
-        ) : mode === 'vote' ? (
+        ) : mode === "vote" ? (
           <VotingPanel
             workspaceId={workspaceId}
             decisionId={decisionId}
@@ -624,7 +717,7 @@ function DocumentPanel({
             sessions={votingSessions}
             canManageVoting={canManageVoting}
           />
-        ) : mode === 'proposal' && selectedProposal ? (
+        ) : mode === "proposal" && selectedProposal ? (
           <article className={`${styles.document} ${styles.proposalDocument}`}>
             <div className={styles.proposalIdentity}>
               <div>
@@ -634,11 +727,11 @@ function DocumentPanel({
               <Badge
                 variant="light"
                 color={
-                  selectedProposal.status === 'submitted'
-                    ? 'green'
-                    : selectedProposal.status === 'withdrawn'
-                      ? 'orange'
-                      : 'gray'
+                  selectedProposal.status === "submitted"
+                    ? "green"
+                    : selectedProposal.status === "withdrawn"
+                      ? "orange"
+                      : "gray"
                 }
               >
                 {selectedProposal.status}
@@ -646,11 +739,12 @@ function DocumentPanel({
             </div>
 
             <p className={styles.lede}>
-              {selectedProposal.summary || 'No proposal summary has been added yet.'}
+              {selectedProposal.summary ||
+                "No proposal summary has been added yet."}
             </p>
 
             <div className={styles.proposalEditorActions}>
-              {canEdit && selectedProposal.status === 'draft' && (
+              {canEdit && selectedProposal.status === "draft" && (
                 <>
                   <Button
                     variant="default"
@@ -663,20 +757,24 @@ function DocumentPanel({
                     color="rust"
                     leftSection={<IconSend size={16} />}
                     loading={transitionPending}
-                    onClick={() => onTransitionProposal(selectedProposal, 'submitted')}
+                    onClick={() =>
+                      onTransitionProposal(selectedProposal, "submitted")
+                    }
                   >
                     Submit proposal
                   </Button>
                 </>
               )}
 
-              {canEdit && selectedProposal.status === 'submitted' && (
+              {canEdit && selectedProposal.status === "submitted" && (
                 <>
                   <Button
                     variant="default"
                     leftSection={<IconArrowBackUp size={16} />}
                     loading={transitionPending}
-                    onClick={() => onTransitionProposal(selectedProposal, 'draft')}
+                    onClick={() =>
+                      onTransitionProposal(selectedProposal, "draft")
+                    }
                   >
                     Reopen
                   </Button>
@@ -685,19 +783,23 @@ function DocumentPanel({
                     color="orange"
                     leftSection={<IconCircleOff size={16} />}
                     loading={transitionPending}
-                    onClick={() => onTransitionProposal(selectedProposal, 'withdrawn')}
+                    onClick={() =>
+                      onTransitionProposal(selectedProposal, "withdrawn")
+                    }
                   >
                     Withdraw
                   </Button>
                 </>
               )}
 
-              {canEdit && selectedProposal.status === 'withdrawn' && (
+              {canEdit && selectedProposal.status === "withdrawn" && (
                 <Button
                   variant="default"
                   leftSection={<IconArrowBackUp size={16} />}
                   loading={transitionPending}
-                  onClick={() => onTransitionProposal(selectedProposal, 'draft')}
+                  onClick={() =>
+                    onTransitionProposal(selectedProposal, "draft")
+                  }
                 >
                   Reopen as draft
                 </Button>
@@ -709,7 +811,7 @@ function DocumentPanel({
               <h2>How this proposal works</h2>
               <p className={styles.proposalContent}>
                 {selectedProposal.content ||
-                  'No rationale has been written yet. Reopen this proposal as a draft to add implementation details, tradeoffs, risks, and assumptions.'}
+                  "No rationale has been written yet. Reopen this proposal as a draft to add implementation details, tradeoffs, risks, and assumptions."}
               </p>
             </section>
 
@@ -721,74 +823,94 @@ function DocumentPanel({
             />
 
             <footer className={styles.proposalFooter}>
-              Updated{' '}
-              {new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(
-                new Date(selectedProposal.updated_at),
-              )}
+              Updated{" "}
+              {new Intl.DateTimeFormat("en", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }).format(new Date(selectedProposal.updated_at))}
             </footer>
           </article>
         ) : (
           <article className={styles.document}>
-          <div className={styles.documentMeta}>DECISION</div>
-          <h1>{title}</h1>
-          <p className={styles.lede}>{summary || 'No decision summary has been added yet.'}</p>
+            <div className={styles.documentMeta}>DECISION</div>
+            <h1>{title}</h1>
+            <p className={styles.lede}>
+              {summary || "No decision summary has been added yet."}
+            </p>
 
-          <section id="context" className={styles.copySection}>
-            <div className={styles.sectionIndex}>01 / CONTEXT</div>
-            <h2>Why this needs a decision</h2>
-            <p>{summary || 'Add context to explain what the team is deciding and why it matters now.'}</p>
-          </section>
+            <section id="context" className={styles.copySection}>
+              <div className={styles.sectionIndex}>01 / CONTEXT</div>
+              <h2>Why this needs a decision</h2>
+              <p>
+                {summary ||
+                  "Add context to explain what the team is deciding and why it matters now."}
+              </p>
+            </section>
 
-          <section id="criteria" className={styles.copySection}>
-            <div className={styles.sectionIndex}>02 / CRITERIA</div>
-            <h2>What we are optimizing for</h2>
-            {criteria.length > 0 ? (
-              <ul className={styles.criteriaList}>
-                {criteria.map((criterion, index) => (
-                  <li key={criterion.id}>
-                    <span>{String(index + 1).padStart(2, '0')}</span>
-                    <div>
-                      <strong>{criterion.name}</strong>
-                      <p>{criterion.description || `Weight: ${criterion.weight}`}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className={styles.emptySection}>
-                <strong>No criteria yet</strong>
-                <p>Criteria will appear here once the team defines how proposals should be evaluated.</p>
-              </div>
-            )}
-          </section>
-
-          <section id="proposals" className={styles.copySection}>
-            <div className={styles.sectionIndex}>03 / PROPOSALS</div>
-            {proposals.length > 0 ? (
-              <div className={styles.leadingProposal}>
-                <div>
-                  <Badge variant="light" color="rust" size="sm">PROPOSALS</Badge>
-                  <h3>{proposals.length} alternative{proposals.length === 1 ? '' : 's'} in progress</h3>
-                  <p>Select a proposal from the outline to read, edit, submit, or withdraw it.</p>
+            <section id="criteria" className={styles.copySection}>
+              <div className={styles.sectionIndex}>02 / CRITERIA</div>
+              <h2>What we are optimizing for</h2>
+              {criteria.length > 0 ? (
+                <ul className={styles.criteriaList}>
+                  {criteria.map((criterion, index) => (
+                    <li key={criterion.id}>
+                      <span>{String(index + 1).padStart(2, "0")}</span>
+                      <div>
+                        <strong>{criterion.name}</strong>
+                        <p>
+                          {criterion.description ||
+                            `Weight: ${criterion.weight}`}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className={styles.emptySection}>
+                  <strong>No criteria yet</strong>
+                  <p>
+                    Criteria will appear here once the team defines how
+                    proposals should be evaluated.
+                  </p>
                 </div>
-              </div>
-            ) : (
-              <div className={styles.emptySection}>
-                <strong>No proposals yet</strong>
-                <p>Alternatives will appear here as the team adds them.</p>
-                <Button
-                  size="xs"
-                  variant="light"
-                  color="rust"
-                  leftSection={<IconPlus size={14} />}
-                  onClick={onCreateProposal}
-                  disabled={!canEdit}
-                >
-                  Add proposal
-                </Button>
-              </div>
-            )}
-          </section>
+              )}
+            </section>
+
+            <section id="proposals" className={styles.copySection}>
+              <div className={styles.sectionIndex}>03 / PROPOSALS</div>
+              {proposals.length > 0 ? (
+                <div className={styles.leadingProposal}>
+                  <div>
+                    <Badge variant="light" color="rust" size="sm">
+                      PROPOSALS
+                    </Badge>
+                    <h3>
+                      {proposals.length} alternative
+                      {proposals.length === 1 ? "" : "s"} in progress
+                    </h3>
+                    <p>
+                      Select a proposal from the outline to read, edit, submit,
+                      or withdraw it.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.emptySection}>
+                  <strong>No proposals yet</strong>
+                  <p>Alternatives will appear here as the team adds them.</p>
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="rust"
+                    leftSection={<IconPlus size={14} />}
+                    onClick={onCreateProposal}
+                    disabled={!canEdit}
+                  >
+                    Add proposal
+                  </Button>
+                </div>
+              )}
+            </section>
           </article>
         )}
       </ScrollArea>
@@ -796,12 +918,40 @@ function DocumentPanel({
   );
 }
 
-function CollaborationPanel() {
+function CollaborationPanel({
+  workspaceId,
+  decisionId,
+  proposals,
+  members,
+  currentUserId,
+  canUploadEvidence,
+  canManageEvidence,
+  decisionLock,
+  value,
+  onChange,
+}: {
+  workspaceId: string;
+  decisionId: string;
+  proposals: Proposal[];
+  members: WorkspaceMember[];
+  currentUserId: string;
+  canUploadEvidence: boolean;
+  canManageEvidence: boolean;
+  decisionLock: DecisionLock | null;
+  value: CollaborationTab;
+  onChange: (value: CollaborationTab) => void;
+}) {
   return (
     <section className={styles.panel} aria-label="Collaboration">
       <Tabs
-        defaultValue="discussion"
-        classNames={{ root: styles.collaborationTabs, list: styles.collabTabList }}
+        value={value}
+        onChange={(nextValue) =>
+          nextValue && onChange(nextValue as CollaborationTab)
+        }
+        classNames={{
+          root: styles.collaborationTabs,
+          list: styles.collabTabList,
+        }}
       >
         <Tabs.List grow>
           <Tabs.Tab value="discussion">Discussion</Tabs.Tab>
@@ -812,15 +962,37 @@ function CollaborationPanel() {
           <strong>No discussion yet</strong>
           <span>Comments and collaborative discussion will appear here.</span>
         </Tabs.Panel>
-        <Tabs.Panel value="evidence" className={styles.emptyPanel}>
-          <IconFileText size={24} />
-          <strong>No evidence loaded yet</strong>
-          <span>Evidence will appear here after its API is connected.</span>
+        <Tabs.Panel
+          value="evidence"
+          className={styles.collaborationEvidencePanel}
+        >
+          {decisionLock ? (
+            <LockedEvidencePanel
+              workspaceId={workspaceId}
+              decisionLock={decisionLock}
+              proposals={proposals}
+              members={members}
+              compact
+            />
+          ) : (
+            <EvidencePanel
+              workspaceId={workspaceId}
+              decisionId={decisionId}
+              proposals={proposals}
+              members={members}
+              currentUserId={currentUserId}
+              canUpload={canUploadEvidence}
+              canManage={canManageEvidence}
+            />
+          )}
         </Tabs.Panel>
         <Tabs.Panel value="people" className={styles.emptyPanel}>
           <IconUsers size={24} />
           <strong>Presence is not connected yet</strong>
-          <span>Live participants will appear here once collaboration presence is wired.</span>
+          <span>
+            Live participants will appear here once collaboration presence is
+            wired.
+          </span>
         </Tabs.Panel>
       </Tabs>
     </section>
@@ -840,26 +1012,37 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
   const proposals = useDecisionProposals(workspaceId, decisionId);
   const criteria = useDecisionCriteria(workspaceId, decisionId);
   const votingSessions = useVotingSessions(workspaceId, decisionId);
+  const attachments = useDecisionAttachments(
+    workspaceId,
+    decisionId,
+    Boolean(decision.data && decision.data.status !== "locked"),
+  );
   const decisionLock = useDecisionLock(
     workspaceId,
     decisionId,
-    decision.data?.status === 'locked',
+    decision.data?.status === "locked",
   );
   const transitionProposal = useTransitionProposal(workspaceId, decisionId);
   const deleteProposal = useDeleteProposal(workspaceId, decisionId);
-  const desktop = useMediaQuery('(min-width: 80em)');
+  const desktop = useMediaQuery("(min-width: 80em)");
   const mobileTab = useUiStore((state) => state.mobileDecisionTab);
   const setMobileTab = useUiStore((state) => state.setMobileDecisionTab);
   const leftPanelRef = usePanelRef();
   const rightPanelRef = usePanelRef();
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
-  const [workMode, setWorkMode] = useState<WorkMode>('document');
-  const [selectedProposalId, setSelectedProposalId] = useState<string | null>(null);
-  const [editorProposal, setEditorProposal] = useState<Proposal | null | undefined>(undefined);
+  const [workMode, setWorkMode] = useState<WorkMode>("document");
+  const [collaborationTab, setCollaborationTab] =
+    useState<CollaborationTab>("discussion");
+  const [selectedProposalId, setSelectedProposalId] = useState<string | null>(
+    null,
+  );
+  const [editorProposal, setEditorProposal] = useState<
+    Proposal | null | undefined
+  >(undefined);
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: 'forkroom-decision-room',
-    panelIds: ['outline', 'document', 'collaboration'],
+    id: "forkroom-decision-room",
+    panelIds: ["outline", "document", "collaboration"],
     onlySaveAfterUserInteractions: true,
   });
 
@@ -871,7 +1054,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     proposals.isPending ||
     criteria.isPending ||
     votingSessions.isPending ||
-    (decision.data?.status === 'locked' && decisionLock.isPending)
+    (decision.data?.status === "locked" && decisionLock.isPending)
   ) {
     return (
       <div className={styles.roomState}>
@@ -889,7 +1072,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     proposals.isError ||
     criteria.isError ||
     votingSessions.isError ||
-    (decision.data?.status === 'locked' && decisionLock.isError) ||
+    (decision.data?.status === "locked" && decisionLock.isError) ||
     !currentUser.data ||
     !workspace.data ||
     !members.data ||
@@ -897,12 +1080,13 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     !proposals.data ||
     !criteria.data ||
     !votingSessions.data ||
-    (decision.data.status === 'locked' && !decisionLock.data)
+    (decision.data.status === "locked" && !decisionLock.data)
   ) {
     return (
       <div className={styles.roomState}>
         <Alert color="red" title="Could not open decision">
-          The decision could not be loaded. It may have been removed or you may not have access to it.
+          The decision could not be loaded. It may have been removed or you may
+          not have access to it.
         </Alert>
       </div>
     );
@@ -915,23 +1099,48 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
   const currentMember = members.data.find(
     (member) => member.user_id === currentUser.data.id,
   );
-  const canContribute = ['owner', 'admin', 'member'].includes(currentMember?.role ?? 'viewer');
-  const canManageVoting = ['owner', 'admin'].includes(currentMember?.role ?? 'viewer');
-  const hasOpenVotingSession = votingSessions.data.some((session) => session.status === 'open');
+  const canContribute = ["owner", "admin", "member"].includes(
+    currentMember?.role ?? "viewer",
+  );
+  const canManageVoting = ["owner", "admin"].includes(
+    currentMember?.role ?? "viewer",
+  );
+  const hasOpenVotingSession = votingSessions.data.some(
+    (session) => session.status === "open",
+  );
   const canEditProposals =
     canContribute &&
     !hasOpenVotingSession &&
-    !['closed', 'locked', 'archived'].includes(decision.data.status);
+    !["closed", "locked", "archived"].includes(decision.data.status);
+  const canUploadEvidence =
+    canContribute &&
+    !hasOpenVotingSession &&
+    !["closed", "locked", "archived"].includes(decision.data.status);
+  const evidenceCount = decisionLock.data
+    ? getSnapshotEvidence(decisionLock.data.snapshot).length
+    : (attachments.data ?? []).filter(
+        (attachment) => attachment.status !== "deleted",
+      ).length;
+
+  const openEvidence = () => {
+    setCollaborationTab("evidence");
+    if (desktop) {
+      rightPanelRef.current?.expand();
+      return;
+    }
+
+    setMobileTab("discussion");
+  };
 
   const selectProposal = (proposal: Proposal) => {
     setSelectedProposalId(proposal.id);
-    setWorkMode('proposal');
-    if (!desktop) setMobileTab('document');
+    setWorkMode("proposal");
+    if (!desktop) setMobileTab("document");
   };
 
   const handleTransitionProposal = async (
     proposal: Proposal,
-    status: Proposal['status'],
+    status: Proposal["status"],
   ) => {
     try {
       const updated = await transitionProposal.mutateAsync({
@@ -939,63 +1148,69 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
         status,
       });
       setSelectedProposalId(updated.id);
-      setWorkMode('proposal');
+      setWorkMode("proposal");
       notifications.show({
-        color: 'green',
-        title: 'Proposal updated',
+        color: "green",
+        title: "Proposal updated",
         message:
-          status === 'submitted'
-            ? 'The proposal is ready for team review.'
-            : status === 'withdrawn'
-              ? 'The proposal has been withdrawn.'
-              : 'The proposal is open for editing again.',
+          status === "submitted"
+            ? "The proposal is ready for team review."
+            : status === "withdrawn"
+              ? "The proposal has been withdrawn."
+              : "The proposal is open for editing again.",
       });
     } catch (error) {
       notifications.show({
-        color: 'red',
-        title: 'Could not update proposal',
-        message: getApiErrorMessage(error, 'ForkRoom could not change this proposal state.'),
+        color: "red",
+        title: "Could not update proposal",
+        message: getApiErrorMessage(
+          error,
+          "ForkRoom could not change this proposal state.",
+        ),
       });
     }
   };
 
   const confirmDeleteProposal = (proposal: Proposal) => {
     modals.openConfirmModal({
-      title: 'Delete draft proposal?',
+      title: "Delete draft proposal?",
       children: (
         <p className={styles.confirmCopy}>
-          “{proposal.title}” will be permanently removed. Submitted proposals must be reopened
-          before they can be deleted.
+          “{proposal.title}” will be permanently removed. Submitted proposals
+          must be reopened before they can be deleted.
         </p>
       ),
-      labels: { confirm: 'Delete proposal', cancel: 'Keep proposal' },
-      confirmProps: { color: 'red' },
+      labels: { confirm: "Delete proposal", cancel: "Keep proposal" },
+      confirmProps: { color: "red" },
       onConfirm: async () => {
         try {
           await deleteProposal.mutateAsync(proposal.id);
           if (selectedProposal?.id === proposal.id) {
             setSelectedProposalId(null);
-            setWorkMode('document');
+            setWorkMode("document");
           }
           notifications.show({
-            color: 'green',
-            title: 'Draft deleted',
-            message: 'The proposal was removed from this decision.',
+            color: "green",
+            title: "Draft deleted",
+            message: "The proposal was removed from this decision.",
           });
         } catch (error) {
           notifications.show({
-            color: 'red',
-            title: 'Could not delete proposal',
-            message: getApiErrorMessage(error, 'ForkRoom could not delete this draft proposal.'),
+            color: "red",
+            title: "Could not delete proposal",
+            message: getApiErrorMessage(
+              error,
+              "ForkRoom could not delete this draft proposal.",
+            ),
           });
         }
       },
     });
   };
 
-  const togglePanel = (side: 'left' | 'right') => {
-    const ref = side === 'left' ? leftPanelRef : rightPanelRef;
-    const collapsed = side === 'left' ? leftCollapsed : rightCollapsed;
+  const togglePanel = (side: "left" | "right") => {
+    const ref = side === "left" ? leftPanelRef : rightPanelRef;
+    const collapsed = side === "left" ? leftCollapsed : rightCollapsed;
     if (collapsed) ref.current?.expand();
     else ref.current?.collapse();
   };
@@ -1006,6 +1221,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
       decisionId={decisionId}
       proposals={proposals.data}
       criteriaCount={criteria.data.length}
+      evidenceCount={evidenceCount}
       selectedProposalId={selectedProposal?.id ?? null}
       canEdit={canEditProposals}
       transitionPending={transitionProposal.isPending}
@@ -1014,6 +1230,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
       onEditProposal={(proposal) => setEditorProposal(proposal)}
       onTransitionProposal={handleTransitionProposal}
       onDeleteProposal={confirmDeleteProposal}
+      onOpenEvidence={openEvidence}
     />
   );
   const document = (
@@ -1028,7 +1245,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
       decisionLock={decisionLock.data ?? null}
       members={members.data}
       currentUserId={currentUser.data.id}
-      isLocked={decision.data.status === 'locked'}
+      isLocked={decision.data.status === "locked"}
       selectedProposal={selectedProposal}
       mode={workMode}
       canEdit={canEditProposals}
@@ -1043,25 +1260,39 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
       onTransitionProposal={handleTransitionProposal}
     />
   );
-  const collaboration = <CollaborationPanel />;
+  const collaboration = (
+    <CollaborationPanel
+      workspaceId={workspaceId}
+      decisionId={decisionId}
+      proposals={proposals.data}
+      members={members.data}
+      currentUserId={currentUser.data.id}
+      canUploadEvidence={canUploadEvidence}
+      canManageEvidence={canManageVoting}
+      decisionLock={decisionLock.data ?? null}
+      value={collaborationTab}
+      onChange={setCollaborationTab}
+    />
+  );
 
   return (
     <div className={styles.room}>
       <header className={styles.roomHeader}>
         <div className={styles.titleBlock}>
           <div className={styles.breadcrumb}>
-            {workspace.data.name.toUpperCase()} <IconChevronRight size={12} /> DECISIONS
+            {workspace.data.name.toUpperCase()} <IconChevronRight size={12} />{" "}
+            DECISIONS
           </div>
           <div className={styles.titleRow}>
             <h1>{decision.data.title}</h1>
             <Badge
               variant="light"
               color={
-                decision.data.status === 'locked'
-                  ? 'green'
-                  : decision.data.status === 'active'
-                    ? 'rust'
-                    : 'gray'
+                decision.data.status === "locked"
+                  ? "green"
+                  : decision.data.status === "active"
+                    ? "rust"
+                    : "gray"
               }
               size="sm"
             >
@@ -1073,21 +1304,25 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
         <div className={styles.roomActions}>
           {desktop && (
             <>
-              <Tooltip label={leftCollapsed ? 'Show outline' : 'Hide outline'}>
+              <Tooltip label={leftCollapsed ? "Show outline" : "Hide outline"}>
                 <ActionIcon
                   variant="subtle"
                   color="dark"
-                  onClick={() => togglePanel('left')}
+                  onClick={() => togglePanel("left")}
                   aria-label="Toggle decision outline"
                 >
                   <IconLayoutSidebarLeftCollapse size={19} />
                 </ActionIcon>
               </Tooltip>
-              <Tooltip label={rightCollapsed ? 'Show collaboration' : 'Hide collaboration'}>
+              <Tooltip
+                label={
+                  rightCollapsed ? "Show collaboration" : "Hide collaboration"
+                }
+              >
                 <ActionIcon
                   variant="subtle"
                   color="dark"
-                  onClick={() => togglePanel('right')}
+                  onClick={() => togglePanel("right")}
                   aria-label="Toggle collaboration panel"
                 >
                   <IconLayoutSidebarRightCollapse size={19} />
@@ -1095,14 +1330,14 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
               </Tooltip>
             </>
           )}
-          {decision.data.status === 'locked' ? (
+          {decision.data.status === "locked" ? (
             <Tooltip label="View the authoritative decision record">
               <Button
                 color="dark"
                 leftSection={<IconLock size={17} />}
                 onClick={() => {
-                  setWorkMode('document');
-                  if (!desktop) setMobileTab('document');
+                  setWorkMode("document");
+                  if (!desktop) setMobileTab("document");
                 }}
               >
                 View locked record
@@ -1114,11 +1349,11 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
                 className={styles.voteButton}
                 leftSection={<IconScale size={17} />}
                 onClick={() => {
-                  setWorkMode('vote');
-                  if (!desktop) setMobileTab('document');
+                  setWorkMode("vote");
+                  if (!desktop) setMobileTab("document");
                 }}
               >
-                {hasOpenVotingSession ? 'Vote now' : 'Voting'}
+                {hasOpenVotingSession ? "Vote now" : "Voting"}
               </Button>
             </Tooltip>
           )}
@@ -1146,9 +1381,17 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
             >
               {outline}
             </Panel>
-            <Separator className={styles.resizeHandle} aria-label="Resize decision outline" />
-            <Panel id="document" minSize={520} defaultSize="55%">{document}</Panel>
-            <Separator className={styles.resizeHandle} aria-label="Resize collaboration panel" />
+            <Separator
+              className={styles.resizeHandle}
+              aria-label="Resize decision outline"
+            />
+            <Panel id="document" minSize={520} defaultSize="55%">
+              {document}
+            </Panel>
+            <Separator
+              className={styles.resizeHandle}
+              aria-label="Resize collaboration panel"
+            />
             <Panel
               id="collaboration"
               panelRef={rightPanelRef}
@@ -1164,15 +1407,26 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
           </Group>
         ) : (
           <div className={styles.responsiveWorkspace}>
-            <Tabs value={mobileTab} onChange={(value) => value && setMobileTab(value as typeof mobileTab)}>
+            <Tabs
+              value={mobileTab}
+              onChange={(value) =>
+                value && setMobileTab(value as typeof mobileTab)
+              }
+            >
               <Tabs.List grow className={styles.responsiveTabs}>
                 <Tabs.Tab value="outline">Outline</Tabs.Tab>
                 <Tabs.Tab value="document">Document</Tabs.Tab>
                 <Tabs.Tab value="discussion">Discussion</Tabs.Tab>
               </Tabs.List>
-              <Tabs.Panel value="outline" className={styles.responsivePanel}>{outline}</Tabs.Panel>
-              <Tabs.Panel value="document" className={styles.responsivePanel}>{document}</Tabs.Panel>
-              <Tabs.Panel value="discussion" className={styles.responsivePanel}>{collaboration}</Tabs.Panel>
+              <Tabs.Panel value="outline" className={styles.responsivePanel}>
+                {outline}
+              </Tabs.Panel>
+              <Tabs.Panel value="document" className={styles.responsivePanel}>
+                {document}
+              </Tabs.Panel>
+              <Tabs.Panel value="discussion" className={styles.responsivePanel}>
+                {collaboration}
+              </Tabs.Panel>
             </Tabs>
           </div>
         )}
@@ -1181,24 +1435,26 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
       <div className={styles.mobileVoteDock}>
         <Button
           fullWidth
-          color={decision.data.status === 'locked' ? 'dark' : 'rust'}
+          color={decision.data.status === "locked" ? "dark" : "rust"}
           leftSection={
-            decision.data.status === 'locked' ? (
+            decision.data.status === "locked" ? (
               <IconLock size={18} />
             ) : (
               <IconScale size={18} />
             )
           }
           onClick={() => {
-            setWorkMode(decision.data.status === 'locked' ? 'document' : 'vote');
-            setMobileTab('document');
+            setWorkMode(
+              decision.data.status === "locked" ? "document" : "vote",
+            );
+            setMobileTab("document");
           }}
         >
-          {decision.data.status === 'locked'
-            ? 'View locked record'
+          {decision.data.status === "locked"
+            ? "View locked record"
             : hasOpenVotingSession
-              ? 'Vote now'
-              : 'Open voting'}
+              ? "Vote now"
+              : "Open voting"}
         </Button>
       </div>
 
@@ -1210,12 +1466,12 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
         onClose={() => setEditorProposal(undefined)}
         onSaved={(proposal) => {
           setSelectedProposalId(proposal.id);
-          setWorkMode('proposal');
-          if (!desktop) setMobileTab('document');
+          setWorkMode("proposal");
+          if (!desktop) setMobileTab("document");
           notifications.show({
-            color: 'green',
-            title: editorProposal ? 'Proposal saved' : 'Proposal created',
-            message: 'The proposal is available in the decision outline.',
+            color: "green",
+            title: editorProposal ? "Proposal saved" : "Proposal created",
+            message: "The proposal is available in the decision outline.",
           });
         }}
       />
