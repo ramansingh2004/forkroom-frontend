@@ -2,8 +2,10 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  createWorkspace,
   createDecision,
+  createProposal,
+  createWorkspace,
+  deleteProposal,
   getDecision,
   getWorkspace,
   listCriteria,
@@ -11,8 +13,13 @@ import {
   listWorkspaceDecisions,
   listWorkspaceMembers,
   listWorkspaces,
+  transitionProposal,
+  updateProposal,
   type DecisionStatus,
   type DecisionCreateRequest,
+  type ProposalCreateRequest,
+  type ProposalStatus,
+  type ProposalUpdateRequest,
   type WorkspaceCreateRequest,
 } from '@/services/workspace.service';
 
@@ -114,6 +121,72 @@ export function useDecisionProposals(
     queryFn: () =>
       listProposals(workspaceId!, decisionId!),
     enabled: Boolean(workspaceId && decisionId),
+  });
+}
+
+export function useCreateProposal(workspaceId: string, decisionId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: ProposalCreateRequest) =>
+      createProposal(workspaceId, decisionId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.proposals(workspaceId, decisionId),
+      });
+    },
+  });
+}
+
+export function useUpdateProposal(workspaceId: string, decisionId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      proposalId,
+      payload,
+    }: {
+      proposalId: string;
+      payload: ProposalUpdateRequest;
+    }) => updateProposal(workspaceId, decisionId, proposalId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.proposals(workspaceId, decisionId),
+      });
+    },
+  });
+}
+
+export function useDeleteProposal(workspaceId: string, decisionId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (proposalId: string) =>
+      deleteProposal(workspaceId, decisionId, proposalId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.proposals(workspaceId, decisionId),
+      });
+    },
+  });
+}
+
+export function useTransitionProposal(workspaceId: string, decisionId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      proposalId,
+      status,
+    }: {
+      proposalId: string;
+      status: ProposalStatus;
+    }) => transitionProposal(workspaceId, decisionId, proposalId, status),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.proposals(workspaceId, decisionId),
+      });
+    },
   });
 }
 

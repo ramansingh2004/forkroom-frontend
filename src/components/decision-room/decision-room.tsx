@@ -7,18 +7,27 @@ import {
   Badge,
   Button,
   Loader,
+  Menu,
   ScrollArea,
   Tabs,
   Tooltip,
 } from '@mantine/core';
+import { modals } from '@mantine/modals';
+import { notifications } from '@mantine/notifications';
 import { useMediaQuery } from '@mantine/hooks';
 import {
+  IconArrowBackUp,
+  IconCircleOff,
   IconChevronRight,
+  IconDotsVertical,
+  IconEdit,
   IconFileText,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarRightCollapse,
   IconPlus,
   IconScale,
+  IconSend,
+  IconTrash,
   IconUsers,
 } from '@tabler/icons-react';
 import {
@@ -30,22 +39,44 @@ import {
 } from 'react-resizable-panels';
 
 import {
+  useDeleteProposal,
   useDecision,
   useDecisionCriteria,
   useDecisionProposals,
+  useTransitionProposal,
   useWorkspace,
 } from '@/hooks/use-workspaces';
+import { getApiErrorMessage } from '@/services/auth.service';
 import type { Criterion, Proposal } from '@/services/workspace.service';
 import { useUiStore } from '@/stores/use-ui-store';
 
 import styles from './decision-room.module.css';
+import { ProposalEditorModal } from './proposal-editor-modal';
+
+type WorkMode = 'document' | 'proposal' | 'compare' | 'vote';
 
 function OutlinePanel({
   proposals,
   criteriaCount,
+  selectedProposalId,
+  canEdit,
+  transitionPending,
+  onSelectProposal,
+  onCreateProposal,
+  onEditProposal,
+  onTransitionProposal,
+  onDeleteProposal,
 }: {
   proposals: Proposal[];
   criteriaCount: number;
+  selectedProposalId: string | null;
+  canEdit: boolean;
+  transitionPending: boolean;
+  onSelectProposal: (proposal: Proposal) => void;
+  onCreateProposal: () => void;
+  onEditProposal: (proposal: Proposal) => void;
+  onTransitionProposal: (proposal: Proposal, status: Proposal['status']) => void;
+  onDeleteProposal: (proposal: Proposal) => void;
 }) {
   return (
     <section className={styles.panel} aria-label="Decision outline">
@@ -54,8 +85,14 @@ function OutlinePanel({
           <span className={styles.kicker}>OUTLINE</span>
           <h2>Decision context</h2>
         </div>
-        <Tooltip label="Proposal creation will be connected next">
-          <ActionIcon variant="subtle" color="dark" aria-label="Add proposal">
+        <Tooltip label={canEdit ? 'Add proposal' : 'This decision is read-only'}>
+          <ActionIcon
+            variant="subtle"
+            color="dark"
+            aria-label="Add proposal"
+            onClick={onCreateProposal}
+            disabled={!canEdit}
+          >
             <IconPlus size={18} stroke={1.8} />
           </ActionIcon>
         </Tooltip>
@@ -78,11 +115,96 @@ function OutlinePanel({
             {proposals.map((proposal, index) => (
               <div
                 key={proposal.id}
-                className={`${styles.proposal} ${index === 0 ? styles.proposalSelected : ''}`}
+                className={styles.proposalItem}
               >
-                <span className={styles.proposalNumber}>{String(index + 1).padStart(2, '0')}</span>
-                <strong>{proposal.title}</strong>
-                <small>{proposal.summary || proposal.status}</small>
+                <button
+                  type="button"
+                  className={`${styles.proposal} ${
+                    proposal.id === selectedProposalId ? styles.proposalSelected : ''
+                  }`}
+                  onClick={() => onSelectProposal(proposal)}
+                  aria-current={proposal.id === selectedProposalId ? 'true' : undefined}
+                >
+                  <span className={styles.proposalNumber}>
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <strong>{proposal.title}</strong>
+                  <small>{proposal.summary || proposal.status}</small>
+                  <span className={styles.proposalStatus}>{proposal.status}</span>
+                </button>
+
+                {canEdit && (
+                  <Menu position="bottom-end" withinPortal>
+                    <Menu.Target>
+                      <ActionIcon
+                        className={styles.proposalMenuButton}
+                        variant="subtle"
+                        color="dark"
+                        size="sm"
+                        aria-label={`Actions for ${proposal.title}`}
+                      >
+                        <IconDotsVertical size={15} />
+                      </ActionIcon>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      {proposal.status === 'draft' && (
+                        <>
+                          <Menu.Item
+                            leftSection={<IconEdit size={15} />}
+                            onClick={() => onEditProposal(proposal)}
+                          >
+                            Edit proposal
+                          </Menu.Item>
+                          <Menu.Item
+                            leftSection={<IconSend size={15} />}
+                            disabled={transitionPending}
+                            onClick={() => onTransitionProposal(proposal, 'submitted')}
+                          >
+                            Submit proposal
+                          </Menu.Item>
+                          <Menu.Divider />
+                          <Menu.Item
+                            color="red"
+                            leftSection={<IconTrash size={15} />}
+                            onClick={() => onDeleteProposal(proposal)}
+                          >
+                            Delete draft
+                          </Menu.Item>
+                        </>
+                      )}
+
+                      {proposal.status === 'submitted' && (
+                        <>
+                          <Menu.Item
+                            leftSection={<IconArrowBackUp size={15} />}
+                            disabled={transitionPending}
+                            onClick={() => onTransitionProposal(proposal, 'draft')}
+                          >
+                            Reopen as draft
+                          </Menu.Item>
+                          <Menu.Item
+                            color="orange"
+                            leftSection={<IconCircleOff size={15} />}
+                            disabled={transitionPending}
+                            onClick={() => onTransitionProposal(proposal, 'withdrawn')}
+                          >
+                            Withdraw proposal
+                          </Menu.Item>
+                        </>
+                      )}
+
+                      {proposal.status === 'withdrawn' && (
+                        <Menu.Item
+                          leftSection={<IconArrowBackUp size={15} />}
+                          disabled={transitionPending}
+                          onClick={() => onTransitionProposal(proposal, 'draft')}
+                        >
+                          Reopen as draft
+                        </Menu.Item>
+                      )}
+                    </Menu.Dropdown>
+                  </Menu>
+                )}
               </div>
             ))}
           </div>
@@ -90,7 +212,14 @@ function OutlinePanel({
           <div className={styles.emptySection}>
             <strong>No proposals yet</strong>
             <p>Add an alternative that the team can compare, challenge, and vote on.</p>
-            <Button size="xs" variant="light" color="rust" leftSection={<IconPlus size={14} />}>
+            <Button
+              size="xs"
+              variant="light"
+              color="rust"
+              leftSection={<IconPlus size={14} />}
+              onClick={onCreateProposal}
+              disabled={!canEdit}
+            >
               Add proposal
             </Button>
           </div>
@@ -105,32 +234,145 @@ function DocumentPanel({
   summary,
   criteria,
   proposals,
+  selectedProposal,
+  mode,
+  canEdit,
+  transitionPending,
+  onModeChange,
+  onCreateProposal,
+  onEditProposal,
+  onTransitionProposal,
 }: {
   title: string;
   summary: string | null;
   criteria: Criterion[];
   proposals: Proposal[];
+  selectedProposal: Proposal | null;
+  mode: WorkMode;
+  canEdit: boolean;
+  transitionPending: boolean;
+  onModeChange: (mode: WorkMode) => void;
+  onCreateProposal: () => void;
+  onEditProposal: (proposal: Proposal) => void;
+  onTransitionProposal: (proposal: Proposal, status: Proposal['status']) => void;
 }) {
-  const leadingProposal = proposals[0];
-
   return (
     <section className={`${styles.panel} ${styles.documentPanel}`} aria-label="Decision document">
       <div className={styles.documentToolbar}>
         <Tabs
-          defaultValue="document"
+          value={mode}
+          onChange={(value) => value && onModeChange(value as WorkMode)}
           variant="unstyled"
           classNames={{ list: styles.modeTabs, tab: styles.modeTab }}
         >
           <Tabs.List aria-label="Decision work mode">
             <Tabs.Tab value="document">Document</Tabs.Tab>
-            <Tabs.Tab value="compare">Compare</Tabs.Tab>
-            <Tabs.Tab value="vote">Vote</Tabs.Tab>
+            <Tabs.Tab value="proposal" disabled={!selectedProposal}>Proposal</Tabs.Tab>
+            <Tabs.Tab value="compare" disabled>Compare</Tabs.Tab>
+            <Tabs.Tab value="vote" disabled>Vote</Tabs.Tab>
           </Tabs.List>
         </Tabs>
       </div>
 
       <ScrollArea className={styles.documentScroll} type="auto">
-        <article className={styles.document}>
+        {mode === 'proposal' && selectedProposal ? (
+          <article className={`${styles.document} ${styles.proposalDocument}`}>
+            <div className={styles.proposalIdentity}>
+              <div>
+                <span className={styles.documentMeta}>PROPOSAL</span>
+                <h1>{selectedProposal.title}</h1>
+              </div>
+              <Badge
+                variant="light"
+                color={
+                  selectedProposal.status === 'submitted'
+                    ? 'green'
+                    : selectedProposal.status === 'withdrawn'
+                      ? 'orange'
+                      : 'gray'
+                }
+              >
+                {selectedProposal.status}
+              </Badge>
+            </div>
+
+            <p className={styles.lede}>
+              {selectedProposal.summary || 'No proposal summary has been added yet.'}
+            </p>
+
+            <div className={styles.proposalEditorActions}>
+              {canEdit && selectedProposal.status === 'draft' && (
+                <>
+                  <Button
+                    variant="default"
+                    leftSection={<IconEdit size={16} />}
+                    onClick={() => onEditProposal(selectedProposal)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    color="rust"
+                    leftSection={<IconSend size={16} />}
+                    loading={transitionPending}
+                    onClick={() => onTransitionProposal(selectedProposal, 'submitted')}
+                  >
+                    Submit proposal
+                  </Button>
+                </>
+              )}
+
+              {canEdit && selectedProposal.status === 'submitted' && (
+                <>
+                  <Button
+                    variant="default"
+                    leftSection={<IconArrowBackUp size={16} />}
+                    loading={transitionPending}
+                    onClick={() => onTransitionProposal(selectedProposal, 'draft')}
+                  >
+                    Reopen
+                  </Button>
+                  <Button
+                    variant="light"
+                    color="orange"
+                    leftSection={<IconCircleOff size={16} />}
+                    loading={transitionPending}
+                    onClick={() => onTransitionProposal(selectedProposal, 'withdrawn')}
+                  >
+                    Withdraw
+                  </Button>
+                </>
+              )}
+
+              {canEdit && selectedProposal.status === 'withdrawn' && (
+                <Button
+                  variant="default"
+                  leftSection={<IconArrowBackUp size={16} />}
+                  loading={transitionPending}
+                  onClick={() => onTransitionProposal(selectedProposal, 'draft')}
+                >
+                  Reopen as draft
+                </Button>
+              )}
+            </div>
+
+            <section className={styles.copySection}>
+              <div className={styles.sectionIndex}>01 / RATIONALE</div>
+              <h2>How this proposal works</h2>
+              <p className={styles.proposalContent}>
+                {selectedProposal.content ||
+                  'No rationale has been written yet. Reopen this proposal as a draft to add implementation details, tradeoffs, risks, and assumptions.'}
+              </p>
+            </section>
+
+            <footer className={styles.proposalFooter}>
+              Updated{' '}
+              {new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(
+                new Date(selectedProposal.updated_at),
+              )}
+            </footer>
+          </article>
+        ) : (
+          <article className={styles.document}>
           <div className={styles.documentMeta}>DECISION</div>
           <h1>{title}</h1>
           <p className={styles.lede}>{summary || 'No decision summary has been added yet.'}</p>
@@ -166,22 +408,33 @@ function DocumentPanel({
 
           <section id="proposals" className={styles.copySection}>
             <div className={styles.sectionIndex}>03 / PROPOSALS</div>
-            {leadingProposal ? (
+            {proposals.length > 0 ? (
               <div className={styles.leadingProposal}>
                 <div>
-                  <Badge variant="light" color="rust" size="sm">PROPOSAL</Badge>
-                  <h3>{leadingProposal.title}</h3>
-                  <p>{leadingProposal.summary || 'No proposal summary has been added yet.'}</p>
+                  <Badge variant="light" color="rust" size="sm">PROPOSALS</Badge>
+                  <h3>{proposals.length} alternative{proposals.length === 1 ? '' : 's'} in progress</h3>
+                  <p>Select a proposal from the outline to read, edit, submit, or withdraw it.</p>
                 </div>
               </div>
             ) : (
               <div className={styles.emptySection}>
                 <strong>No proposals yet</strong>
                 <p>Alternatives will appear here as the team adds them.</p>
+                <Button
+                  size="xs"
+                  variant="light"
+                  color="rust"
+                  leftSection={<IconPlus size={14} />}
+                  onClick={onCreateProposal}
+                  disabled={!canEdit}
+                >
+                  Add proposal
+                </Button>
               </div>
             )}
           </section>
-        </article>
+          </article>
+        )}
       </ScrollArea>
     </section>
   );
@@ -228,6 +481,8 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
   const decision = useDecision(workspaceId, decisionId);
   const proposals = useDecisionProposals(workspaceId, decisionId);
   const criteria = useDecisionCriteria(workspaceId, decisionId);
+  const transitionProposal = useTransitionProposal(workspaceId, decisionId);
+  const deleteProposal = useDeleteProposal(workspaceId, decisionId);
   const desktop = useMediaQuery('(min-width: 80em)');
   const mobileTab = useUiStore((state) => state.mobileDecisionTab);
   const setMobileTab = useUiStore((state) => state.setMobileDecisionTab);
@@ -235,6 +490,9 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
   const rightPanelRef = usePanelRef();
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
+  const [workMode, setWorkMode] = useState<WorkMode>('document');
+  const [selectedProposalId, setSelectedProposalId] = useState<string | null>(null);
+  const [editorProposal, setEditorProposal] = useState<Proposal | null | undefined>(undefined);
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
     id: 'forkroom-decision-room',
     panelIds: ['outline', 'document', 'collaboration'],
@@ -269,6 +527,82 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     );
   }
 
+  const selectedProposal =
+    proposals.data.find((proposal) => proposal.id === selectedProposalId) ??
+    proposals.data[0] ??
+    null;
+  const canEditProposals = !['closed', 'locked', 'archived'].includes(decision.data.status);
+
+  const selectProposal = (proposal: Proposal) => {
+    setSelectedProposalId(proposal.id);
+    setWorkMode('proposal');
+    if (!desktop) setMobileTab('document');
+  };
+
+  const handleTransitionProposal = async (
+    proposal: Proposal,
+    status: Proposal['status'],
+  ) => {
+    try {
+      const updated = await transitionProposal.mutateAsync({
+        proposalId: proposal.id,
+        status,
+      });
+      setSelectedProposalId(updated.id);
+      setWorkMode('proposal');
+      notifications.show({
+        color: 'green',
+        title: 'Proposal updated',
+        message:
+          status === 'submitted'
+            ? 'The proposal is ready for team review.'
+            : status === 'withdrawn'
+              ? 'The proposal has been withdrawn.'
+              : 'The proposal is open for editing again.',
+      });
+    } catch (error) {
+      notifications.show({
+        color: 'red',
+        title: 'Could not update proposal',
+        message: getApiErrorMessage(error, 'ForkRoom could not change this proposal state.'),
+      });
+    }
+  };
+
+  const confirmDeleteProposal = (proposal: Proposal) => {
+    modals.openConfirmModal({
+      title: 'Delete draft proposal?',
+      children: (
+        <p className={styles.confirmCopy}>
+          “{proposal.title}” will be permanently removed. Submitted proposals must be reopened
+          before they can be deleted.
+        </p>
+      ),
+      labels: { confirm: 'Delete proposal', cancel: 'Keep proposal' },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        try {
+          await deleteProposal.mutateAsync(proposal.id);
+          if (selectedProposal?.id === proposal.id) {
+            setSelectedProposalId(null);
+            setWorkMode('document');
+          }
+          notifications.show({
+            color: 'green',
+            title: 'Draft deleted',
+            message: 'The proposal was removed from this decision.',
+          });
+        } catch (error) {
+          notifications.show({
+            color: 'red',
+            title: 'Could not delete proposal',
+            message: getApiErrorMessage(error, 'ForkRoom could not delete this draft proposal.'),
+          });
+        }
+      },
+    });
+  };
+
   const togglePanel = (side: 'left' | 'right') => {
     const ref = side === 'left' ? leftPanelRef : rightPanelRef;
     const collapsed = side === 'left' ? leftCollapsed : rightCollapsed;
@@ -276,13 +610,34 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     else ref.current?.collapse();
   };
 
-  const outline = <OutlinePanel proposals={proposals.data} criteriaCount={criteria.data.length} />;
+  const outline = (
+    <OutlinePanel
+      proposals={proposals.data}
+      criteriaCount={criteria.data.length}
+      selectedProposalId={selectedProposal?.id ?? null}
+      canEdit={canEditProposals}
+      transitionPending={transitionProposal.isPending}
+      onSelectProposal={selectProposal}
+      onCreateProposal={() => setEditorProposal(null)}
+      onEditProposal={(proposal) => setEditorProposal(proposal)}
+      onTransitionProposal={handleTransitionProposal}
+      onDeleteProposal={confirmDeleteProposal}
+    />
+  );
   const document = (
     <DocumentPanel
       title={decision.data.title}
       summary={decision.data.summary}
       criteria={criteria.data}
       proposals={proposals.data}
+      selectedProposal={selectedProposal}
+      mode={workMode}
+      canEdit={canEditProposals}
+      transitionPending={transitionProposal.isPending}
+      onModeChange={setWorkMode}
+      onCreateProposal={() => setEditorProposal(null)}
+      onEditProposal={(proposal) => setEditorProposal(proposal)}
+      onTransitionProposal={handleTransitionProposal}
     />
   );
   const collaboration = <CollaborationPanel />;
@@ -337,7 +692,17 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
               </Tooltip>
             </>
           )}
-          <Button className={styles.voteButton} leftSection={<IconScale size={17} />}>Vote</Button>
+          <Tooltip label="Voting will be connected after objections">
+            <span>
+              <Button
+                className={styles.voteButton}
+                leftSection={<IconScale size={17} />}
+                disabled
+              >
+                Vote
+              </Button>
+            </span>
+          </Tooltip>
         </div>
       </header>
 
@@ -395,8 +760,28 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
       </div>
 
       <div className={styles.mobileVoteDock}>
-        <Button fullWidth leftSection={<IconScale size={18} />}>Vote on this decision</Button>
+        <Button fullWidth leftSection={<IconScale size={18} />} disabled>
+          Voting comes after objections
+        </Button>
       </div>
+
+      <ProposalEditorModal
+        workspaceId={workspaceId}
+        decisionId={decisionId}
+        proposal={editorProposal ?? null}
+        opened={editorProposal !== undefined}
+        onClose={() => setEditorProposal(undefined)}
+        onSaved={(proposal) => {
+          setSelectedProposalId(proposal.id);
+          setWorkMode('proposal');
+          if (!desktop) setMobileTab('document');
+          notifications.show({
+            color: 'green',
+            title: editorProposal ? 'Proposal saved' : 'Proposal created',
+            message: 'The proposal is available in the decision outline.',
+          });
+        }}
+      />
     </div>
   );
 }

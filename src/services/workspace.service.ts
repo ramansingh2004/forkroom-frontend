@@ -9,6 +9,9 @@ export type Decision = components['schemas']['DecisionResponse'];
 export type DecisionStatus = components['schemas']['DecisionStatus'];
 export type DecisionCreateRequest = components['schemas']['DecisionCreateRequest'];
 export type Proposal = components['schemas']['ProposalResponse'];
+export type ProposalCreateRequest = components['schemas']['ProposalCreateRequest'];
+export type ProposalUpdateRequest = components['schemas']['ProposalUpdateRequest'];
+export type ProposalStatus = components['schemas']['ProposalStatus'];
 export type Criterion = components['schemas']['CriterionResponse'];
 
 export async function listWorkspaces() {
@@ -68,6 +71,57 @@ export async function listProposals(
 ) {
   const { data } = await apiClient.get<Proposal[]>(
     `/workspaces/${workspaceId}/decisions/${decisionId}/proposals`,
+  );
+
+  return data;
+}
+
+export async function createProposal(
+  workspaceId: string,
+  decisionId: string,
+  payload: ProposalCreateRequest,
+) {
+  const { data } = await apiClient.post<Proposal>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/proposals`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function updateProposal(
+  workspaceId: string,
+  decisionId: string,
+  proposalId: string,
+  payload: ProposalUpdateRequest,
+) {
+  const { data } = await apiClient.patch<Proposal>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/proposals/${proposalId}`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function deleteProposal(
+  workspaceId: string,
+  decisionId: string,
+  proposalId: string,
+) {
+  await apiClient.delete(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/proposals/${proposalId}`,
+  );
+}
+
+export async function transitionProposal(
+  workspaceId: string,
+  decisionId: string,
+  proposalId: string,
+  status: ProposalStatus,
+) {
+  const { data } = await apiClient.post<Proposal>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/proposals/${proposalId}/transitions`,
+    { status },
   );
 
   return data;
