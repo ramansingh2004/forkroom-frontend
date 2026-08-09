@@ -14,34 +14,26 @@ export type ProposalUpdateRequest = components['schemas']['ProposalUpdateRequest
 export type ProposalStatus = components['schemas']['ProposalStatus'];
 export type Criterion = components['schemas']['CriterionResponse'];
 export type Objection = components['schemas']['ObjectionResponse'];
-export type ObjectionCreateRequest =
-  components['schemas']['ObjectionCreateRequest'];
-export type ObjectionUpdateRequest =
-  components['schemas']['ObjectionUpdateRequest'];
-export type ObjectionSeverity =
-  components['schemas']['ObjectionSeverity'];
-export type ObjectionStatus =
-  components['schemas']['ObjectionStatus'];
-export type ObjectionTransitionRequest =
-  components['schemas']['ObjectionTransitionRequest'];
+export type ObjectionCreateRequest = components['schemas']['ObjectionCreateRequest'];
+export type ObjectionUpdateRequest = components['schemas']['ObjectionUpdateRequest'];
+export type ObjectionSeverity = components['schemas']['ObjectionSeverity'];
+export type ObjectionStatus = components['schemas']['ObjectionStatus'];
+export type ObjectionTransitionRequest = components['schemas']['ObjectionTransitionRequest'];
+export type VotingSession = components['schemas']['VotingSessionResponse'];
+export type VotingSessionCreateRequest = components['schemas']['VotingSessionCreateRequest'];
+export type VotingSessionStatus = components['schemas']['VotingSessionStatus'];
+export type VoteCastRequest = components['schemas']['VoteCastRequest'];
+export type Vote = components['schemas']['VoteResponse'];
+export type VotingResult = components['schemas']['VotingResultResponse'];
+export type DecisionLock = components['schemas']['DecisionLockResponse'];
+export type DecisionLockCreateRequest = components['schemas']['DecisionLockCreateRequest'];
+export type DecisionLockVerification =
+  components['schemas']['DecisionLockVerificationResponse'];
 
 export type ObjectionFilters = {
   severity?: ObjectionSeverity;
   status?: ObjectionStatus;
 };
-
-export type VotingSession =
-  components['schemas']['VotingSessionResponse'];
-export type VotingSessionCreateRequest =
-  components['schemas']['VotingSessionCreateRequest'];
-export type VotingSessionStatus =
-  components['schemas']['VotingSessionStatus'];
-export type VoteCastRequest =
-  components['schemas']['VoteCastRequest'];
-export type Vote =
-  components['schemas']['VoteResponse'];
-export type VotingResult =
-  components['schemas']['VotingResultResponse'];
 
 export async function listWorkspaces() {
   const { data } = await apiClient.get<Workspace[]>('/workspaces');
@@ -306,6 +298,41 @@ export async function getVotingResult(
 ) {
   const { data } = await apiClient.get<VotingResult>(
     `/workspaces/${workspaceId}/decisions/${decisionId}/voting-sessions/${votingSessionId}/result`,
+  );
+
+  return data;
+}
+
+export async function getDecisionLock(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const { data } = await apiClient.get<DecisionLock>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/lock`,
+  );
+
+  return data;
+}
+
+export async function createDecisionLock(
+  workspaceId: string,
+  decisionId: string,
+  payload: DecisionLockCreateRequest,
+) {
+  const { data } = await apiClient.post<DecisionLock>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/lock`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function verifyDecisionLock(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const { data } = await apiClient.get<DecisionLockVerification>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/lock/verify`,
   );
 
   return data;
