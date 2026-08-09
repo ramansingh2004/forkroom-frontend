@@ -1,0 +1,344 @@
+.page {
+  width: min(1080px, 100%);
+  margin: 0 auto;
+  padding: 34px 24px 64px;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 22px;
+}
+
+.pageHeader > div {
+  min-width: 0;
+}
+
+.eyebrow {
+  color: #7a6458;
+  font-family: "JetBrains Mono Variable", monospace;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+}
+
+.pageHeader h1 {
+  margin: 6px 0 8px;
+  font-size: clamp(30px, 4vw, 42px);
+  font-weight: 560;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.pageHeader p {
+  max-width: 700px;
+  margin: 0;
+  color: var(--fr-text-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.summaryBar {
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: stretch;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: 8px;
+  background: var(--fr-raised);
+  overflow: hidden;
+}
+
+.summaryBar > div {
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  border-right: 1px solid var(--fr-border);
+}
+
+.summaryBar > div:first-child svg {
+  color: var(--fr-primary);
+}
+
+.summaryBar span,
+.summaryBar strong {
+  font-family: "JetBrains Mono Variable", monospace;
+}
+
+.summaryBar > div span {
+  color: var(--fr-text-muted);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.summaryBar strong {
+  margin-left: auto;
+  font-size: 19px;
+  font-weight: 650;
+}
+
+.refreshNote {
+  align-self: center;
+  justify-self: end;
+  padding: 14px 18px;
+  color: var(--fr-text-muted);
+  font-size: 9px;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.toolbar {
+  position: sticky;
+  z-index: 10;
+  top: calc(var(--fr-header-height) + 8px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--fr-canvas) 92%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.kindSelect {
+  width: min(240px, 100%);
+}
+
+.staleAlert {
+  margin-bottom: 10px;
+}
+
+.notificationList,
+.skeletonList {
+  display: grid;
+  gap: 8px;
+}
+
+.notificationRow {
+  position: relative;
+  min-height: 112px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 15px;
+  padding: 17px 18px;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: 8px;
+  background: var(--fr-raised);
+}
+
+.notificationUnread {
+  box-shadow: inset 3px 0 0 var(--fr-primary);
+  background: linear-gradient(90deg, var(--fr-primary-soft), var(--fr-raised) 35%);
+}
+
+.notificationUnread::after {
+  content: "";
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--fr-primary);
+}
+
+.notificationIcon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #2f5d8a;
+  background: #e8f0f7;
+}
+
+.notificationIcon[data-color="orange"] {
+  color: #8a560f;
+  background: #f7ead4;
+}
+
+.notificationIcon[data-color="red"] {
+  color: #9b2a22;
+  background: #f8e0dc;
+}
+
+.notificationIcon[data-color="rust"] {
+  color: var(--fr-primary);
+  background: var(--fr-primary-soft);
+}
+
+.notificationContent {
+  min-width: 0;
+}
+
+.notificationMeta {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 6px;
+}
+
+.notificationMeta time,
+.deliveryFailure {
+  color: var(--fr-text-muted);
+  font-family: "JetBrains Mono Variable", monospace;
+  font-size: 9px;
+}
+
+.deliveryFailure {
+  color: var(--fr-danger);
+}
+
+.notificationContent h2 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 660;
+}
+
+.notificationContent p {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--fr-text-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.notificationActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 8px;
+}
+
+.statePanel {
+  min-height: 310px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 9px;
+  padding: 38px;
+  border: 1px dashed var(--fr-border-strong);
+  border-radius: 8px;
+  color: var(--fr-text-muted);
+  background: var(--fr-raised);
+  text-align: center;
+}
+
+.statePanel strong {
+  color: var(--fr-text);
+  font-size: 15px;
+}
+
+.statePanel p {
+  max-width: 590px;
+  margin: 0 0 5px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.loadMore {
+  padding-top: 18px;
+}
+
+.backgroundRefresh {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--fr-text-muted);
+  font-size: 10px;
+}
+
+.backButton {
+  margin-top: 8px;
+}
+
+@media (max-width: 767px) {
+  .page {
+    padding: 24px 14px 48px;
+  }
+
+  .pageHeader {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .pageHeader :global(.mantine-Button-root) {
+    width: 100%;
+  }
+
+  .summaryBar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .summaryBar > div {
+    min-width: 0;
+  }
+
+  .summaryBar > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .refreshNote {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    padding-block: 10px;
+    border-top: 1px solid var(--fr-border);
+    text-align: left;
+  }
+
+  .toolbar {
+    top: calc(var(--fr-header-height) + 6px);
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .toolbar :global(.mantine-SegmentedControl-root),
+  .kindSelect {
+    width: 100%;
+  }
+
+  .notificationRow {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: flex-start;
+    padding: 15px;
+  }
+
+  .notificationActions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    padding: 2px 0 0 57px;
+  }
+}
+
+@media (max-width: 480px) {
+  .notificationIcon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .notificationMeta {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .notificationActions {
+    padding-left: 51px;
+  }
+
+  .notificationActions :global(.mantine-Button-root) {
+    flex: 1;
+  }
+}
