@@ -29,6 +29,10 @@ import {
   IconSend,
   IconTrash,
   IconUsers,
+  IconAlertTriangle,
+  IconCheck,
+  IconMessageExclamation,
+  IconRestore,
 } from '@tabler/icons-react';
 import {
   Group,
@@ -45,17 +49,68 @@ import {
   useDecisionProposals,
   useTransitionProposal,
   useWorkspace,
+  useProposalObjections,
 } from '@/hooks/use-workspaces';
 import { getApiErrorMessage } from '@/services/auth.service';
-import type { Criterion, Proposal } from '@/services/workspace.service';
+import type { 
+  Criterion,
+  Objection,
+  ObjectionStatus,
+  Proposal, 
+} from '@/services/workspace.service';
 import { useUiStore } from '@/stores/use-ui-store';
 
 import styles from './decision-room.module.css';
 import { ProposalEditorModal } from './proposal-editor-modal';
+import { ObjectionEditorModal } from './objection-editor-modal';
+import { ObjectionStatusModal } from './objection-status-modal';
 
 type WorkMode = 'document' | 'proposal' | 'compare' | 'vote';
 
+function ProposalObjectionCount({
+  workspaceId,
+  decisionId,
+  proposalId,
+}: {
+  workspaceId: string;
+  decisionId: string;
+  proposalId: string;
+}) {
+  const objections =
+    useProposalObjections(
+      workspaceId,
+      decisionId,
+      proposalId,
+      {
+        status: 'open',
+      },
+    );
+
+  if (
+    !objections.data?.length
+  ) {
+    return null;
+  }
+
+  return (
+    <span
+      className={
+        styles.proposalObjectionCount
+      }
+    >
+      <IconMessageExclamation
+        size={11}
+      />
+
+      {objections.data.length}{' '}
+      open
+    </span>
+  );
+}
+
 function OutlinePanel({
+  workspaceId,
+  decisionId,
   proposals,
   criteriaCount,
   selectedProposalId,
@@ -67,6 +122,8 @@ function OutlinePanel({
   onTransitionProposal,
   onDeleteProposal,
 }: {
+  workspaceId: string;
+  decisionId: string;
   proposals: Proposal[];
   criteriaCount: number;
   selectedProposalId: string | null;
@@ -131,6 +188,11 @@ function OutlinePanel({
                   <strong>{proposal.title}</strong>
                   <small>{proposal.summary || proposal.status}</small>
                   <span className={styles.proposalStatus}>{proposal.status}</span>
+                  <ProposalObjectionCount
+  workspaceId={workspaceId}
+  decisionId={decisionId}
+  proposalId={proposal.id}
+/>
                 </button>
 
                 {canEdit && (
@@ -229,7 +291,617 @@ function OutlinePanel({
   );
 }
 
+function ProposalObjectionsSection({
+  workspaceId,
+  decisionId,
+  proposal,
+  canEdit,
+}: {
+  workspaceId: string;
+  decisionId: string;
+  proposal: Proposal;
+  canEdit: boolean;
+}) {
+  const objections =
+    useProposalObjections(
+      workspaceId,
+      decisionId,
+      proposal.id,
+    );
+
+  const [
+    editorObjection,
+    setEditorObjection,
+  ] = useState<
+    | Objection
+    | null
+    | undefined
+  >(undefined);
+
+  const [
+    statusChange,
+    setStatusChange,
+  ] = useState<{
+    objection: Objection;
+    status: ObjectionStatus;
+  } | null>(null);
+
+  const canRaiseObjection =
+    canEdit &&
+    proposal.status ===
+      'submitted';
+
+  const orderedObjections = [
+    ...(objections.data ?? []),
+  ].sort(
+    (left, right) => {
+      const statusOrder = {
+        open: 0,
+        resolved: 1,
+        dismissed: 2,
+      } as const;
+
+      const severityOrder = {
+        blocking: 0,
+        major: 1,
+        informational: 2,
+      } as const;
+
+      return (
+        statusOrder[
+          left.status
+        ] -
+          statusOrder[
+            right.status
+          ] ||
+        severityOrder[
+          left.severity
+        ] -
+          severityOrder[
+            right.severity
+          ]
+      );
+    },
+  );
+
+  const openCount =
+    orderedObjections.filter(
+      (objection) =>
+        objection.status ===
+        'open',
+    ).length;
+
+  const openBlockingCount =
+    orderedObjections.filter(
+      (objection) =>
+        objection.status ===
+          'open' &&
+        objection.severity ===
+          'blocking',
+    ).length;
+
+  const statusColor = (
+    status: Objection['status'],
+  ) => {
+    if (
+      status === 'resolved'
+    ) {
+      return 'green';
+    }
+
+    if (
+      status === 'dismissed'
+    ) {
+      return 'orange';
+    }
+
+    return 'red';
+  };
+
+  const severityColor = (
+    severity: Objection['severity'],
+  ) => {
+    if (
+      severity === 'blocking'
+    ) {
+      return 'red';
+    }
+
+    if (
+      severity === 'major'
+    ) {
+      return 'orange';
+    }
+
+    return 'blue';
+  };
+
+  return (
+    <section
+      className={
+        styles.objectionsSection
+      }
+      aria-labelledby="proposal-objections-title"
+    >
+      <div
+        className={
+          styles.objectionsHeading
+        }
+      >
+        <div>
+          <div
+            className={
+              styles.sectionIndex
+            }
+          >
+            02 / OBJECTIONS
+          </div>
+
+          <h2 id="proposal-objections-title">
+            Challenges to this
+            proposal
+          </h2>
+
+          <p>
+            Open concerns stay
+            visible here so they
+            cannot be lost in
+            general discussion.
+          </p>
+        </div>
+
+        <Button
+          size="xs"
+          color="rust"
+          leftSection={
+            <IconMessageExclamation
+              size={15}
+            />
+          }
+          onClick={() =>
+            setEditorObjection(
+              null,
+            )
+          }
+          disabled={
+            !canRaiseObjection
+          }
+        >
+          Raise objection
+        </Button>
+      </div>
+
+      {!canRaiseObjection &&
+        proposal.status !==
+          'submitted' && (
+          <Alert
+            color="gray"
+            title="Submit this proposal before objections can be raised"
+          >
+            Objections belong to
+            review-ready proposals.
+            Existing objections
+            remain visible.
+          </Alert>
+        )}
+
+      {openBlockingCount >
+        0 && (
+        <div
+          className={
+            styles.blockingNotice
+          }
+          role="status"
+        >
+          <IconAlertTriangle
+            size={18}
+          />
+
+          <div>
+            <strong>
+              {
+                openBlockingCount
+              }{' '}
+              blocking objection
+              {openBlockingCount ===
+              1
+                ? ''
+                : 's'}{' '}
+              open
+            </strong>
+
+            <span>
+              These concerns must
+              be resolved or
+              dismissed before
+              commitment.
+            </span>
+          </div>
+        </div>
+      )}
+
+      {objections.isPending && (
+        <div
+          className={
+            styles.objectionState
+          }
+        >
+          <Loader
+            color="rust"
+            size="xs"
+          />
+
+          <span>
+            Loading objections…
+          </span>
+        </div>
+      )}
+
+      {objections.isError && (
+        <Alert
+          color="red"
+          title="Could not load objections"
+        >
+          ForkRoom could not load
+          the objections for this
+          proposal.
+        </Alert>
+      )}
+
+      {!objections.isPending &&
+        !objections.isError &&
+        orderedObjections.length ===
+          0 && (
+          <div
+            className={
+              styles.emptySection
+            }
+          >
+            <strong>
+              No objections have
+              been raised
+            </strong>
+
+            <p>
+              The proposal has no
+              recorded concerns
+              yet. Team members can
+              add informational,
+              major, or blocking
+              objections after it
+              is submitted.
+            </p>
+          </div>
+        )}
+
+      {orderedObjections.length >
+        0 && (
+        <div
+          className={
+            styles.objectionList
+          }
+        >
+          <div
+            className={
+              styles.objectionSummary
+            }
+          >
+            <span>
+              {openCount} open
+            </span>
+
+            <span>
+              {
+                orderedObjections.length
+              }{' '}
+              total
+            </span>
+          </div>
+
+          {orderedObjections.map(
+            (objection) => (
+              <article
+                key={
+                  objection.id
+                }
+                className={`${
+                  styles.objectionCard
+                } ${
+                  objection.status !==
+                  'open'
+                    ? styles.objectionCardClosed
+                    : ''
+                }`}
+              >
+                <div
+                  className={
+                    styles.objectionCardHeader
+                  }
+                >
+                  <div
+                    className={
+                      styles.objectionBadges
+                    }
+                  >
+                    <Badge
+                      variant="light"
+                      color={severityColor(
+                        objection.severity,
+                      )}
+                      size="sm"
+                    >
+                      {
+                        objection.severity
+                      }
+                    </Badge>
+
+                    <Badge
+                      variant="outline"
+                      color={statusColor(
+                        objection.status,
+                      )}
+                      size="sm"
+                    >
+                      {
+                        objection.status
+                      }
+                    </Badge>
+                  </div>
+
+                  {canEdit && (
+                    <Menu
+                      position="bottom-end"
+                      withinPortal
+                    >
+                      <Menu.Target>
+                        <ActionIcon
+                          variant="subtle"
+                          color="dark"
+                          aria-label={`Actions for ${objection.title}`}
+                        >
+                          <IconDotsVertical
+                            size={
+                              16
+                            }
+                          />
+                        </ActionIcon>
+                      </Menu.Target>
+
+                      <Menu.Dropdown>
+                        {objection.status ===
+                        'open' ? (
+                          <>
+                            <Menu.Item
+                              leftSection={
+                                <IconEdit
+                                  size={
+                                    15
+                                  }
+                                />
+                              }
+                              onClick={() =>
+                                setEditorObjection(
+                                  objection,
+                                )
+                              }
+                            >
+                              Edit
+                              objection
+                            </Menu.Item>
+
+                            <Menu.Item
+                              color="green"
+                              leftSection={
+                                <IconCheck
+                                  size={
+                                    15
+                                  }
+                                />
+                              }
+                              onClick={() =>
+                                setStatusChange(
+                                  {
+                                    objection,
+                                    status:
+                                      'resolved',
+                                  },
+                                )
+                              }
+                            >
+                              Mark
+                              resolved
+                            </Menu.Item>
+
+                            <Menu.Item
+                              color="orange"
+                              leftSection={
+                                <IconCircleOff
+                                  size={
+                                    15
+                                  }
+                                />
+                              }
+                              onClick={() =>
+                                setStatusChange(
+                                  {
+                                    objection,
+                                    status:
+                                      'dismissed',
+                                  },
+                                )
+                              }
+                            >
+                              Dismiss
+                              with note
+                            </Menu.Item>
+                          </>
+                        ) : (
+                          <Menu.Item
+                            leftSection={
+                              <IconRestore
+                                size={
+                                  15
+                                }
+                              />
+                            }
+                            onClick={() =>
+                              setStatusChange(
+                                {
+                                  objection,
+                                  status:
+                                    'open',
+                                },
+                              )
+                            }
+                          >
+                            Reopen
+                            objection
+                          </Menu.Item>
+                        )}
+                      </Menu.Dropdown>
+                    </Menu>
+                  )}
+                </div>
+
+                <h3>
+                  {
+                    objection.title
+                  }
+                </h3>
+
+                <p>
+                  {
+                    objection.description
+                  }
+                </p>
+
+                {objection.resolution_note && (
+                  <div
+                    className={
+                      styles.resolutionNote
+                    }
+                  >
+                    <strong>
+                      {objection.status ===
+                      'resolved'
+                        ? 'Resolution'
+                        : 'Dismissal note'}
+                    </strong>
+
+                    <span>
+                      {
+                        objection.resolution_note
+                      }
+                    </span>
+                  </div>
+                )}
+
+                <footer>
+                  Raised{' '}
+                  {new Intl.DateTimeFormat(
+                    'en',
+                    {
+                      dateStyle:
+                        'medium',
+                    },
+                  ).format(
+                    new Date(
+                      objection.created_at,
+                    ),
+                  )}
+                </footer>
+              </article>
+            ),
+          )}
+        </div>
+      )}
+
+      <ObjectionEditorModal
+        workspaceId={
+          workspaceId
+        }
+        decisionId={decisionId}
+        proposalId={proposal.id}
+        objection={
+          editorObjection ?? null
+        }
+        opened={
+          editorObjection !==
+          undefined
+        }
+        onClose={() =>
+          setEditorObjection(
+            undefined,
+          )
+        }
+        onSaved={(
+          savedObjection,
+        ) => {
+          notifications.show({
+            color: 'green',
+
+            title:
+              editorObjection
+                ? 'Objection saved'
+                : 'Objection raised',
+
+            message:
+              savedObjection.severity ===
+              'blocking'
+                ? 'This blocking concern is now visible in the decision record.'
+                : 'The concern is now visible on this proposal.',
+          });
+        }}
+      />
+
+      <ObjectionStatusModal
+        workspaceId={
+          workspaceId
+        }
+        decisionId={decisionId}
+        proposalId={proposal.id}
+        objection={
+          statusChange?.objection ??
+          null
+        }
+        nextStatus={
+          statusChange?.status ??
+          null
+        }
+        opened={Boolean(
+          statusChange,
+        )}
+        onClose={() =>
+          setStatusChange(null)
+        }
+        onTransitioned={(
+          updatedObjection,
+        ) => {
+          notifications.show({
+            color:
+              updatedObjection.status ===
+              'resolved'
+                ? 'green'
+                : 'orange',
+
+            title:
+              'Objection updated',
+
+            message:
+              updatedObjection.status ===
+              'open'
+                ? 'The objection is open for review again.'
+                : `The objection was marked ${updatedObjection.status}.`,
+          });
+        }}
+      />
+    </section>
+  );
+}
+
 function DocumentPanel({
+  workspaceId,
+  decisionId,
   title,
   summary,
   criteria,
@@ -243,6 +915,8 @@ function DocumentPanel({
   onEditProposal,
   onTransitionProposal,
 }: {
+  workspaceId: string;
+  decisionId: string;
   title: string;
   summary: string | null;
   criteria: Criterion[];
@@ -363,6 +1037,13 @@ function DocumentPanel({
                   'No rationale has been written yet. Reopen this proposal as a draft to add implementation details, tradeoffs, risks, and assumptions.'}
               </p>
             </section>
+
+            <ProposalObjectionsSection
+              workspaceId={workspaceId}
+              decisionId={decisionId}
+              proposal={selectedProposal}
+              canEdit={canEdit}
+            />
 
             <footer className={styles.proposalFooter}>
               Updated{' '}
@@ -612,6 +1293,8 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
 
   const outline = (
     <OutlinePanel
+      workspaceId={workspaceId}
+      decisionId={decisionId}
       proposals={proposals.data}
       criteriaCount={criteria.data.length}
       selectedProposalId={selectedProposal?.id ?? null}
@@ -626,6 +1309,8 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
   );
   const document = (
     <DocumentPanel
+      workspaceId={workspaceId}
+      decisionId={decisionId}
       title={decision.data.title}
       summary={decision.data.summary}
       criteria={criteria.data}
