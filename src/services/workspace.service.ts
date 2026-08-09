@@ -32,6 +32,18 @@ export type DecisionLockVerification =
 export type DecisionExport = components['schemas']['DecisionExportResponse'];
 export type DecisionExportDownload =
   components['schemas']['DecisionExportDownloadResponse'];
+export type DecisionAction = components['schemas']['ActionResponse'];
+export type ActionStatus = components['schemas']['ActionStatus'];
+export type ActionCreateRequest = components['schemas']['ActionCreateRequest'];
+export type ActionUpdateRequest = components['schemas']['ActionUpdateRequest'];
+export type ActionTransitionRequest = components['schemas']['ActionTransitionRequest'];
+export type DecisionReview = components['schemas']['ReviewResponse'];
+export type ReviewStatus = components['schemas']['ReviewStatus'];
+export type ReviewOutcome = components['schemas']['ReviewOutcome'];
+export type ReviewCreateRequest = components['schemas']['ReviewCreateRequest'];
+export type ReviewUpdateRequest = components['schemas']['ReviewUpdateRequest'];
+export type ReviewOutcomeRequest = components['schemas']['ReviewOutcomeRequest'];
+export type ReviewOutcomeResponse = components['schemas']['ReviewOutcomeResponse'];
 
 export type ObjectionFilters = {
   severity?: ObjectionSeverity;
@@ -369,6 +381,122 @@ export async function createDecisionExportDownload(
 ) {
   const { data } = await apiClient.post<DecisionExportDownload>(
     `/workspaces/${workspaceId}/decisions/${decisionId}/exports/download`,
+  );
+
+  return data;
+}
+
+export async function listDecisionActions(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const { data } = await apiClient.get<DecisionAction[]>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/actions`,
+  );
+
+  return data;
+}
+
+export async function createDecisionAction(
+  workspaceId: string,
+  decisionId: string,
+  payload: ActionCreateRequest,
+) {
+  const { data } = await apiClient.post<DecisionAction>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/actions`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function updateDecisionAction(
+  workspaceId: string,
+  decisionId: string,
+  actionId: string,
+  payload: ActionUpdateRequest,
+) {
+  const { data } = await apiClient.patch<DecisionAction>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/actions/${actionId}`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function transitionDecisionAction(
+  workspaceId: string,
+  decisionId: string,
+  actionId: string,
+  payload: ActionTransitionRequest,
+) {
+  const { data } = await apiClient.post<DecisionAction>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/actions/${actionId}/transitions`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function listDecisionReviews(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const { data } = await apiClient.get<DecisionReview[]>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/reviews`,
+  );
+
+  return data;
+}
+
+export async function createDecisionReview(
+  workspaceId: string,
+  decisionId: string,
+  payload: ReviewCreateRequest,
+) {
+  const { data } = await apiClient.post<DecisionReview>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/reviews`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function updateDecisionReview(
+  workspaceId: string,
+  decisionId: string,
+  reviewId: string,
+  payload: ReviewUpdateRequest,
+) {
+  const { data } = await apiClient.patch<DecisionReview>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/reviews/${reviewId}`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function cancelDecisionReview(
+  workspaceId: string,
+  decisionId: string,
+  reviewId: string,
+) {
+  const { data } = await apiClient.post<DecisionReview>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/reviews/${reviewId}/cancel`,
+  );
+
+  return data;
+}
+
+export async function completeDecisionReview(
+  workspaceId: string,
+  decisionId: string,
+  reviewId: string,
+  payload: ReviewOutcomeRequest,
+) {
+  const { data } = await apiClient.post<ReviewOutcomeResponse>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/reviews/${reviewId}/outcome`,
+    payload,
   );
 
   return data;

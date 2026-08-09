@@ -2,14 +2,18 @@
 
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  cancelDecisionReview,
   cancelVotingSession,
   castVote,
   closeVotingSession,
+  completeDecisionReview,
+  createDecisionAction,
   createDecisionExportDownload,
   createDecisionLock,
   createObjection,
   createDecision,
   createProposal,
+  createDecisionReview,
   createVotingSession,
   createWorkspace,
   deleteProposal,
@@ -19,6 +23,8 @@ import {
   getVotingResult,
   getWorkspace,
   listCriteria,
+  listDecisionActions,
+  listDecisionReviews,
   listObjections,
   listProposals,
   listVotingSessions,
@@ -28,11 +34,17 @@ import {
   openVotingSession,
   requestDecisionExport,
   transitionProposal,
+  transitionDecisionAction,
   transitionObjection,
+  updateDecisionAction,
+  updateDecisionReview,
   updateObjection,
   updateProposal,
   verifyDecisionLock,
   type DecisionLockCreateRequest,
+  type ActionCreateRequest,
+  type ActionTransitionRequest,
+  type ActionUpdateRequest,
   type DecisionStatus,
   type DecisionCreateRequest,
   type ObjectionCreateRequest,
@@ -42,6 +54,9 @@ import {
   type ProposalCreateRequest,
   type ProposalStatus,
   type ProposalUpdateRequest,
+  type ReviewCreateRequest,
+  type ReviewOutcomeRequest,
+  type ReviewUpdateRequest,
   type VoteCastRequest,
   type VotingSessionCreateRequest,
   type WorkspaceCreateRequest,
@@ -88,6 +103,10 @@ export const workspaceKeys = {
     [...workspaceKeys.decisionLock(workspaceId, decisionId), 'verification'] as const,
   decisionExport: (workspaceId: string, decisionId: string) =>
     [...workspaceKeys.decisionLock(workspaceId, decisionId), 'export'] as const,
+  decisionActions: (workspaceId: string, decisionId: string) =>
+    [...workspaceKeys.decision(workspaceId, decisionId), 'actions'] as const,
+  decisionReviews: (workspaceId: string, decisionId: string) =>
+    [...workspaceKeys.decision(workspaceId, decisionId), 'reviews'] as const,
 };
 
 export function useWorkspaces() {
@@ -594,5 +613,180 @@ export function useDecisionExportDownload(
 ) {
   return useMutation({
     mutationFn: () => createDecisionExportDownload(workspaceId, decisionId),
+  });
+}
+
+export function useDecisionActions(
+  workspaceId?: string,
+  decisionId?: string,
+) {
+  return useQuery({
+    queryKey: workspaceKeys.decisionActions(
+      workspaceId ?? '',
+      decisionId ?? '',
+    ),
+    queryFn: () => listDecisionActions(workspaceId!, decisionId!),
+    enabled: Boolean(workspaceId && decisionId),
+  });
+}
+
+export function useCreateDecisionAction(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: ActionCreateRequest) =>
+      createDecisionAction(workspaceId, decisionId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.decisionActions(workspaceId, decisionId),
+      });
+    },
+  });
+}
+
+export function useUpdateDecisionAction(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      actionId,
+      payload,
+    }: {
+      actionId: string;
+      payload: ActionUpdateRequest;
+    }) => updateDecisionAction(workspaceId, decisionId, actionId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.decisionActions(workspaceId, decisionId),
+      });
+    },
+  });
+}
+
+export function useTransitionDecisionAction(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      actionId,
+      payload,
+    }: {
+      actionId: string;
+      payload: ActionTransitionRequest;
+    }) => transitionDecisionAction(workspaceId, decisionId, actionId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.decisionActions(workspaceId, decisionId),
+      });
+    },
+  });
+}
+
+export function useDecisionReviews(
+  workspaceId?: string,
+  decisionId?: string,
+) {
+  return useQuery({
+    queryKey: workspaceKeys.decisionReviews(
+      workspaceId ?? '',
+      decisionId ?? '',
+    ),
+    queryFn: () => listDecisionReviews(workspaceId!, decisionId!),
+    enabled: Boolean(workspaceId && decisionId),
+  });
+}
+
+export function useCreateDecisionReview(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: ReviewCreateRequest) =>
+      createDecisionReview(workspaceId, decisionId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.decisionReviews(workspaceId, decisionId),
+      });
+    },
+  });
+}
+
+export function useUpdateDecisionReview(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      reviewId,
+      payload,
+    }: {
+      reviewId: string;
+      payload: ReviewUpdateRequest;
+    }) => updateDecisionReview(workspaceId, decisionId, reviewId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.decisionReviews(workspaceId, decisionId),
+      });
+    },
+  });
+}
+
+export function useCancelDecisionReview(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (reviewId: string) =>
+      cancelDecisionReview(workspaceId, decisionId, reviewId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.decisionReviews(workspaceId, decisionId),
+      });
+    },
+  });
+}
+
+export function useCompleteDecisionReview(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      reviewId,
+      payload,
+    }: {
+      reviewId: string;
+      payload: ReviewOutcomeRequest;
+    }) => completeDecisionReview(workspaceId, decisionId, reviewId, payload),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: workspaceKeys.decisionReviews(workspaceId, decisionId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: workspaceKeys.decision(workspaceId, decisionId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: [...workspaceKeys.all, 'decisions', workspaceId],
+        }),
+      ]);
+    },
   });
 }
