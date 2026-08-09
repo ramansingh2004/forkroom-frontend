@@ -16,8 +16,10 @@ import {
   IconHome,
   IconPlus,
   IconSearch,
+  IconShieldLock,
   IconSettings,
   IconSwitchHorizontal,
+  IconUserCircle,
   IconUsers,
   IconVocabulary,
 } from '@tabler/icons-react';
@@ -262,6 +264,22 @@ export function GlobalSearch({
         leftSection: <IconBell size={18} />,
         keywords: ['attention', 'inbox', 'unread'],
         onClick: () => navigate('/notifications'),
+      },
+      {
+        id: 'profile-settings',
+        label: 'Open profile settings',
+        description: 'Review your ForkRoom identity and email status',
+        leftSection: <IconUserCircle size={18} />,
+        keywords: ['account', 'personal', 'profile', 'email', 'verification'],
+        onClick: () => navigate('/settings/profile'),
+      },
+      {
+        id: 'security-settings',
+        label: 'Open security settings',
+        description: 'Password recovery and current browser session',
+        leftSection: <IconShieldLock size={18} />,
+        keywords: ['account', 'password', 'reset', 'security', 'session', 'logout'],
+        onClick: () => navigate('/settings/security'),
       },
       {
         id: 'switch-workspace',

@@ -14,6 +14,7 @@ import {
   Tooltip,
   UnstyledButton,
 } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { spotlight } from '@mantine/spotlight';
 import {
   IconAt,
@@ -27,7 +28,9 @@ import {
   IconLogout,
   IconPlug,
   IconSearch,
+  IconShieldLock,
   IconSettings,
+  IconUserCircle,
   IconUsers,
   IconVocabulary,
 } from '@tabler/icons-react';
@@ -36,6 +39,7 @@ import { useUnreadNotificationCount } from '@/hooks/use-notifications';
 import { useWorkspace, useWorkspaceMembers } from '@/hooks/use-workspaces';
 import { useUiStore } from '@/stores/use-ui-store';
 import { GlobalSearch } from '@/components/search/global-search';
+import { getApiErrorMessage } from '@/services/auth.service';
 import styles from './forkroom-shell.module.css';
 
 type NavItem = {
@@ -203,7 +207,11 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
   );
 
   const unreadCount = unreadNotifications.data?.unread ?? 0;
-  const section = pathname.startsWith('/notifications')
+  const section = pathname.startsWith('/settings/profile')
+    ? 'Profile'
+    : pathname.startsWith('/settings/security')
+      ? 'Security'
+    : pathname.startsWith('/notifications')
     ? 'Notifications'
     : pathname.includes('/settings')
       ? 'Settings'
@@ -218,8 +226,19 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
           : 'Workspaces';
 
   const signOut = async () => {
-    await logout.mutateAsync();
-    router.replace('/login');
+    try {
+      await logout.mutateAsync();
+      router.replace('/login');
+    } catch (error) {
+      notifications.show({
+        color: 'red',
+        title: 'Could not sign out',
+        message: getApiErrorMessage(
+          error,
+          'Your session remains active. Check the connection and try again.',
+        ),
+      });
+    }
   };
 
   return (
@@ -253,13 +272,13 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
 
         <div className={styles.sidebarBottom}>
           <Divider color="var(--fr-border-strong)" />
-          <div className={styles.profileBlock}>
+          <Link href="/settings/profile" className={styles.profileBlock}>
             <Avatar color="rust" size={34} radius="xl">{initials}</Avatar>
             <div className={styles.profileCopy}>
               <strong>{displayName}</strong>
               <span>{user?.email ?? 'Signed in'}</span>
             </div>
-          </div>
+          </Link>
         </div>
       </aside>
 
@@ -275,7 +294,11 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
         </div>
 
         <div className={styles.breadcrumb} aria-label="Current location">
-          <span>{workspace.data?.name ?? 'Workspace'}</span>
+          <span>
+            {pathname.startsWith('/settings')
+              ? 'Account'
+              : workspace.data?.name ?? 'Workspace'}
+          </span>
           <IconChevronRight size={14} aria-hidden="true" />
           <strong>{section}</strong>
         </div>
@@ -349,6 +372,21 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Label>{displayName}</Menu.Label>
+              <Menu.Item
+                component={Link}
+                href="/settings/profile"
+                leftSection={<IconUserCircle size={16} stroke={1.8} />}
+              >
+                Profile
+              </Menu.Item>
+              <Menu.Item
+                component={Link}
+                href="/settings/security"
+                leftSection={<IconShieldLock size={16} stroke={1.8} />}
+              >
+                Security
+              </Menu.Item>
+              <Menu.Divider />
               <Menu.Item
                 color="red"
                 leftSection={<IconLogout size={16} stroke={1.8} />}

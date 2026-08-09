@@ -1,7 +1,12 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getMe, logout } from '@/services/auth.service';
+import {
+  getMe,
+  logout,
+  requestEmailVerification,
+  requestPasswordReset,
+} from '@/services/auth.service';
 
 export const authKeys = {
   all: ['auth'] as const,
@@ -22,8 +27,16 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: logout,
-    onSettled: async () => {
-      queryClient.removeQueries({ queryKey: authKeys.all });
+    onSuccess: () => {
+      queryClient.clear();
     },
   });
+}
+
+export function useRequestEmailVerification() {
+  return useMutation({ mutationFn: requestEmailVerification });
+}
+
+export function useRequestPasswordReset() {
+  return useMutation({ mutationFn: requestPasswordReset });
 }

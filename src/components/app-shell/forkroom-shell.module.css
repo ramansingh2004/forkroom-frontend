@@ -169,6 +169,11 @@
   align-items: center;
   gap: 10px;
   padding: 3px 8px 0;
+  border-radius: 7px;
+}
+
+.profileBlock:hover {
+  background: rgba(255, 253, 252, 0.72);
 }
 
 .profileCopy {
