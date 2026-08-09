@@ -14,6 +14,7 @@ import {
   Tooltip,
   UnstyledButton,
 } from '@mantine/core';
+import { spotlight } from '@mantine/spotlight';
 import {
   IconAt,
   IconBell,
@@ -34,6 +35,7 @@ import { useCurrentUser, useLogout } from '@/hooks/use-auth';
 import { useUnreadNotificationCount } from '@/hooks/use-notifications';
 import { useWorkspace, useWorkspaceMembers } from '@/hooks/use-workspaces';
 import { useUiStore } from '@/stores/use-ui-store';
+import { GlobalSearch } from '@/components/search/global-search';
 import styles from './forkroom-shell.module.css';
 
 type NavItem = {
@@ -172,6 +174,13 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
     .map((part) => part[0]?.toUpperCase())
     .join('') || 'FR';
 
+  const currentMember = members.data?.find(
+    (member) => member.user_id === user?.id,
+  );
+  const canCreateDecision = ['owner', 'admin', 'member'].includes(
+    currentMember?.role ?? 'viewer',
+  );
+
   const unreadCount = unreadNotifications.data?.unread ?? 0;
   const section = pathname.startsWith('/notifications')
     ? 'Notifications'
@@ -245,13 +254,36 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
           <strong>{section}</strong>
         </div>
 
-        <button type="button" className={styles.searchButton} aria-label="Search ForkRoom">
+        <button
+          type="button"
+          className={styles.searchButton}
+          aria-label={
+            workspaceId
+              ? `Search ${workspace.data?.name ?? 'current workspace'}`
+              : 'Open ForkRoom command menu'
+          }
+          onClick={spotlight.open}
+        >
           <IconSearch size={19} stroke={1.8} aria-hidden="true" />
-          <span>Search decisions, documents, people</span>
+          <span>
+            {workspaceId
+              ? 'Search decisions or run a command'
+              : 'Run a ForkRoom command'}
+          </span>
           <Kbd className={styles.searchKey}>Ctrl K</Kbd>
         </button>
 
         <div className={styles.headerActions}>
+          <ActionIcon
+            className={styles.mobileSearchAction}
+            variant="subtle"
+            color="dark"
+            size={38}
+            aria-label="Open search and commands"
+            onClick={spotlight.open}
+          >
+            <IconSearch size={19} stroke={1.8} />
+          </ActionIcon>
           <Indicator
             color="rust"
             size={16}
@@ -305,6 +337,12 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
       </header>
 
       <main className={styles.main}>{children}</main>
+
+      <GlobalSearch
+        workspaceId={workspaceId}
+        workspaceName={workspace.data?.name}
+        canCreateDecision={canCreateDecision}
+      />
 
       <Drawer
         opened={navigationOpen}

@@ -260,6 +260,10 @@
   gap: 3px;
 }
 
+.mobileSearchAction {
+  display: none;
+}
+
 .profileButton {
   display: grid;
   place-items: center;
@@ -349,4 +353,5 @@
   .header { grid-template-columns: auto minmax(0, 1fr); }
   .searchButton { display: none; }
   .headerActions { justify-self: end; }
+  .mobileSearchAction { display: inline-flex; }
 }
