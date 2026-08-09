@@ -20,11 +20,13 @@ import {
   getDecision,
   getDecisionExport,
   getDecisionLock,
+  getDecisionRevision,
   getVotingResult,
   getWorkspace,
   listCriteria,
   listDecisionActions,
   listDecisionReviews,
+  listDecisionRevisions,
   listObjections,
   listProposals,
   listVotingSessions,
@@ -107,6 +109,17 @@ export const workspaceKeys = {
     [...workspaceKeys.decision(workspaceId, decisionId), 'actions'] as const,
   decisionReviews: (workspaceId: string, decisionId: string) =>
     [...workspaceKeys.decision(workspaceId, decisionId), 'reviews'] as const,
+  decisionRevisions: (workspaceId: string, decisionId: string) =>
+    [...workspaceKeys.decision(workspaceId, decisionId), 'revisions'] as const,
+  decisionRevision: (
+    workspaceId: string,
+    decisionId: string,
+    revisionId: string,
+  ) =>
+    [
+      ...workspaceKeys.decisionRevisions(workspaceId, decisionId),
+      revisionId,
+    ] as const,
 };
 
 export function useWorkspaces() {
@@ -786,7 +799,41 @@ export function useCompleteDecisionReview(
         queryClient.invalidateQueries({
           queryKey: [...workspaceKeys.all, 'decisions', workspaceId],
         }),
+        queryClient.invalidateQueries({
+          queryKey: workspaceKeys.decisionRevisions(workspaceId, decisionId),
+        }),
       ]);
     },
+  });
+}
+
+export function useDecisionRevisions(
+  workspaceId?: string,
+  decisionId?: string,
+) {
+  return useQuery({
+    queryKey: workspaceKeys.decisionRevisions(
+      workspaceId ?? '',
+      decisionId ?? '',
+    ),
+    queryFn: () => listDecisionRevisions(workspaceId!, decisionId!),
+    enabled: Boolean(workspaceId && decisionId),
+  });
+}
+
+export function useDecisionRevision(
+  workspaceId?: string,
+  decisionId?: string,
+  revisionId?: string,
+) {
+  return useQuery({
+    queryKey: workspaceKeys.decisionRevision(
+      workspaceId ?? '',
+      decisionId ?? '',
+      revisionId ?? '',
+    ),
+    queryFn: () =>
+      getDecisionRevision(workspaceId!, decisionId!, revisionId!),
+    enabled: Boolean(workspaceId && decisionId && revisionId),
   });
 }

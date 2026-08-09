@@ -19,6 +19,7 @@ import type {
 import styles from './decision-room.module.css';
 import { DecisionActionsPanel } from './decision-actions-panel';
 import { DecisionExportPanel } from './decision-export-panel';
+import { DecisionHistoryPanel } from './decision-history-panel';
 import { DecisionReviewsPanel } from './decision-reviews-panel';
 
 type LockedDecisionPanelProps = {
@@ -92,6 +93,7 @@ export function LockedDecisionPanel({
           <Tabs.Tab value="record">Record</Tabs.Tab>
           <Tabs.Tab value="actions">Actions</Tabs.Tab>
           <Tabs.Tab value="reviews">Reviews</Tabs.Tab>
+          <Tabs.Tab value="history">History</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="record" className={styles.lockedTabPanel}>
@@ -221,6 +223,15 @@ export function LockedDecisionPanel({
             decisionId={decisionId}
             members={members}
             canManageReviews={canManageFollowThrough}
+          />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="history" className={styles.lockedTabPanel}>
+          <DecisionHistoryPanel
+            workspaceId={workspaceId}
+            decisionId={decisionId}
+            decisionLock={decisionLock}
+            members={members}
           />
         </Tabs.Panel>
       </Tabs>

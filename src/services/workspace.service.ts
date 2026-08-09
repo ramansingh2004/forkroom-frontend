@@ -44,6 +44,7 @@ export type ReviewCreateRequest = components['schemas']['ReviewCreateRequest'];
 export type ReviewUpdateRequest = components['schemas']['ReviewUpdateRequest'];
 export type ReviewOutcomeRequest = components['schemas']['ReviewOutcomeRequest'];
 export type ReviewOutcomeResponse = components['schemas']['ReviewOutcomeResponse'];
+export type DecisionRevision = components['schemas']['DecisionRevisionResponse'];
 
 export type ObjectionFilters = {
   severity?: ObjectionSeverity;
@@ -497,6 +498,29 @@ export async function completeDecisionReview(
   const { data } = await apiClient.post<ReviewOutcomeResponse>(
     `/workspaces/${workspaceId}/decisions/${decisionId}/reviews/${reviewId}/outcome`,
     payload,
+  );
+
+  return data;
+}
+
+export async function listDecisionRevisions(
+  workspaceId: string,
+  decisionId: string,
+) {
+  const { data } = await apiClient.get<DecisionRevision[]>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/revisions`,
+  );
+
+  return data;
+}
+
+export async function getDecisionRevision(
+  workspaceId: string,
+  decisionId: string,
+  revisionId: string,
+) {
+  const { data } = await apiClient.get<DecisionRevision>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/revisions/${revisionId}`,
   );
 
   return data;
