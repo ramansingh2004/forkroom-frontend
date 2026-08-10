@@ -7,9 +7,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
-import { IconAlertCircle } from '@tabler/icons-react';
+import { IconAlertCircle, IconCircleCheck } from '@tabler/icons-react';
 import { authKeys } from '@/hooks/use-auth';
-import { safeNextPath } from '@/lib/auth/navigation';
+import { authPath, safeNextPath } from '@/lib/auth/navigation';
 import { loginSchema, type LoginValues } from '@/lib/auth/schema';
 import { getApiErrorMessage, login } from '@/services/auth.service';
 import { AuthHeading } from './auth-shell';
@@ -20,26 +20,39 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
+  const next = searchParams.get('next');
+  const state = searchParams.get('state');
+  const email = searchParams.get('email') ?? '';
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
+    defaultValues: { email, password: '' },
   });
 
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError(null);
+    setVerificationEmail(null);
 
     try {
       const user = await login(values);
       queryClient.setQueryData(authKeys.me, user);
       router.replace(safeNextPath(searchParams.get('next')));
     } catch (error) {
-      setSubmitError(getApiErrorMessage(error, 'Email or password is incorrect.'));
+      const message = getApiErrorMessage(error, 'Email or password is incorrect.');
+      setSubmitError(message);
+
+      if (/unverified|verify your email|email verification/i.test(message)) {
+        setVerificationEmail(values.email);
+      }
     }
   });
+
+  const registerHref = authPath('/register', { next });
+  const forgotHref = authPath('/forgot-password', { email, next });
 
   return (
     <>
@@ -50,9 +63,31 @@ export function LoginForm() {
       />
 
       <form className={styles.form} onSubmit={onSubmit} noValidate>
+        {(state === 'verified' || state === 'password-reset') && (
+          <Alert icon={<IconCircleCheck size={17} />} color="green" variant="light">
+            {state === 'verified'
+              ? 'Email verified. Sign in to continue.'
+              : 'Password updated. Sign in with your new password.'}
+          </Alert>
+        )}
+
         {submitError && (
           <Alert icon={<IconAlertCircle size={17} />} color="red" variant="light">
-            {submitError}
+            <span>{submitError}</span>
+            {verificationEmail && (
+              <>
+                {' '}
+                <Link
+                  href={authPath('/verify-email', {
+                    email: verificationEmail,
+                    next,
+                  })}
+                  className={styles.textLink}
+                >
+                  Resend verification
+                </Link>
+              </>
+            )}
           </Alert>
         )}
 
@@ -94,7 +129,7 @@ export function LoginForm() {
 
         <div className={styles.formMeta}>
           <span>Session ends when you sign out.</span>
-          <Link href="/forgot-password" className={styles.textLink}>
+          <Link href={forgotHref} className={styles.textLink}>
             Forgot password?
           </Link>
         </div>
@@ -105,7 +140,7 @@ export function LoginForm() {
 
         <p className={styles.secondary}>
           New to ForkRoom?{' '}
-          <Link href="/register" className={styles.textLink}>
+          <Link href={registerHref} className={styles.textLink}>
             Create an account
           </Link>
         </p>
