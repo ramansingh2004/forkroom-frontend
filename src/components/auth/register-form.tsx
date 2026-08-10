@@ -4,16 +4,19 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Alert, Button, Checkbox, PasswordInput, TextInput } from '@mantine/core';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import { IconAlertCircle } from '@tabler/icons-react';
+import { authPath } from '@/lib/auth/navigation';
 import { registerSchema, type RegisterValues } from '@/lib/auth/schema';
-import { getApiErrorMessage, register } from '@/services/auth.service';
+import { getApiErrorMessage, register, requestEmailVerification } from '@/services/auth.service';
 import { AuthHeading } from './auth-shell';
 import styles from './auth.module.css';
 
 export function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next');
   const [submitError, setSubmitError] = useState<string | null>(null);
   const {
     control,
@@ -33,7 +36,22 @@ export function RegisterForm() {
         email: values.email,
         password: values.password,
       });
-      router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
+
+      let state = 'verification-sent';
+
+      try {
+        await requestEmailVerification(values.email);
+      } catch {
+        state = 'delivery-failed';
+      }
+
+      router.push(
+        authPath('/verify-email', {
+          email: values.email,
+          next,
+          state,
+        }),
+      );
     } catch (error) {
       setSubmitError(getApiErrorMessage(error, 'We could not create your account. Please try again.'));
     }
@@ -117,7 +135,12 @@ export function RegisterForm() {
                 className={styles.terms}
                 checked={field.value}
                 onChange={(event) => field.onChange(event.currentTarget.checked)}
-                label="I agree to ForkRoom's Terms and Privacy Policy."
+                label={
+                  <span>
+                    I agree to ForkRoom&apos;s <Link href="/terms">Terms</Link> and{' '}
+                    <Link href="/privacy">Privacy Notice</Link>.
+                  </span>
+                }
                 disabled={isSubmitting}
               />
             )}
@@ -131,7 +154,7 @@ export function RegisterForm() {
 
         <p className={styles.secondary}>
           Already have an account?{' '}
-          <Link href="/login" className={styles.textLink}>
+          <Link href={authPath('/login', { next })} className={styles.textLink}>
             Sign in
           </Link>
         </p>

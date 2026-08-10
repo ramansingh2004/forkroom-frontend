@@ -2,152 +2,79 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import {
-  Alert,
-  Button,
-  PasswordInput,
-} from '@mantine/core';
+import { Alert, Button, PasswordInput } from '@mantine/core';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useSearchParams } from 'next/navigation';
-import {
-  Controller,
-  useForm,
-} from 'react-hook-form';
-import {
-  IconAlertCircle,
-  IconCheck,
-} from '@tabler/icons-react';
-
-import {
-  resetPasswordSchema,
-  type ResetPasswordValues,
-} from '@/lib/auth/schema';
-
-import {
-  getApiErrorMessage,
-  resetPassword,
-} from '@/services/auth.service';
-
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Controller, useForm } from 'react-hook-form';
+import { IconAlertCircle, IconCheck } from '@tabler/icons-react';
+import { authPath } from '@/lib/auth/navigation';
+import { resetPasswordSchema, type ResetPasswordValues } from '@/lib/auth/schema';
+import { getApiErrorMessage, getApiStatus, resetPassword } from '@/services/auth.service';
 import { AuthHeading } from './auth-shell';
 import styles from './auth.module.css';
 
 export function ResetPasswordForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
-
-  const [submitError, setSubmitError] =
-    useState<string | null>(null);
-
-  const [complete, setComplete] =
-    useState(false);
-
+  const next = searchParams.get('next');
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [complete, setComplete] = useState(false);
+  const [unusable, setUnusable] = useState(false);
   const {
     control,
     handleSubmit,
-    formState: {
-      errors,
-      isSubmitting,
-    },
+    formState: { errors, isSubmitting },
   } = useForm<ResetPasswordValues>({
-    resolver: zodResolver(
-      resetPasswordSchema,
-    ),
-    defaultValues: {
-      password: '',
-      confirmPassword: '',
-    },
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: { password: '', confirmPassword: '' },
   });
 
-  const onSubmit = handleSubmit(
-    async ({ password }) => {
-      if (!token) {
-        return;
+  const onSubmit = handleSubmit(async ({ password }) => {
+    if (!token) return;
+    setSubmitError(null);
+
+    try {
+      await resetPassword(token, password);
+      setComplete(true);
+      router.replace(authPath('/reset-password', { next, state: 'complete' }));
+    } catch (error) {
+      const message = getApiErrorMessage(error, 'This reset link is invalid or has expired.');
+      setSubmitError(message);
+
+      const status = getApiStatus(error);
+      if ([400, 401, 404, 410].includes(status ?? 0) || /invalid|expired|already used/i.test(message)) {
+        setUnusable(true);
       }
+    }
+  });
 
-      setSubmitError(null);
-
-      try {
-        await resetPassword(
-          token,
-          password,
-        );
-
-        setComplete(true);
-      } catch (error) {
-        setSubmitError(
-          getApiErrorMessage(
-            error,
-            'This reset link is invalid or has expired.',
-          ),
-        );
-      }
-    },
-  );
-
-  if (!token) {
+  if ((!token && searchParams.get('state') !== 'complete') || unusable) {
     return (
       <div className={styles.status}>
-        <div
-          className={`${styles.statusIcon} ${styles.statusIconError}`}
-        >
-          <IconAlertCircle size={25} />
-        </div>
-
-        <h1>Reset link missing</h1>
-
+        <div className={`${styles.statusIcon} ${styles.statusIconError}`}><IconAlertCircle size={25} /></div>
+        <h1>{unusable ? 'Reset link no longer works' : 'Reset link missing'}</h1>
         <p>
-          Open the complete password-reset
-          link from your email, or request
-          a new one.
+          {unusable
+            ? submitError
+            : 'Open the complete password-reset link from your email, or request a new one.'}
         </p>
-
         <div className={styles.statusActions}>
-          <Button
-            component={Link}
-            href="/forgot-password"
-            color="rust"
-            fullWidth
-          >
-            Request a new link
-          </Button>
-
-          <Button
-            component={Link}
-            href="/login"
-            variant="subtle"
-            color="dark"
-            fullWidth
-          >
-            Back to sign in
-          </Button>
+          <Button component={Link} href="/forgot-password" color="rust" fullWidth>Request a new link</Button>
+          <Button component={Link} href="/login" variant="subtle" color="dark" fullWidth>Back to sign in</Button>
         </div>
       </div>
     );
   }
 
-  if (complete) {
+  if (complete || searchParams.get('state') === 'complete') {
     return (
       <div className={styles.status}>
-        <div
-          className={`${styles.statusIcon} ${styles.statusIconSuccess}`}
-        >
-          <IconCheck size={25} />
-        </div>
-
+        <div className={`${styles.statusIcon} ${styles.statusIconSuccess}`}><IconCheck size={25} /></div>
         <h1>Password updated</h1>
-
-        <p>
-          Your new password is ready.
-          Sign in to continue to ForkRoom.
-        </p>
-
+        <p>Your new password is ready. Sign in to continue to ForkRoom.</p>
         <div className={styles.statusActions}>
-          <Button
-            component={Link}
-            href="/login"
-            color="rust"
-            fullWidth
-          >
+          <Button component={Link} href={authPath('/login', { next, state: 'password-reset' })} color="rust" fullWidth>
             Continue to sign in
           </Button>
         </div>
@@ -162,22 +89,10 @@ export function ResetPasswordForm() {
         title="Choose a new password"
         description="Use at least 8 characters. Your reset link can only be used for this recovery flow."
       />
-
-      <form
-        className={styles.form}
-        onSubmit={onSubmit}
-        noValidate
-      >
+      <form className={styles.form} onSubmit={onSubmit} noValidate>
         {submitError && (
-          <Alert
-            icon={<IconAlertCircle size={17} />}
-            color="red"
-            variant="light"
-          >
-            {submitError}
-          </Alert>
+          <Alert icon={<IconAlertCircle size={17} />} color="red" variant="light">{submitError}</Alert>
         )}
-
         <div className={styles.fieldStack}>
           <Controller
             name="password"
@@ -194,7 +109,6 @@ export function ResetPasswordForm() {
               />
             )}
           />
-
           <Controller
             name="confirmPassword"
             control={control}
@@ -204,24 +118,14 @@ export function ResetPasswordForm() {
                 className={styles.input}
                 label="Confirm new password"
                 autoComplete="new-password"
-                error={
-                  errors.confirmPassword
-                    ?.message
-                }
+                error={errors.confirmPassword?.message}
                 disabled={isSubmitting}
                 required
               />
             )}
           />
         </div>
-
-        <Button
-          className={styles.submit}
-          type="submit"
-          color="rust"
-          loading={isSubmitting}
-          fullWidth
-        >
+        <Button className={styles.submit} type="submit" color="rust" loading={isSubmitting} fullWidth>
           Set new password
         </Button>
       </form>
