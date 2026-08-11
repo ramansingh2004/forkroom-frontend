@@ -11,7 +11,7 @@ import { IconAlertCircle, IconCircleCheck } from '@tabler/icons-react';
 import { authKeys } from '@/hooks/use-auth';
 import { authPath, safeNextPath } from '@/lib/auth/navigation';
 import { loginSchema, type LoginValues } from '@/lib/auth/schema';
-import { getApiErrorMessage, login } from '@/services/auth.service';
+import { getApiErrorMessage, getMe, login } from '@/services/auth.service';
 import { AuthHeading } from './auth-shell';
 import styles from './auth.module.css';
 
@@ -38,7 +38,11 @@ export function LoginForm() {
     setVerificationEmail(null);
 
     try {
-      const user = await login(values);
+      await login(values);
+
+      // Confirm that the browser accepted the HTTP-only cookies before the UI
+      // treats the user as authenticated and starts workspace requests.
+      const user = await getMe();
       queryClient.setQueryData(authKeys.me, user);
       router.replace(safeNextPath(searchParams.get('next')));
     } catch (error) {
