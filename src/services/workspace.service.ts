@@ -18,6 +18,8 @@ export type Decision = components["schemas"]["DecisionResponse"];
 export type DecisionStatus = components["schemas"]["DecisionStatus"];
 export type DecisionCreateRequest =
   components["schemas"]["DecisionCreateRequest"];
+export type DecisionTransitionRequest =
+  components["schemas"]["DecisionTransitionRequest"];
 export type Proposal = components["schemas"]["ProposalResponse"];
 export type ProposalCreateRequest =
   components["schemas"]["ProposalCreateRequest"];
@@ -181,6 +183,19 @@ export async function createDecision(
 export async function getDecision(workspaceId: string, decisionId: string) {
   const { data } = await apiClient.get<Decision>(
     `/workspaces/${workspaceId}/decisions/${decisionId}`,
+  );
+
+  return data;
+}
+
+export async function transitionDecision(
+  workspaceId: string,
+  decisionId: string,
+  payload: DecisionTransitionRequest,
+) {
+  const { data } = await apiClient.post<Decision>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/transitions`,
+    payload,
   );
 
   return data;

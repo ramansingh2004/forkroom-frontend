@@ -48,6 +48,7 @@ import {
   openVotingSession,
   requestDecisionExport,
   removeWorkspaceMember,
+  transitionDecision,
   transitionProposal,
   transitionDecisionAction,
   transitionObjection,
@@ -66,6 +67,7 @@ import {
   type ActionUpdateRequest,
   type DecisionStatus,
   type DecisionCreateRequest,
+  type DecisionTransitionRequest,
   type ObjectionCreateRequest,
   type ObjectionFilters,
   type ObjectionTransitionRequest,
@@ -590,6 +592,24 @@ export function useVotingSessions(workspaceId?: string, decisionId?: string) {
     queryKey: workspaceKeys.votingSessions(workspaceId ?? "", decisionId ?? ""),
     queryFn: () => listVotingSessions(workspaceId!, decisionId!),
     enabled: Boolean(workspaceId && decisionId),
+  });
+}
+
+export function useTransitionDecision(workspaceId: string, decisionId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: DecisionTransitionRequest) =>
+      transitionDecision(workspaceId, decisionId, payload),
+    onSuccess: async (updatedDecision) => {
+      queryClient.setQueryData(
+        workspaceKeys.decision(workspaceId, decisionId),
+        updatedDecision,
+      );
+      await queryClient.invalidateQueries({
+        queryKey: [...workspaceKeys.all, "decisions", workspaceId],
+      });
+    },
   });
 }
 

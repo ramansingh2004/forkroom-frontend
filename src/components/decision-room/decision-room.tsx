@@ -26,6 +26,7 @@ import {
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarRightCollapse,
   IconLock,
+  IconPlayerPlay,
   IconPlus,
   IconMessageExclamation,
   IconRestore,
@@ -51,6 +52,7 @@ import {
   useDecisionLock,
   useDecisionProposals,
   useProposalObjections,
+  useTransitionDecision,
   useTransitionProposal,
   useWorkspace,
   useWorkspaceMembers,
@@ -60,6 +62,7 @@ import { getApiErrorMessage } from "@/services/auth.service";
 import type {
   Criterion,
   DecisionLock,
+  DecisionStatus,
   Objection,
   ObjectionStatus,
   Proposal,
@@ -619,6 +622,7 @@ function DocumentPanel({
   criteria,
   proposals,
   votingSessions,
+  decisionStatus,
   decisionLock,
   members,
   currentUserId,
@@ -643,6 +647,7 @@ function DocumentPanel({
   criteria: Criterion[];
   proposals: Proposal[];
   votingSessions: VotingSession[];
+  decisionStatus: DecisionStatus;
   decisionLock: DecisionLock | null;
   members: WorkspaceMember[];
   currentUserId: string;
@@ -713,6 +718,7 @@ function DocumentPanel({
           <VotingPanel
             workspaceId={workspaceId}
             decisionId={decisionId}
+            decisionStatus={decisionStatus}
             proposals={proposals}
             sessions={votingSessions}
             canManageVoting={canManageVoting}
@@ -1023,6 +1029,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     decision.data?.status === "locked",
   );
   const transitionProposal = useTransitionProposal(workspaceId, decisionId);
+  const transitionDecision = useTransitionDecision(workspaceId, decisionId);
   const deleteProposal = useDeleteProposal(workspaceId, decisionId);
   const desktop = useMediaQuery("(min-width: 80em)");
   const mobileTab = useUiStore((state) => state.mobileDecisionTab);
@@ -1171,6 +1178,39 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     }
   };
 
+  const confirmActivateDecision = () => {
+    modals.openConfirmModal({
+      title: "Activate this decision?",
+      children: (
+        <p className={styles.confirmCopy}>
+          The decision will enter active discussion. Owners and administrators
+          can then create a draft voting round when the team is ready.
+        </p>
+      ),
+      labels: { confirm: "Activate decision", cancel: "Keep as draft" },
+      confirmProps: { color: "rust" },
+      onConfirm: async () => {
+        try {
+          await transitionDecision.mutateAsync({ status: "active" });
+          notifications.show({
+            color: "green",
+            title: "Decision activated",
+            message: "Voting-round preparation is now available.",
+          });
+        } catch (error) {
+          notifications.show({
+            color: "red",
+            title: "Could not activate decision",
+            message: getApiErrorMessage(
+              error,
+              "ForkRoom could not activate this decision.",
+            ),
+          });
+        }
+      },
+    });
+  };
+
   const confirmDeleteProposal = (proposal: Proposal) => {
     modals.openConfirmModal({
       title: "Delete draft proposal?",
@@ -1242,6 +1282,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
       criteria={criteria.data}
       proposals={proposals.data}
       votingSessions={votingSessions.data}
+      decisionStatus={decision.data.status}
       decisionLock={decisionLock.data ?? null}
       members={members.data}
       currentUserId={currentUser.data.id}
@@ -1302,6 +1343,17 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
         </div>
 
         <div className={styles.roomActions}>
+          {canManageVoting && decision.data.status === "draft" && (
+            <Button
+              variant="light"
+              color="rust"
+              leftSection={<IconPlayerPlay size={17} />}
+              loading={transitionDecision.isPending}
+              onClick={confirmActivateDecision}
+            >
+              Activate decision
+            </Button>
+          )}
           {desktop && (
             <>
               <Tooltip label={leftCollapsed ? "Show outline" : "Hide outline"}>

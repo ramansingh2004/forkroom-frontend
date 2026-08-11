@@ -35,6 +35,7 @@ import {
 } from '@/hooks/use-workspaces';
 import { getApiErrorMessage } from '@/services/auth.service';
 import type {
+  DecisionStatus,
   Proposal,
   Vote,
   VotingSession,
@@ -47,6 +48,7 @@ import { VotingSessionModal } from './voting-session-modal';
 type VotingPanelProps = {
   workspaceId: string;
   decisionId: string;
+  decisionStatus: DecisionStatus;
   proposals: Proposal[];
   sessions: VotingSession[];
   canManageVoting: boolean;
@@ -70,27 +72,47 @@ const statusColor = (status: VotingSession['status']) => {
 export function VotingPanel({
   workspaceId,
   decisionId,
+  decisionStatus,
   proposals,
   sessions,
   canManageVoting,
 }: VotingPanelProps) {
   const orderedSessions = [...sessions].sort(
     (left, right) =>
-      new Date(right.created_at).getTime() - new Date(left.created_at).getTime(),
+      new Date(right.created_at).getTime() -
+      new Date(left.created_at).getTime(),
   );
+  const unfinishedSession = orderedSessions.find(
+    (session) => session.status === 'draft' || session.status === 'open',
+  );
+  const canCreateRound =
+    canManageVoting && decisionStatus === 'active' && !unfinishedSession;
+  const roundCreationReason =
+    decisionStatus === 'draft'
+      ? 'Activate the decision before creating a voting round.'
+      : decisionStatus !== 'active'
+        ? `Voting rounds cannot be created while the decision is ${decisionStatus}.`
+        : unfinishedSession
+          ? `Finish or cancel the existing ${unfinishedSession.status} round first.`
+          : null;
   const preferredSession =
     orderedSessions.find((session) => session.status === 'open') ??
     orderedSessions.find((session) => session.status === 'draft') ??
     orderedSessions[0] ??
     null;
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    null,
+  );
   const [createOpened, setCreateOpened] = useState(false);
   const [lockOpened, setLockOpened] = useState(false);
   const [selectedProposalId, setSelectedProposalId] = useState('');
   const [recordedVote, setRecordedVote] = useState<Vote | null>(null);
   const selectedSession =
-    orderedSessions.find((session) => session.id === selectedSessionId) ?? preferredSession;
-  const submittedProposals = proposals.filter((proposal) => proposal.status === 'submitted');
+    orderedSessions.find((session) => session.id === selectedSessionId) ??
+    preferredSession;
+  const submittedProposals = proposals.filter(
+    (proposal) => proposal.status === 'submitted',
+  );
   const requiresReadinessCheck =
     selectedSession?.status === 'draft' || selectedSession?.status === 'open';
   const blockers = useOpenBlockingObjections(
@@ -110,16 +132,22 @@ export function VotingPanel({
   const openSession = useOpenVotingSession(workspaceId, decisionId);
   const closeSession = useCloseVotingSession(workspaceId, decisionId);
   const cancelSession = useCancelVotingSession(workspaceId, decisionId);
-  const castVote = useCastVote(workspaceId, decisionId, selectedSession?.id ?? '');
+  const castVote = useCastVote(
+    workspaceId,
+    decisionId,
+    selectedSession?.id ?? '',
+  );
   const result = useVotingResult(
     workspaceId,
     decisionId,
     selectedSession?.id,
     selectedSession?.status === 'closed',
   );
-  const proposalById = new Map(proposals.map((proposal) => [proposal.id, proposal]));
+  const proposalById = new Map(
+    proposals.map((proposal) => [proposal.id, proposal]),
+  );
   const winningProposal = result.data?.winner_proposal_id
-    ? proposalById.get(result.data.winner_proposal_id) ?? null
+    ? (proposalById.get(result.data.winner_proposal_id) ?? null)
     : null;
   const canLockResult = Boolean(
     result.data?.result_valid &&
@@ -132,7 +160,8 @@ export function VotingPanel({
     blockers.isError ||
     blockers.objections.length > 0 ||
     submittedProposals.length === 0;
-  const actionError = openSession.error ?? closeSession.error ?? cancelSession.error;
+  const actionError =
+    openSession.error ?? closeSession.error ?? cancelSession.error;
 
   const confirmOpen = () => {
     if (!selectedSession) return;
@@ -140,8 +169,8 @@ export function VotingPanel({
       title: 'Open this voting round?',
       children: (
         <p className={styles.confirmCopy}>
-          Eligible members will be able to vote for one submitted proposal. Proposal structure
-          should remain unchanged until the round closes.
+          Eligible members will be able to vote for one submitted proposal.
+          Proposal structure should remain unchanged until the round closes.
         </p>
       ),
       labels: { confirm: 'Open voting', cancel: 'Keep draft' },
@@ -167,8 +196,9 @@ export function VotingPanel({
       title: 'Close voting and calculate the result?',
       children: (
         <p className={styles.confirmCopy}>
-          No more ballots can be submitted after this round closes. ForkRoom will calculate
-          quorum, tallies, ties, and the winning proposal from the recorded votes.
+          No more ballots can be submitted after this round closes. ForkRoom
+          will calculate quorum, tallies, ties, and the winning proposal from
+          the recorded votes.
         </p>
       ),
       labels: { confirm: 'Close voting', cancel: 'Keep open' },
@@ -194,7 +224,8 @@ export function VotingPanel({
       title: 'Cancel this voting round?',
       children: (
         <p className={styles.confirmCopy}>
-          The round will remain in voting history as cancelled and cannot be reopened.
+          The round will remain in voting history as cancelled and cannot be
+          reopened.
         </p>
       ),
       labels: { confirm: 'Cancel round', cancel: 'Keep round' },
@@ -221,8 +252,10 @@ export function VotingPanel({
       title: recordedVote ? 'Update your vote?' : 'Submit your vote?',
       children: (
         <p className={styles.confirmCopy}>
-          Your ballot will select <strong>{proposal?.title ?? 'this proposal'}</strong>. The
-          backend will confirm your eligibility and whether this round permits a changed vote.
+          Your ballot will select{' '}
+          <strong>{proposal?.title ?? 'this proposal'}</strong>. The backend
+          will confirm your eligibility and whether this round permits a changed
+          vote.
         </p>
       ),
       labels: {
@@ -232,12 +265,15 @@ export function VotingPanel({
       confirmProps: { color: 'rust' },
       onConfirm: async () => {
         try {
-          const vote = await castVote.mutateAsync({ proposal_id: selectedProposalId });
+          const vote = await castVote.mutateAsync({
+            proposal_id: selectedProposalId,
+          });
           setRecordedVote(vote);
           notifications.show({
             color: 'green',
             title: 'Vote recorded',
-            message: 'Your ballot was recorded. This does not lock the decision.',
+            message:
+              'Your ballot was recorded. This does not lock the decision.',
           });
         } catch {
           // The inline alert presents the backend error.
@@ -253,31 +289,44 @@ export function VotingPanel({
           <span className={styles.documentMeta}>COMMITMENT / VOTING</span>
           <h1>Choose an informed outcome</h1>
           <p className={styles.lede}>
-            Review the rules and submitted alternatives before recording one ballot.
+            Review the rules and submitted alternatives before recording one
+            ballot.
           </p>
         </div>
         {canManageVoting && (
-          <Button
-            color="rust"
-            leftSection={<IconPlus size={16} />}
-            onClick={() => setCreateOpened(true)}
-            disabled={Boolean(orderedSessions.find((session) => session.status === 'open'))}
-          >
-            New round
-          </Button>
+          <div title={roundCreationReason ?? undefined}>
+            <Button
+              color="rust"
+              leftSection={<IconPlus size={16} />}
+              onClick={() => setCreateOpened(true)}
+              disabled={!canCreateRound}
+            >
+              New round
+            </Button>
+          </div>
         )}
       </div>
+
+      {canManageVoting && roundCreationReason && (
+        <Alert color="orange" title="A new voting round is not available">
+          {roundCreationReason}
+        </Alert>
+      )}
 
       {orderedSessions.length === 0 || !selectedSession ? (
         <div className={styles.votingEmpty}>
           <IconScale size={28} />
           <strong>No voting round yet</strong>
           <p>
-            A facilitator can create a draft round after the team submits at least one proposal
-            and addresses blocking objections.
+            A facilitator can create a draft round after the team submits at
+            least one proposal and addresses blocking objections.
           </p>
           {canManageVoting && (
-            <Button color="rust" onClick={() => setCreateOpened(true)}>
+            <Button
+              color="rust"
+              onClick={() => setCreateOpened(true)}
+              disabled={!canCreateRound}
+            >
               Create voting round
             </Button>
           )}
@@ -299,7 +348,11 @@ export function VotingPanel({
               }}
               allowDeselect={false}
             />
-            <Badge variant="light" color={statusColor(selectedSession.status)} size="lg">
+            <Badge
+              variant="light"
+              color={statusColor(selectedSession.status)}
+              size="lg"
+            >
               {selectedSession.status}
             </Badge>
           </div>
@@ -327,8 +380,9 @@ export function VotingPanel({
 
           {requiresReadinessCheck && blockers.isError && (
             <Alert color="red" title="Voting readiness could not be verified">
-              ForkRoom could not check every submitted proposal for blocking objections. Opening
-              and ballot submission remain disabled until this check succeeds.
+              ForkRoom could not check every submitted proposal for blocking
+              objections. Opening and ballot submission remain disabled until
+              this check succeeds.
             </Alert>
           )}
 
@@ -340,7 +394,8 @@ export function VotingPanel({
                 blockers.objections.length === 1 ? '' : 's'
               } open`}
             >
-              Resolve or dismiss every blocking concern before opening or continuing this vote.
+              Resolve or dismiss every blocking concern before opening or
+              continuing this vote.
             </Alert>
           )}
 
@@ -359,8 +414,9 @@ export function VotingPanel({
               <h2>Review before opening</h2>
               <p>
                 {submittedProposals.length} submitted proposal
-                {submittedProposals.length === 1 ? '' : 's'} will be shown on the ballot. The
-                server snapshots eligibility when the round opens.
+                {submittedProposals.length === 1 ? '' : 's'} will be shown on
+                the ballot. The server snapshots eligibility when the round
+                opens.
               </p>
               {submittedProposals.length === 0 && (
                 <Alert color="orange" title="No submitted proposals">
@@ -390,7 +446,8 @@ export function VotingPanel({
                 </Group>
               ) : (
                 <Alert color="gray" title="Waiting for a facilitator">
-                  Only a workspace owner or administrator can open or cancel this round.
+                  Only a workspace owner or administrator can open or cancel
+                  this round.
                 </Alert>
               )}
             </section>
@@ -401,8 +458,9 @@ export function VotingPanel({
               <div className={styles.sectionIndex}>01 / YOUR BALLOT</div>
               <h2>Select one proposal</h2>
               <p>
-                Eligibility is checked by the server when you submit. Live participation totals
-                are not exposed by the current API and are therefore not estimated here.
+                Eligibility is checked by the server when you submit. Live
+                participation totals are not exposed by the current API and are
+                therefore not estimated here.
               </p>
 
               <Radio.Group
@@ -415,7 +473,9 @@ export function VotingPanel({
                     <label
                       key={proposal.id}
                       className={`${styles.ballotOption} ${
-                        selectedProposalId === proposal.id ? styles.ballotOptionSelected : ''
+                        selectedProposalId === proposal.id
+                          ? styles.ballotOptionSelected
+                          : ''
                       }`}
                     >
                       <Radio value={proposal.id} />
@@ -424,7 +484,9 @@ export function VotingPanel({
                       </span>
                       <span>
                         <strong>{proposal.title}</strong>
-                        <small>{proposal.summary || 'No summary provided.'}</small>
+                        <small>
+                          {proposal.summary || 'No summary provided.'}
+                        </small>
                       </span>
                     </label>
                   ))}
@@ -432,10 +494,16 @@ export function VotingPanel({
               </Radio.Group>
 
               {recordedVote && (
-                <Alert color="green" icon={<IconSquareCheck size={18} />} title="Vote recorded">
+                <Alert
+                  color="green"
+                  icon={<IconSquareCheck size={18} />}
+                  title="Vote recorded"
+                >
                   Your current in-session confirmation is{' '}
-                  <strong>{proposalById.get(recordedVote.proposal_id)?.title}</strong>. A recorded
-                  vote is not the same as a locked decision.
+                  <strong>
+                    {proposalById.get(recordedVote.proposal_id)?.title}
+                  </strong>
+                  . A recorded vote is not the same as a locked decision.
                 </Alert>
               )}
 
@@ -450,8 +518,8 @@ export function VotingPanel({
 
               <Group justify="space-between" className={styles.voteActions}>
                 <span>
-                  Your recorded ballot cannot be restored after reload until the API exposes a
-                  current-user vote endpoint.
+                  Your recorded ballot cannot be restored after reload until the
+                  API exposes a current-user vote endpoint.
                 </span>
                 <Button
                   color="rust"
@@ -466,7 +534,11 @@ export function VotingPanel({
 
               {canManageVoting && (
                 <Group className={styles.facilitatorActions}>
-                  <Button color="dark" onClick={confirmClose} loading={closeSession.isPending}>
+                  <Button
+                    color="dark"
+                    onClick={confirmClose}
+                    loading={closeSession.isPending}
+                  >
                     Close and calculate result
                   </Button>
                   <Button
@@ -495,7 +567,10 @@ export function VotingPanel({
 
               {result.isError && (
                 <Alert color="red" title="Could not load the result">
-                  {getApiErrorMessage(result.error, 'ForkRoom could not load this round result.')}
+                  {getApiErrorMessage(
+                    result.error,
+                    'ForkRoom could not load this round result.',
+                  )}
                 </Alert>
               )}
 
@@ -505,7 +580,8 @@ export function VotingPanel({
                     <div>
                       <span>PARTICIPATION</span>
                       <strong>
-                        {result.data.votes_cast} / {result.data.eligible_voter_count}
+                        {result.data.votes_cast} /{' '}
+                        {result.data.eligible_voter_count}
                       </strong>
                     </div>
                     <div>
@@ -514,14 +590,18 @@ export function VotingPanel({
                     </div>
                     <div>
                       <span>QUORUM</span>
-                      <strong>{result.data.quorum_met ? 'Met' : 'Not met'}</strong>
+                      <strong>
+                        {result.data.quorum_met ? 'Met' : 'Not met'}
+                      </strong>
                     </div>
                   </div>
 
                   <Progress
                     value={
                       result.data.eligible_voter_count > 0
-                        ? (result.data.votes_cast / result.data.eligible_voter_count) * 100
+                        ? (result.data.votes_cast /
+                            result.data.eligible_voter_count) *
+                          100
                         : 0
                     }
                     color={result.data.quorum_met ? 'green' : 'orange'}
@@ -544,8 +624,9 @@ export function VotingPanel({
                       ? result.data.is_tie
                         ? 'A facilitator must resolve the tie before the decision can be locked.'
                         : `Winning proposal: ${
-                            proposalById.get(result.data.winner_proposal_id ?? '')?.title ??
-                            'Unknown proposal'
+                            proposalById.get(
+                              result.data.winner_proposal_id ?? '',
+                            )?.title ?? 'Unknown proposal'
                           }. The decision is not locked yet.`
                       : 'Quorum was not met, so this result cannot be used to lock the decision.'}
                   </Alert>
@@ -554,10 +635,14 @@ export function VotingPanel({
                     {[...result.data.tallies]
                       .sort((left, right) => right.votes - left.votes)
                       .map((tally) => (
-                        <div key={tally.proposal_id} className={styles.resultTally}>
+                        <div
+                          key={tally.proposal_id}
+                          className={styles.resultTally}
+                        >
                           <div>
                             <strong>
-                              {proposalById.get(tally.proposal_id)?.title ?? 'Unknown proposal'}
+                              {proposalById.get(tally.proposal_id)?.title ??
+                                'Unknown proposal'}
                             </strong>
                             <span>{tally.votes} votes</span>
                           </div>
@@ -587,9 +672,13 @@ export function VotingPanel({
                       )}
 
                       {openObjections.isError && (
-                        <Alert color="red" title="Lock readiness could not be verified">
+                        <Alert
+                          color="red"
+                          title="Lock readiness could not be verified"
+                        >
                           ForkRoom could not load all unresolved objections. The
-                          lock action remains disabled until this check succeeds.
+                          lock action remains disabled until this check
+                          succeeds.
                         </Alert>
                       )}
 
@@ -605,9 +694,12 @@ export function VotingPanel({
                           Lock decision
                         </Button>
                       ) : (
-                        <Alert color="gray" title="Waiting for an administrator">
-                          The result is valid. A workspace owner or administrator
-                          must confirm and lock the decision.
+                        <Alert
+                          color="gray"
+                          title="Waiting for an administrator"
+                        >
+                          The result is valid. A workspace owner or
+                          administrator must confirm and lock the decision.
                         </Alert>
                       )}
                     </div>
@@ -622,8 +714,8 @@ export function VotingPanel({
               <IconBan size={27} />
               <strong>This voting round was cancelled</strong>
               <p>
-                It remains in the decision record for traceability. Select another historical
-                round or create a new draft round.
+                It remains in the decision record for traceability. Select
+                another historical round or create a new draft round.
               </p>
             </div>
           )}
