@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useParams, usePathname, useRouter } from 'next/navigation';
+import Link from "next/link";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import {
   ActionIcon,
   Avatar,
@@ -13,9 +13,9 @@ import {
   Menu,
   Tooltip,
   UnstyledButton,
-} from '@mantine/core';
-import { notifications } from '@mantine/notifications';
-import { spotlight } from '@mantine/spotlight';
+} from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { spotlight } from "@mantine/spotlight";
 import {
   IconAt,
   IconBell,
@@ -26,6 +26,7 @@ import {
   IconHistory,
   IconHome,
   IconLogout,
+  IconMenu2,
   IconPlug,
   IconSearch,
   IconShieldLock,
@@ -33,14 +34,14 @@ import {
   IconUserCircle,
   IconUsers,
   IconVocabulary,
-} from '@tabler/icons-react';
-import { useCurrentUser, useLogout } from '@/hooks/use-auth';
-import { useUnreadNotificationCount } from '@/hooks/use-notifications';
-import { useWorkspace, useWorkspaceMembers } from '@/hooks/use-workspaces';
-import { useUiStore } from '@/stores/use-ui-store';
-import { GlobalSearch } from '@/components/search/global-search';
-import { getApiErrorMessage } from '@/services/auth.service';
-import styles from './forkroom-shell.module.css';
+} from "@tabler/icons-react";
+import { useCurrentUser, useLogout } from "@/hooks/use-auth";
+import { useUnreadNotificationCount } from "@/hooks/use-notifications";
+import { useWorkspace, useWorkspaceMembers } from "@/hooks/use-workspaces";
+import { useUiStore } from "@/stores/use-ui-store";
+import { GlobalSearch } from "@/components/search/global-search";
+import { getApiErrorMessage } from "@/services/auth.service";
+import styles from "./forkroom-shell.module.css";
 
 type NavItem = {
   label: string;
@@ -69,8 +70,11 @@ function NavGroup({
             <Icon size={19} stroke={1.75} aria-hidden="true" />
             <span className={styles.navText}>{item.label}</span>
             {Boolean(item.badge) && (
-              <span className={styles.navBadge} aria-label={`${item.badge} unread`}>
-                {item.badge! > 99 ? '99+' : item.badge}
+              <span
+                className={styles.navBadge}
+                aria-label={`${item.badge} unread`}
+              >
+                {item.badge! > 99 ? "99+" : item.badge}
               </span>
             )}
           </>
@@ -78,22 +82,37 @@ function NavGroup({
 
         if (!item.href) {
           return (
-            <div
+            <Tooltip
               key={item.label}
-              className={`${styles.navItem} ${styles.navItemDisabled}`}
-              aria-disabled="true"
+              label={item.label}
+              position="right"
+              disabled={!compact}
+              openDelay={250}
             >
-              {content}
-            </div>
+              <div
+                className={`${styles.navItem} ${styles.navItemDisabled}`}
+                aria-disabled="true"
+                aria-label={compact ? item.label : undefined}
+              >
+                {content}
+              </div>
+            </Tooltip>
           );
         }
 
         return (
-          <Tooltip key={item.label} label={item.label} position="right" disabled={!compact}>
+          <Tooltip
+            key={item.label}
+            label={item.label}
+            position="right"
+            disabled={!compact}
+            openDelay={250}
+          >
             <Link
               href={item.href}
-              className={`${styles.navItem} ${item.active ? styles.navItemActive : ''}`}
-              aria-current={item.active ? 'page' : undefined}
+              className={`${styles.navItem} ${item.active ? styles.navItemActive : ""}`}
+              aria-current={item.active ? "page" : undefined}
+              aria-label={compact ? item.label : undefined}
             >
               {content}
             </Link>
@@ -119,20 +138,24 @@ function WorkspaceNavigation({
 }) {
   const workspaceItems: NavItem[] = [
     {
-      label: 'Overview',
+      label: "Overview",
       icon: IconHome,
-      href: workspaceId ? `/w/${workspaceId}` : '/workspaces',
-      active: workspaceId ? pathname === `/w/${workspaceId}` : pathname.startsWith('/workspaces'),
+      href: workspaceId ? `/w/${workspaceId}` : "/workspaces",
+      active: workspaceId
+        ? pathname === `/w/${workspaceId}`
+        : pathname.startsWith("/workspaces"),
     },
     {
-      label: 'Decisions',
+      label: "Decisions",
       icon: IconVocabulary,
       href: workspaceId ? `/w/${workspaceId}/decisions` : undefined,
-      active: Boolean(workspaceId && pathname.startsWith(`/w/${workspaceId}/decisions`)),
+      active: Boolean(
+        workspaceId && pathname.startsWith(`/w/${workspaceId}/decisions`),
+      ),
     },
-    { label: 'Documents', icon: IconFileText },
+    { label: "Documents", icon: IconFileText },
     {
-      label: 'Members',
+      label: "Members",
       icon: IconUsers,
       href: workspaceId ? `/w/${workspaceId}/members` : undefined,
       active: Boolean(
@@ -143,22 +166,22 @@ function WorkspaceNavigation({
 
   const activityItems: NavItem[] = [
     {
-      label: 'Notifications',
+      label: "Notifications",
       icon: IconBell,
-      href: '/notifications',
-      active: pathname.startsWith('/notifications'),
+      href: "/notifications",
+      active: pathname.startsWith("/notifications"),
       badge: unreadCount,
     },
-    { label: 'Recent activity', icon: IconHistory },
-    { label: 'Mentions', icon: IconAt },
+    { label: "Recent activity", icon: IconHistory },
+    { label: "Mentions", icon: IconAt },
   ];
 
   const systemItems: NavItem[] = [
-    { label: 'Integrations', icon: IconPlug },
+    { label: "Integrations", icon: IconPlug },
     ...(canManageWorkspace && workspaceId
       ? [
           {
-            label: 'Workspace settings',
+            label: "Workspace settings",
             icon: IconSettings,
             href: `/w/${workspaceId}/settings`,
             active: pathname.startsWith(`/w/${workspaceId}/settings`),
@@ -176,7 +199,9 @@ function WorkspaceNavigation({
   );
 }
 
-export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode }>) {
+export function ForkRoomShell({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams<{ workspaceId?: string }>();
@@ -188,82 +213,126 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
   const logout = useLogout();
   const navigationOpen = useUiStore((state) => state.navigationOpen);
   const setNavigationOpen = useUiStore((state) => state.setNavigationOpen);
-  const displayName = user?.display_name ?? 'ForkRoom user';
-  const initials = displayName
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('') || 'FR';
+  const sidebarCollapsed = useUiStore((state) => state.sidebarCollapsed);
+  const setSidebarCollapsed = useUiStore((state) => state.setSidebarCollapsed);
+  const displayName = user?.display_name ?? "ForkRoom user";
+  const initials =
+    displayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "FR";
 
   const currentMember = members.data?.find(
     (member) => member.user_id === user?.id,
   );
-  const canCreateDecision = ['owner', 'admin', 'member'].includes(
-    currentMember?.role ?? 'viewer',
+  const canCreateDecision = ["owner", "admin", "member"].includes(
+    currentMember?.role ?? "viewer",
   );
-  const canManageWorkspace = ['owner', 'admin'].includes(
-    currentMember?.role ?? 'viewer',
+  const canManageWorkspace = ["owner", "admin"].includes(
+    currentMember?.role ?? "viewer",
   );
 
   const unreadCount = unreadNotifications.data?.unread ?? 0;
-  const section = pathname.startsWith('/settings/profile')
-    ? 'Profile'
-    : pathname.startsWith('/settings/security')
-      ? 'Security'
-    : pathname.startsWith('/notifications')
-    ? 'Notifications'
-    : pathname.includes('/settings')
-      ? 'Settings'
-    : pathname.includes('/members')
-      ? 'Members'
-    : pathname.includes('/decisions/')
-      ? 'Decision'
-      : pathname.endsWith('/decisions')
-        ? 'Decisions'
-        : workspaceId
-          ? 'Overview'
-          : 'Workspaces';
+  const section = pathname.startsWith("/settings/profile")
+    ? "Profile"
+    : pathname.startsWith("/settings/security")
+      ? "Security"
+      : pathname.startsWith("/notifications")
+        ? "Notifications"
+        : pathname.includes("/settings")
+          ? "Settings"
+          : pathname.includes("/members")
+            ? "Members"
+            : pathname.includes("/decisions/")
+              ? "Decision"
+              : pathname.endsWith("/decisions")
+                ? "Decisions"
+                : workspaceId
+                  ? "Overview"
+                  : "Workspaces";
 
   const signOut = async () => {
     try {
       await logout.mutateAsync();
-      router.replace('/login');
+      router.replace("/login");
     } catch (error) {
       notifications.show({
-        color: 'red',
-        title: 'Could not sign out',
+        color: "red",
+        title: "Could not sign out",
         message: getApiErrorMessage(
           error,
-          'Your session remains active. Check the connection and try again.',
+          "Your session remains active. Check the connection and try again.",
         ),
       });
     }
   };
 
   return (
-    <div className={styles.shell}>
-      <aside className={styles.sidebar}>
-        <div>
-          <div className={styles.sidebarBrand}>
-            <Link href="/" className={styles.brand} aria-label="ForkRoom home">
-              <span className={styles.brandName}>FORKROOM</span>
-              <span className={styles.brandTagline}>DECISION WORKSPACE</span>
-            </Link>
-          </div>
+    <div
+      className={`${styles.shell} ${sidebarCollapsed ? styles.shellCollapsed : ""}`}
+      data-sidebar-state={sidebarCollapsed ? "collapsed" : "expanded"}
+    >
+      <div className={styles.desktopMasthead}>
+        <Tooltip
+          label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          position="right"
+          openDelay={250}
+        >
+          <ActionIcon
+            className={styles.sidebarToggle}
+            variant="subtle"
+            color="dark"
+            size={38}
+            aria-label={
+              sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+            }
+            aria-expanded={!sidebarCollapsed}
+            aria-controls="workspace-sidebar"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          >
+            <IconMenu2 size={21} stroke={1.8} aria-hidden="true" />
+          </ActionIcon>
+        </Tooltip>
+        <Link href="/" className={styles.brand} aria-label="ForkRoom home">
+          <span className={styles.brandName}>FORKROOM</span>
+          <span className={styles.brandTagline}>DECISION WORKSPACE</span>
+        </Link>
+      </div>
 
-          <Link href="/workspaces" className={styles.workspaceSwitcher}>
-            <span>
-              <strong>{workspace.data?.name ?? 'Choose workspace'}</strong>
-              <small>
-                {workspaceId && members.data ? `${members.data.length} members` : 'Switch workspace'}
-              </small>
-            </span>
-            <IconChevronDown size={16} stroke={1.8} aria-hidden="true" />
-          </Link>
+      <aside
+        id="workspace-sidebar"
+        className={styles.sidebar}
+        aria-label="Workspace sidebar"
+      >
+        <div>
+          <Tooltip
+            label="Switch workspace"
+            position="right"
+            disabled={!sidebarCollapsed}
+            openDelay={250}
+          >
+            <Link
+              href="/workspaces"
+              className={styles.workspaceSwitcher}
+              aria-label={sidebarCollapsed ? "Switch workspace" : undefined}
+            >
+              <span>
+                <strong>{workspace.data?.name ?? "Choose workspace"}</strong>
+                <small>
+                  {workspaceId && members.data
+                    ? `${members.data.length} members`
+                    : "Switch workspace"}
+                </small>
+              </span>
+              <IconChevronDown size={16} stroke={1.8} aria-hidden="true" />
+            </Link>
+          </Tooltip>
 
           <WorkspaceNavigation
             canManageWorkspace={canManageWorkspace}
+            compact={sidebarCollapsed}
             pathname={pathname}
             unreadCount={unreadCount}
             workspaceId={workspaceId}
@@ -272,13 +341,28 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
 
         <div className={styles.sidebarBottom}>
           <Divider color="var(--fr-border-strong)" />
-          <Link href="/settings/profile" className={styles.profileBlock}>
-            <Avatar color="rust" size={34} radius="xl">{initials}</Avatar>
-            <div className={styles.profileCopy}>
-              <strong>{displayName}</strong>
-              <span>{user?.email ?? 'Signed in'}</span>
-            </div>
-          </Link>
+          <Tooltip
+            label="Profile and account settings"
+            position="right"
+            disabled={!sidebarCollapsed}
+            openDelay={250}
+          >
+            <Link
+              href="/settings/profile"
+              className={styles.profileBlock}
+              aria-label={
+                sidebarCollapsed ? "Profile and account settings" : undefined
+              }
+            >
+              <Avatar color="rust" size={34} radius="xl">
+                {initials}
+              </Avatar>
+              <div className={styles.profileCopy}>
+                <strong>{displayName}</strong>
+                <span>{user?.email ?? "Signed in"}</span>
+              </div>
+            </Link>
+          </Tooltip>
         </div>
       </aside>
 
@@ -295,9 +379,9 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
 
         <div className={styles.breadcrumb} aria-label="Current location">
           <span>
-            {pathname.startsWith('/settings')
-              ? 'Account'
-              : workspace.data?.name ?? 'Workspace'}
+            {pathname.startsWith("/settings")
+              ? "Account"
+              : (workspace.data?.name ?? "Workspace")}
           </span>
           <IconChevronRight size={14} aria-hidden="true" />
           <strong>{section}</strong>
@@ -308,16 +392,16 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
           className={styles.searchButton}
           aria-label={
             workspaceId
-              ? `Search ${workspace.data?.name ?? 'current workspace'}`
-              : 'Open ForkRoom command menu'
+              ? `Search ${workspace.data?.name ?? "current workspace"}`
+              : "Open ForkRoom command menu"
           }
           onClick={spotlight.open}
         >
           <IconSearch size={19} stroke={1.8} aria-hidden="true" />
           <span>
             {workspaceId
-              ? 'Search decisions or run a command'
-              : 'Run a ForkRoom command'}
+              ? "Search decisions or run a command"
+              : "Run a ForkRoom command"}
           </span>
           <Kbd className={styles.searchKey}>Ctrl K</Kbd>
         </button>
@@ -337,7 +421,7 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
             color="rust"
             size={16}
             offset={5}
-            label={unreadCount > 99 ? '99+' : unreadCount}
+            label={unreadCount > 99 ? "99+" : unreadCount}
             disabled={unreadCount === 0}
           >
             <ActionIcon
@@ -348,7 +432,7 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
               size={38}
               aria-label={
                 unreadNotifications.isError
-                  ? 'Notifications; unread count unavailable'
+                  ? "Notifications; unread count unavailable"
                   : `${unreadCount} unread notifications`
               }
             >
@@ -366,8 +450,13 @@ export function ForkRoomShell({ children }: Readonly<{ children: React.ReactNode
           </ActionIcon>
           <Menu position="bottom-end" width={220} shadow="md">
             <Menu.Target>
-              <UnstyledButton className={styles.profileButton} aria-label="Open account menu">
-                <Avatar color="rust" radius="xl" size={34}>{initials}</Avatar>
+              <UnstyledButton
+                className={styles.profileButton}
+                aria-label="Open account menu"
+              >
+                <Avatar color="rust" radius="xl" size={34}>
+                  {initials}
+                </Avatar>
               </UnstyledButton>
             </Menu.Target>
             <Menu.Dropdown>

@@ -1,31 +1,70 @@
 .shell {
+  --fr-masthead-width: var(--fr-nav-width);
+  --fr-sidebar-current-width: var(--fr-nav-width);
   min-height: 100dvh;
   background: var(--fr-canvas);
+}
+
+.shellCollapsed {
+  --fr-sidebar-current-width: var(--fr-nav-compact-width);
 }
 
 .sidebar {
   position: fixed;
   z-index: 100;
-  inset: 0 auto 0 0;
-  width: var(--fr-nav-width);
+  inset: var(--fr-header-height) auto 0 0;
+  width: var(--fr-sidebar-current-width);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   background: var(--fr-surface);
   border-right: 1px solid var(--fr-border-strong);
+  overflow-x: hidden;
   overflow-y: auto;
+  scrollbar-width: none;
+  transition: width 180ms ease;
 }
 
-.sidebarBrand {
-  min-height: 82px;
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+.desktopMasthead {
+  position: fixed;
+  z-index: 110;
+  inset: 0 auto auto 0;
+  width: var(--fr-masthead-width);
+  min-width: var(--fr-masthead-width);
+  height: var(--fr-header-height);
   display: flex;
   align-items: center;
-  padding: 18px 22px 12px;
+  gap: 9px;
+  padding: 0 12px;
+  background: var(--fr-surface);
+  border-right: 1px solid var(--fr-border-strong);
+  border-bottom: 1px solid var(--fr-border-strong);
+}
+
+/*
+ * The masthead is deliberately outside the collapsible sidebar. Keep this
+ * selector explicit so the persisted compact state can never hide or resize
+ * the hamburger, FORKROOM wordmark, or tagline.
+ */
+.shellCollapsed .desktopMasthead {
+  width: var(--fr-masthead-width);
+  min-width: var(--fr-masthead-width);
+}
+
+.sidebarToggle {
+  flex: 0 0 auto;
 }
 
 .brand {
+  flex: 1 1 auto;
+  min-width: 0;
   display: grid;
   gap: 2px;
+  white-space: nowrap;
 }
 
 .brandName {
@@ -38,7 +77,7 @@
 .brandTagline,
 .navLabel {
   color: #7a6458;
-  font-family: 'JetBrains Mono Variable', monospace;
+  font-family: "JetBrains Mono Variable", monospace;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -56,7 +95,11 @@
   background: var(--fr-raised);
   border: 1px solid var(--fr-border-strong);
   border-radius: 7px;
-  transition: border-color 140ms ease, background-color 140ms ease;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    margin 180ms ease,
+    min-height 180ms ease;
 }
 
 .workspaceSwitcher:hover {
@@ -109,7 +152,9 @@
   color: #443d39;
   font-size: 12px;
   font-weight: 600;
-  transition: background-color 140ms ease, color 140ms ease;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
 }
 
 .navItem:hover {
@@ -122,7 +167,7 @@
 }
 
 .navItemActive::before {
-  content: '';
+  content: "";
   position: absolute;
   left: -12px;
   width: 3px;
@@ -141,7 +186,7 @@
   border-radius: 999px;
   color: #fff;
   background: var(--fr-primary);
-  font-family: 'JetBrains Mono Variable', monospace;
+  font-family: "JetBrains Mono Variable", monospace;
   font-size: 8px;
   font-weight: 750;
 }
@@ -190,15 +235,73 @@
   white-space: nowrap;
 }
 
-.profileCopy strong { font-size: 11px; }
-.profileCopy span { color: var(--fr-text-muted); }
+.profileCopy strong {
+  font-size: 11px;
+}
+.profileCopy span {
+  color: var(--fr-text-muted);
+}
+
+.shellCollapsed .workspaceSwitcher span,
+.shellCollapsed .workspaceSwitcher svg,
+.shellCollapsed .navText,
+.shellCollapsed .navLabel,
+.shellCollapsed .profileCopy {
+  display: none;
+}
+
+.shellCollapsed .workspaceSwitcher {
+  min-height: 42px;
+  margin: 0 12px 18px;
+  padding: 0;
+}
+
+.shellCollapsed .workspaceSwitcher::after {
+  content: "W";
+  margin: auto;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.shellCollapsed .navigation {
+  gap: 16px;
+  padding-inline: 10px;
+}
+
+.shellCollapsed .sidebarBottom {
+  padding-inline: 10px;
+}
+
+.shellCollapsed .navItem {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.shellCollapsed .navBadge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 15px;
+  height: 15px;
+  padding-inline: 3px;
+  font-size: 7px;
+}
+
+.shellCollapsed .navItemActive::before {
+  left: -10px;
+}
+
+.shellCollapsed .profileBlock {
+  justify-content: center;
+  padding-inline: 0;
+}
 
 .header {
   position: fixed;
   z-index: 90;
   top: 0;
   right: 0;
-  left: var(--fr-nav-width);
+  left: var(--fr-masthead-width);
   height: var(--fr-header-height);
   display: grid;
   grid-template-columns: minmax(170px, 1fr) minmax(320px, 560px) auto;
@@ -209,7 +312,9 @@
   border-bottom: 1px solid var(--fr-border-strong);
 }
 
-.mobileBrand { display: none; }
+.mobileBrand {
+  display: none;
+}
 
 .breadcrumb {
   min-width: 0;
@@ -226,7 +331,9 @@
   white-space: nowrap;
 }
 
-.breadcrumb strong { color: var(--fr-text); }
+.breadcrumb strong {
+  color: var(--fr-text);
+}
 
 .searchButton {
   height: 36px;
@@ -255,7 +362,7 @@
   color: var(--fr-text-muted);
   border-color: var(--fr-border-strong);
   background: var(--fr-raised);
-  font-family: 'JetBrains Mono Variable', monospace;
+  font-family: "JetBrains Mono Variable", monospace;
   font-size: 9px;
 }
 
@@ -279,8 +386,9 @@
 .main {
   height: 100dvh;
   padding-top: var(--fr-header-height);
-  padding-left: var(--fr-nav-width);
+  padding-left: var(--fr-sidebar-current-width);
   overflow: auto;
+  transition: padding-left 180ms ease;
 }
 
 .drawerTitle {
@@ -289,51 +397,16 @@
 }
 
 @media (max-width: 1099px) {
-  .sidebar { width: var(--fr-nav-compact-width); }
-  .sidebarBrand { justify-content: center; padding-inline: 0; }
-  .brandName { font-size: 18px; }
-  .brandName { font-size: 0; }
-  .brandName::first-letter { font-size: 18px; }
-  .brandTagline,
-  .workspaceSwitcher span,
-  .workspaceSwitcher svg,
-  .navText,
-  .navLabel,
-  .profileCopy { display: none; }
-  .workspaceSwitcher {
-    min-height: 42px;
-    margin: 0 12px 18px;
-    padding: 0;
-  }
-  .workspaceSwitcher::after {
-    content: 'W';
-    margin: auto;
-    font-size: 12px;
-    font-weight: 800;
-  }
-  .navigation,
-  .sidebarBottom { padding-inline: 10px; }
-  .navItem { justify-content: center; padding-inline: 0; }
-  .navBadge {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    min-width: 15px;
-    height: 15px;
-    padding-inline: 3px;
-    font-size: 7px;
-  }
-  .navItemActive::before { left: -10px; }
-  .profileBlock { justify-content: center; padding-inline: 0; }
   .header {
-    left: var(--fr-nav-compact-width);
     grid-template-columns: minmax(120px, 1fr) minmax(260px, 440px) auto;
   }
-  .main { padding-left: var(--fr-nav-compact-width); }
 }
 
 @media (max-width: 767px) {
-  .sidebar { display: none; }
+  .desktopMasthead,
+  .sidebar {
+    display: none;
+  }
   .header {
     left: 0;
     grid-template-columns: auto minmax(0, 1fr) auto;
@@ -347,16 +420,34 @@
     font-size: 12px;
     font-weight: 780;
   }
-  .breadcrumb { display: none; }
-  .searchButton { width: 100%; }
-  .searchKey { display: none; }
-  .helpAction { display: none; }
-  .main { padding-left: 0; }
+  .breadcrumb {
+    display: none;
+  }
+  .searchButton {
+    width: 100%;
+  }
+  .searchKey {
+    display: none;
+  }
+  .helpAction {
+    display: none;
+  }
+  .main {
+    padding-left: 0;
+  }
 }
 
 @media (max-width: 520px) {
-  .header { grid-template-columns: auto minmax(0, 1fr); }
-  .searchButton { display: none; }
-  .headerActions { justify-self: end; }
-  .mobileSearchAction { display: inline-flex; }
+  .header {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .searchButton {
+    display: none;
+  }
+  .headerActions {
+    justify-self: end;
+  }
+  .mobileSearchAction {
+    display: inline-flex;
+  }
 }
