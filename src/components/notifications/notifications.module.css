@@ -137,7 +137,11 @@
 
 .notificationUnread {
   box-shadow: inset 3px 0 0 var(--fr-primary);
-  background: linear-gradient(90deg, var(--fr-primary-soft), var(--fr-raised) 35%);
+  background: linear-gradient(
+    90deg,
+    var(--fr-primary-soft),
+    var(--fr-raised) 35%
+  );
 }
 
 .notificationUnread::after {
@@ -341,4 +345,50 @@
   .notificationActions :global(.mantine-Button-root) {
     flex: 1;
   }
+}
+
+/* Activity reads as one continuous ledger with compact rows. */
+.summaryBar,
+.toolbar,
+.statePanel {
+  box-shadow: none;
+}
+
+.notificationList {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: var(--fr-card-radius);
+  background: var(--fr-raised);
+}
+
+.notificationRow {
+  min-height: 88px;
+  padding: 13px 15px;
+  border: 0;
+  border-bottom: 1px solid var(--fr-border);
+  border-radius: 0;
+}
+
+.notificationRow:last-child {
+  border-bottom: 0;
+}
+
+.notificationUnread {
+  background: color-mix(in srgb, var(--fr-primary-soft) 55%, var(--fr-raised));
+  box-shadow: inset 3px 0 0 var(--fr-primary);
+}
+
+.notificationIcon,
+.notificationIcon[data-color="orange"],
+.notificationIcon[data-color="red"],
+.notificationIcon[data-color="rust"] {
+  color: var(--fr-text-muted);
+  background: var(--fr-surface);
+}
+
+.notificationMeta :global(.mantine-Badge-root) {
+  color: var(--fr-text-muted);
+  border: 1px solid var(--fr-border-strong);
+  background: var(--fr-surface);
 }

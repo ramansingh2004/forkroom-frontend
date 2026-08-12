@@ -45,7 +45,7 @@
   flex: 0 0 auto;
   height: 42px;
   padding-inline: 18px;
-  font-family: 'JetBrains Mono Variable', monospace;
+  font-family: "JetBrains Mono Variable", monospace;
   font-size: 10px;
   font-weight: 750;
   letter-spacing: 0.06em;
@@ -55,7 +55,7 @@
 .eyebrow,
 .kicker {
   color: #7a6458;
-  font-family: 'JetBrains Mono Variable', monospace;
+  font-family: "JetBrains Mono Variable", monospace;
   font-size: 9px;
   font-weight: 750;
   letter-spacing: 0.12em;
@@ -93,7 +93,7 @@
 
 .memberMetrics span {
   color: #7a6458;
-  font-family: 'JetBrains Mono Variable', monospace;
+  font-family: "JetBrains Mono Variable", monospace;
   font-size: 8px;
   font-weight: 750;
   letter-spacing: 0.11em;
@@ -138,7 +138,7 @@
   padding: 0 17px 0 66px;
   color: #7a6458;
   border-bottom: 1px solid var(--fr-border);
-  font-family: 'JetBrains Mono Variable', monospace;
+  font-family: "JetBrains Mono Variable", monospace;
   font-size: 8px;
   font-weight: 750;
   letter-spacing: 0.1em;
@@ -305,7 +305,7 @@
 
 .detailsMetadata small {
   color: #7a6458;
-  font-family: 'JetBrains Mono Variable', monospace;
+  font-family: "JetBrains Mono Variable", monospace;
   font-size: 8px;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -533,4 +533,89 @@
   .memberRow {
     transition: none;
   }
+}
+
+/* Member management is a dense master-detail table, not a card gallery. */
+.membersHeader {
+  padding: 20px 4px 22px;
+  border-width: 0 0 1px;
+  border-radius: 0;
+  background: transparent;
+}
+
+.membersHeader h1 {
+  font-size: clamp(28px, 3.4vw, 38px);
+}
+
+.memberMetrics {
+  margin-top: 0;
+  border-width: 0 0 1px;
+  border-radius: 0;
+  background: transparent;
+}
+
+.memberMetrics > div {
+  min-height: 62px;
+}
+
+.memberMetrics strong {
+  font-size: 23px;
+}
+
+.memberGrid {
+  gap: var(--fr-gutter);
+  margin-top: var(--fr-gutter);
+}
+
+.memberListPanel,
+.memberDetailsPanel {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.memberToolbar {
+  padding: 12px;
+}
+
+.memberRow {
+  min-height: 62px;
+}
+
+.memberRowSelected {
+  background: color-mix(in srgb, var(--fr-primary-soft) 72%, var(--fr-raised));
+}
+
+.detailsMetadata {
+  gap: 0;
+  border: 1px solid var(--fr-border);
+}
+
+.detailsMetadata > div {
+  border: 0;
+  border-right: 1px solid var(--fr-border);
+  border-radius: 0;
+  background: var(--fr-raised);
+}
+
+.detailsMetadata > div:last-child {
+  border-right: 0;
+}
+
+.accessCard,
+.managementSection,
+.dangerSection,
+.adminBoundary {
+  border-radius: var(--fr-card-radius);
+  box-shadow: none;
+}
+
+.accessCard {
+  background: var(--fr-surface);
+}
+
+.memberRow :global(.mantine-Badge-root),
+.detailsIdentity :global(.mantine-Badge-root) {
+  color: var(--fr-text-muted);
+  border: 1px solid var(--fr-border-strong);
+  background: var(--fr-surface);
 }

@@ -3196,6 +3196,227 @@
   font-family: "JetBrains Mono Variable", monospace;
 }
 
+/* -------------------------------------------------------------------------- */
+/* Architectural visual hierarchy                                             */
+/* -------------------------------------------------------------------------- */
+
+.workspace {
+  padding: var(--fr-gutter);
+}
+
+.panel,
+.focusWorkspace,
+.responsiveTabs,
+.responsivePanel > .panel {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.panelHeader {
+  min-height: 48px;
+  padding: 8px 10px 7px 12px;
+  background: var(--fr-surface);
+}
+
+.panelHeader h2 {
+  font-size: 13px;
+}
+
+.resizeHandle {
+  width: var(--fr-gutter);
+  flex-basis: var(--fr-gutter);
+  background: var(--fr-canvas);
+}
+
+.resizeHandle::after {
+  inset-block: 14px;
+}
+
+.documentToolbar {
+  min-height: 42px;
+  background: var(--fr-surface);
+}
+
+.modeTab,
+.outlineNav a,
+.outlineNav button {
+  border-radius: var(--fr-control-radius);
+}
+
+.outlineNav {
+  padding: 8px;
+}
+
+.outlineNav a,
+.outlineNav button {
+  min-height: 34px;
+  padding-block: 6px;
+}
+
+.proposalList {
+  gap: 0;
+  padding-inline: 0;
+  border-top: 1px solid var(--fr-border);
+}
+
+.proposalItem {
+  border-bottom: 1px solid var(--fr-border);
+}
+
+.proposal {
+  min-height: 68px;
+  padding: 9px 34px 9px 36px;
+  border: 0;
+  border-radius: 0;
+}
+
+.proposalSelected {
+  background: color-mix(in srgb, var(--fr-primary-soft) 72%, var(--fr-raised));
+  box-shadow: inset 3px 0 0 var(--fr-primary);
+}
+
+.proposalStatus,
+.proposalObjectionCount {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.document {
+  padding-top: clamp(30px, 3.5vw, 48px);
+}
+
+.objectionList,
+.evidenceList,
+.actionList,
+.revisionList,
+.auditTimeline {
+  gap: 0;
+}
+
+.objectionList,
+.evidenceList,
+.actionList,
+.revisionList {
+  border-top: 1px solid var(--fr-border);
+}
+
+.objectionCard,
+.evidenceCard,
+.lockedEvidenceCard,
+.actionRow,
+.reviewContent,
+.revisionCard,
+.auditEventBody,
+.resultTally {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.objectionCard,
+.evidenceCard,
+.lockedEvidenceCard,
+.actionRow,
+.revisionCard,
+.resultTally {
+  border: 0;
+  border-bottom: 1px solid var(--fr-border);
+}
+
+.objectionCard {
+  border-left: 3px solid var(--fr-danger);
+}
+
+.objectionCardClosed {
+  border-left-color: var(--fr-success);
+  background: var(--fr-raised);
+}
+
+.readinessPanel,
+.votingRoundBar,
+.votingMetrics,
+.resultSummary,
+.freezeSummary,
+.lockOutcomePreview,
+.lockConfirmationMetrics,
+.lockMetadata,
+.lockedOutcome,
+.hashRecord,
+.exportStatusCard,
+.exportMetadata,
+.exportActions,
+.followThroughMetrics,
+.followThroughFilters,
+.successorFields,
+.revisionMetadata {
+  border-radius: var(--fr-card-radius);
+  box-shadow: none;
+}
+
+.readinessPanel {
+  background: var(--fr-raised);
+}
+
+.readinessMetrics {
+  border-radius: var(--fr-control-radius);
+}
+
+.actionRow,
+.evidenceCard,
+.lockedEvidenceCard {
+  padding-block: 11px;
+}
+
+.reviewTimeline,
+.auditTimeline {
+  gap: 8px;
+}
+
+.reviewContent,
+.auditEventBody {
+  background: var(--fr-raised);
+}
+
+.revisionMarker {
+  color: var(--fr-text-muted);
+  background: var(--fr-surface);
+}
+
+.restorePanelButton {
+  border-radius: var(--fr-control-radius);
+  box-shadow: none;
+}
+
+.lockedTab[data-active],
+.modeTab[data-active] {
+  box-shadow: inset 0 0 0 1px var(--fr-border-strong);
+}
+
+.titleRow :global(.mantine-Badge-root),
+.objectionBadges :global(.mantine-Badge-root),
+.proposalFormIntro :global(.mantine-Badge-root),
+.actionRow :global(.mantine-Badge-root),
+.reviewContent :global(.mantine-Badge-root),
+.auditEventBody :global(.mantine-Badge-root) {
+  color: var(--fr-text-muted);
+  border-color: var(--fr-border-strong);
+  background: var(--fr-surface);
+}
+
+.lockDecisionCallout :global(.mantine-Button-root),
+.roomActions
+  :global(.mantine-Button-root[data-variant="filled"][data-color="dark"]),
+.mobileVoteDock :global(.mantine-Button-root[data-color="dark"]) {
+  color: #fff;
+  background: var(--fr-black);
+}
+
+@media (max-width: 1279px) {
+  .workspace {
+    padding: var(--fr-gutter);
+  }
+}
+
 @media (max-width: 900px) {
   .actionRow {
     grid-template-columns: minmax(0, 1fr) auto;

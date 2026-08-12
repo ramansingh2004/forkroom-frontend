@@ -1,27 +1,24 @@
-'use client';
+"use client";
 
-import { Alert, Badge, Button, Loader } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
+import { Alert, Badge, Button, Loader } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import {
   IconAlertTriangle,
   IconCircleCheck,
   IconDownload,
   IconFileTypePdf,
   IconRefresh,
-} from '@tabler/icons-react';
+} from "@tabler/icons-react";
 
 import {
   useDecisionExport,
   useDecisionExportDownload,
   useRequestDecisionExport,
-} from '@/hooks/use-workspaces';
-import {
-  getApiErrorMessage,
-  getApiStatus,
-} from '@/services/auth.service';
-import type { DecisionExport } from '@/services/workspace.service';
+} from "@/hooks/use-workspaces";
+import { getApiErrorMessage, getApiStatus } from "@/services/auth.service";
+import type { DecisionExport } from "@/services/workspace.service";
 
-import styles from './decision-room.module.css';
+import styles from "./decision-room.module.css";
 
 type DecisionExportPanelProps = {
   workspaceId: string;
@@ -34,24 +31,24 @@ type DecisionExportPanelProps = {
 
 const formatDateTime = (value: string | null) =>
   value
-    ? new Intl.DateTimeFormat('en', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
+    ? new Intl.DateTimeFormat("en", {
+        dateStyle: "medium",
+        timeStyle: "short",
       }).format(new Date(value))
-    : 'Not recorded';
+    : "Not recorded";
 
 const formatBytes = (value: number | null) => {
-  if (value === null) return 'Not available';
+  if (value === null) return "Not available";
   if (value < 1_024) return `${value} B`;
   if (value < 1_048_576) return `${(value / 1_024).toFixed(1)} KB`;
   return `${(value / 1_048_576).toFixed(1)} MB`;
 };
 
-const statusColor = (status: DecisionExport['status']) => {
-  if (status === 'available') return 'green';
-  if (status === 'failed') return 'red';
-  if (status === 'processing') return 'blue';
-  return 'orange';
+const statusColor = (status: DecisionExport["status"]) => {
+  if (status === "available") return "green";
+  if (status === "failed") return "red";
+  if (status === "processing") return "blue";
+  return "orange";
 };
 
 export function DecisionExportPanel({
@@ -76,15 +73,15 @@ export function DecisionExportPanel({
       const requested = await requestExport.mutateAsync();
 
       notifications.show({
-        color: requested.status === 'available' ? 'green' : 'blue',
+        color: requested.status === "available" ? "green" : "blue",
         title:
-          requested.status === 'available'
-            ? 'PDF export available'
-            : 'PDF export requested',
+          requested.status === "available"
+            ? "PDF export available"
+            : "PDF export requested",
         message:
-          requested.status === 'available'
-            ? 'ForkRoom found the existing export for this locked snapshot.'
-            : 'Rendering continues in the background. You can leave this page safely.',
+          requested.status === "available"
+            ? "ForkRoom found the existing export for this locked snapshot."
+            : "Rendering continues in the background. You can leave this page safely.",
       });
     } catch {
       // The mutation error is rendered below the export state.
@@ -94,17 +91,17 @@ export function DecisionExportPanel({
   const download = async () => {
     try {
       const response = await downloadExport.mutateAsync();
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = response.download_url;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
       document.body.appendChild(link);
       link.click();
       link.remove();
 
       notifications.show({
-        color: 'green',
-        title: 'Secure download opened',
+        color: "green",
+        title: "Secure download opened",
         message: `The temporary link expires ${formatDateTime(response.expires_at)}.`,
       });
     } catch {
@@ -113,7 +110,10 @@ export function DecisionExportPanel({
   };
 
   return (
-    <section className={styles.exportSection} aria-labelledby="decision-export-heading">
+    <section
+      className={styles.exportSection}
+      aria-labelledby="decision-export-heading"
+    >
       <div className={styles.exportHeading}>
         <div>
           <div className={styles.sectionIndex}>03 / PDF EXPORT</div>
@@ -175,7 +175,7 @@ export function DecisionExportPanel({
           <Alert color="red" title="Export status could not be loaded">
             {getApiErrorMessage(
               decisionExport.error,
-              'ForkRoom could not load the PDF export state.',
+              "ForkRoom could not load the PDF export state.",
             )}
           </Alert>
         )}
@@ -184,9 +184,9 @@ export function DecisionExportPanel({
           <div className={styles.exportRecord}>
             <div className={styles.exportStatusCard}>
               <div className={styles.exportStatusIcon}>
-                {exportRecord.status === 'available' ? (
+                {exportRecord.status === "available" ? (
                   <IconCircleCheck size={22} />
-                ) : exportRecord.status === 'failed' ? (
+                ) : exportRecord.status === "failed" ? (
                   <IconAlertTriangle size={22} />
                 ) : (
                   <Loader color="rust" size="sm" />
@@ -202,23 +202,23 @@ export function DecisionExportPanel({
                   {exportRecord.status}
                 </Badge>
                 <strong>
-                  {exportRecord.status === 'pending'
-                    ? 'Export queued'
-                    : exportRecord.status === 'processing'
-                      ? 'Rendering the locked decision'
-                      : exportRecord.status === 'available'
-                        ? 'PDF ready to download'
-                        : 'PDF rendering failed'}
+                  {exportRecord.status === "pending"
+                    ? "Export queued"
+                    : exportRecord.status === "processing"
+                      ? "Rendering the locked decision"
+                      : exportRecord.status === "available"
+                        ? "PDF ready to download"
+                        : "PDF rendering failed"}
                 </strong>
                 <p>
-                  {exportRecord.status === 'pending'
-                    ? 'The worker will claim this export when capacity is available.'
-                    : exportRecord.status === 'processing'
-                      ? 'ForkRoom is verifying the snapshot and rendering the PDF in the background.'
-                      : exportRecord.status === 'available'
-                        ? 'A fresh short-lived link is created only when you choose Download.'
+                  {exportRecord.status === "pending"
+                    ? "The worker will claim this export when capacity is available."
+                    : exportRecord.status === "processing"
+                      ? "ForkRoom is verifying the snapshot and rendering the PDF in the background."
+                      : exportRecord.status === "available"
+                        ? "A fresh short-lived link is created only when you choose Download."
                         : exportRecord.error ||
-                          'The locked decision is safe. Retry only restarts PDF generation.'}
+                          "The locked decision is safe. Retry only restarts PDF generation."}
                 </p>
               </div>
             </div>
@@ -267,10 +267,10 @@ export function DecisionExportPanel({
               </Alert>
             )}
 
-            {exportRecord.status === 'available' && (
+            {exportRecord.status === "available" && (
               <div className={styles.exportActions}>
                 <Button
-                  color="dark"
+                  color="rust"
                   leftSection={<IconDownload size={17} />}
                   onClick={download}
                   loading={downloadExport.isPending}
@@ -285,7 +285,7 @@ export function DecisionExportPanel({
               </div>
             )}
 
-            {exportRecord.status === 'failed' && (
+            {exportRecord.status === "failed" && (
               <div className={styles.exportActions}>
                 {canRequestExport ? (
                   <Button
@@ -323,7 +323,7 @@ export function DecisionExportPanel({
         <Alert color="red" title="PDF export could not be requested">
           {getApiErrorMessage(
             requestExport.error,
-            'ForkRoom could not queue this locked decision for PDF rendering.',
+            "ForkRoom could not queue this locked decision for PDF rendering.",
           )}
         </Alert>
       )}
@@ -332,7 +332,7 @@ export function DecisionExportPanel({
         <Alert color="red" title="Download link could not be created">
           {getApiErrorMessage(
             downloadExport.error,
-            'The previous link may have expired. Request a fresh download link and try again.',
+            "The previous link may have expired. Request a fresh download link and try again.",
           )}
         </Alert>
       )}

@@ -20,7 +20,7 @@
 
 .eyebrow {
   color: #7a6458;
-  font-family: 'JetBrains Mono Variable', monospace;
+  font-family: "JetBrains Mono Variable", monospace;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -112,7 +112,7 @@
 .sectionHeading > span {
   padding-top: 4px;
   color: var(--fr-primary);
-  font-family: 'JetBrains Mono Variable', monospace;
+  font-family: "JetBrains Mono Variable", monospace;
   font-size: 10px;
   font-weight: 750;
 }
@@ -151,7 +151,7 @@
 .identityCard span,
 .profileFacts small {
   color: #7a6458;
-  font-family: 'JetBrains Mono Variable', monospace;
+  font-family: "JetBrains Mono Variable", monospace;
   font-size: 8px;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -378,4 +378,36 @@
   .inlineAction :global(.mantine-Button-root) {
     width: 100%;
   }
+}
+
+/* Settings remain calm: one bounded section with internal rows. */
+.accountContent {
+  gap: 18px;
+}
+
+.settingsSection,
+.accountNav {
+  box-shadow: none;
+}
+
+.identityCard,
+.emailRow,
+.inlineAction,
+.capabilityRow,
+.sessionRow {
+  border-radius: var(--fr-control-radius);
+  box-shadow: none;
+  background: var(--fr-raised);
+}
+
+.profileFacts {
+  border-radius: var(--fr-control-radius);
+}
+
+.identityCard :global(.mantine-Badge-root),
+.emailRow :global(.mantine-Badge-root),
+.capabilityRow :global(.mantine-Badge-root) {
+  color: var(--fr-text-muted);
+  border: 1px solid var(--fr-border-strong);
+  background: var(--fr-surface);
 }

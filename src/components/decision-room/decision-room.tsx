@@ -1747,7 +1747,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
       return {
         label: "Export decision",
         icon: <IconFileExport size={17} />,
-        color: "dark",
+        color: "rust",
         disabled: false,
         reason: null,
         onClick: openLockedExport,
@@ -1865,8 +1865,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
         <div className={styles.roomActions}>
           <Button
             className={styles.meetingButton}
-            variant="light"
-            color="dark"
+            variant="default"
             leftSection={<IconVideo size={17} />}
             onClick={() => setMeetingOpened(true)}
           >

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Avatar,
@@ -11,10 +11,10 @@ import {
   Select,
   TextInput,
   Tooltip,
-} from '@mantine/core';
-import { useMediaQuery } from '@mantine/hooks';
-import { modals } from '@mantine/modals';
-import { notifications } from '@mantine/notifications';
+} from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
+import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
 import {
   IconAlertTriangle,
   IconCalendar,
@@ -26,22 +26,22 @@ import {
   IconTrash,
   IconUserPlus,
   IconUsers,
-} from '@tabler/icons-react';
-import { useCurrentUser } from '@/hooks/use-auth';
+} from "@tabler/icons-react";
+import { useCurrentUser } from "@/hooks/use-auth";
 import {
   useRemoveWorkspaceMember,
   useUpdateWorkspaceMember,
   useWorkspace,
   useWorkspaceMembers,
-} from '@/hooks/use-workspaces';
-import { getApiErrorMessage } from '@/services/auth.service';
+} from "@/hooks/use-workspaces";
+import { getApiErrorMessage } from "@/services/auth.service";
 import type {
   AssignableWorkspaceRole,
   WorkspaceMember,
   WorkspaceRole,
-} from '@/services/workspace.service';
-import { MemberAddModal } from './member-add-modal';
-import styles from './members.module.css';
+} from "@/services/workspace.service";
+import { MemberAddModal } from "./member-add-modal";
+import styles from "./members.module.css";
 
 const roleOrder: Record<WorkspaceRole, number> = {
   owner: 0,
@@ -51,10 +51,10 @@ const roleOrder: Record<WorkspaceRole, number> = {
 };
 
 const roleColor: Record<WorkspaceRole, string> = {
-  owner: 'dark',
-  admin: 'rust',
-  member: 'blue',
-  viewer: 'gray',
+  owner: "gray",
+  admin: "gray",
+  member: "gray",
+  viewer: "gray",
 };
 
 const roleDetails: Record<
@@ -62,39 +62,39 @@ const roleDetails: Record<
   { title: string; summary: string; capabilities: string[] }
 > = {
   owner: {
-    title: 'Workspace owner',
-    summary: 'Permanent governance identity for this workspace.',
+    title: "Workspace owner",
+    summary: "Permanent governance identity for this workspace.",
     capabilities: [
-      'Controls membership and administrator roles',
-      'Manages decisions, voting, locking, and workspace settings',
-      'Owns destructive workspace operations',
+      "Controls membership and administrator roles",
+      "Manages decisions, voting, locking, and workspace settings",
+      "Owns destructive workspace operations",
     ],
   },
   admin: {
-    title: 'Administrator',
-    summary: 'Facilitates decisions and manages day-to-day operations.',
+    title: "Administrator",
+    summary: "Facilitates decisions and manages day-to-day operations.",
     capabilities: [
-      'Adds members with member or viewer access',
-      'Removes members and viewers',
-      'Manages voting sessions, locking, and non-owner settings',
+      "Adds members with member or viewer access",
+      "Removes members and viewers",
+      "Manages voting sessions, locking, and non-owner settings",
     ],
   },
   member: {
-    title: 'Member',
-    summary: 'Contributes to the structured decision process.',
+    title: "Member",
+    summary: "Contributes to the structured decision process.",
     capabilities: [
-      'Creates decisions and draft proposals',
-      'Raises objections, scores criteria, and votes when eligible',
-      'Owns and updates assigned follow-through actions',
+      "Creates decisions and draft proposals",
+      "Raises objections, scores criteria, and votes when eligible",
+      "Owns and updates assigned follow-through actions",
     ],
   },
   viewer: {
-    title: 'Viewer',
-    summary: 'Reads the workspace without changing its record.',
+    title: "Viewer",
+    summary: "Reads the workspace without changing its record.",
     capabilities: [
-      'Reads decisions, results, evidence, and history',
-      'Downloads available locked-decision exports',
-      'Cannot create, edit, vote, or manage membership',
+      "Reads decisions, results, evidence, and history",
+      "Downloads available locked-decision exports",
+      "Cannot create, edit, vote, or manage membership",
     ],
   },
 };
@@ -103,9 +103,9 @@ const assignableRoleOptions: Array<{
   value: AssignableWorkspaceRole;
   label: string;
 }> = [
-  { value: 'admin', label: 'Admin' },
-  { value: 'member', label: 'Member' },
-  { value: 'viewer', label: 'Viewer' },
+  { value: "admin", label: "Admin" },
+  { value: "member", label: "Member" },
+  { value: "viewer", label: "Viewer" },
 ];
 
 function memberInitials(member: WorkspaceMember) {
@@ -115,13 +115,13 @@ function memberInitials(member: WorkspaceMember) {
       .filter(Boolean)
       .slice(0, 2)
       .map((part) => part[0]?.toUpperCase())
-      .join('') || 'FR'
+      .join("") || "FR"
   );
 }
 
 function formatJoinedAt(value: string) {
-  return new Intl.DateTimeFormat('en', {
-    dateStyle: 'medium',
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
   }).format(new Date(value));
 }
 
@@ -142,14 +142,14 @@ function MemberDetails({
 }) {
   const updateMember = useUpdateWorkspaceMember(workspaceId);
   const removeMember = useRemoveWorkspaceMember(workspaceId);
-  const isOwner = member.role === 'owner';
+  const isOwner = member.role === "owner";
   const isCurrentUser = member.user_id === currentUserId;
-  const canChangeRole = actorRole === 'owner' && !isOwner && !isCurrentUser;
+  const canChangeRole = actorRole === "owner" && !isOwner && !isCurrentUser;
   const canRemove =
     !isOwner &&
     !isCurrentUser &&
-    (actorRole === 'owner' ||
-      (actorRole === 'admin' && ['member', 'viewer'].includes(member.role)));
+    (actorRole === "owner" ||
+      (actorRole === "admin" && ["member", "viewer"].includes(member.role)));
   const details = roleDetails[member.role];
 
   useEffect(() => {
@@ -161,16 +161,16 @@ function MemberDetails({
     if (!role || role === member.role || !canChangeRole) return;
 
     modals.openConfirmModal({
-      title: 'Change workspace role?',
+      title: "Change workspace role?",
       children: (
         <p className={styles.confirmCopy}>
-          {member.display_name} will move from <strong>{member.role}</strong> to{' '}
+          {member.display_name} will move from <strong>{member.role}</strong> to{" "}
           <strong>{role}</strong>. Their effective workspace access changes as
           soon as the server accepts this update.
         </p>
       ),
-      labels: { confirm: 'Change role', cancel: 'Keep current role' },
-      confirmProps: { color: 'rust' },
+      labels: { confirm: "Change role", cancel: "Keep current role" },
+      confirmProps: { color: "rust" },
       onConfirm: async () => {
         try {
           await updateMember.mutateAsync({
@@ -178,8 +178,8 @@ function MemberDetails({
             payload: { role },
           });
           notifications.show({
-            color: 'green',
-            title: 'Role updated',
+            color: "green",
+            title: "Role updated",
             message: `${member.display_name} is now a workspace ${role}.`,
           });
         } catch {
@@ -193,7 +193,7 @@ function MemberDetails({
     if (!canRemove) return;
 
     modals.openConfirmModal({
-      title: 'Remove workspace access?',
+      title: "Remove workspace access?",
       children: (
         <p className={styles.confirmCopy}>
           Remove <strong>{member.display_name}</strong> from this workspace?
@@ -201,14 +201,14 @@ function MemberDetails({
           record, but they will lose workspace access immediately.
         </p>
       ),
-      labels: { confirm: 'Remove member', cancel: 'Cancel' },
-      confirmProps: { color: 'red' },
+      labels: { confirm: "Remove member", cancel: "Cancel" },
+      confirmProps: { color: "red" },
       onConfirm: async () => {
         try {
           await removeMember.mutateAsync(member.user_id);
           notifications.show({
-            color: 'green',
-            title: 'Member removed',
+            color: "green",
+            title: "Member removed",
             message: `${member.display_name} no longer has access to this workspace.`,
           });
           onRemoved();
@@ -222,12 +222,7 @@ function MemberDetails({
   return (
     <div className={styles.memberDetails}>
       <div className={styles.detailsIdentity}>
-        <Avatar
-          src={member.avatar_url}
-          color="rust"
-          size={58}
-          radius="xl"
-        >
+        <Avatar src={member.avatar_url} color="rust" size={58} radius="xl">
           {memberInitials(member)}
         </Avatar>
         <div>
@@ -280,11 +275,15 @@ function MemberDetails({
       </section>
 
       {isOwner ? (
-        <Alert color="gray" icon={<IconLock size={17} />} title="Owner is immutable">
+        <Alert
+          color="gray"
+          icon={<IconLock size={17} />}
+          title="Owner is immutable"
+        >
           The owner membership cannot be reassigned or removed by the current
           API. Ownership transfer is not part of this release.
         </Alert>
-      ) : actorRole === 'admin' && member.role === 'admin' ? (
+      ) : actorRole === "admin" && member.role === "admin" ? (
         <Alert
           color="gray"
           icon={<IconLock size={17} />}
@@ -299,7 +298,7 @@ function MemberDetails({
         </Alert>
       ) : null}
 
-      {actorRole === 'owner' && !isOwner && !isCurrentUser && (
+      {actorRole === "owner" && !isOwner && !isCurrentUser && (
         <section className={styles.managementSection}>
           <div>
             <span className={styles.kicker}>ACCESS CONTROL</span>
@@ -323,7 +322,7 @@ function MemberDetails({
         <Alert color="red" title="Access could not be changed">
           {getApiErrorMessage(
             updateMember.error ?? removeMember.error,
-            'ForkRoom rejected this membership change. Refresh the member list and try again.',
+            "ForkRoom rejected this membership change. Refresh the member list and try again.",
           )}
         </Alert>
       )}
@@ -333,7 +332,9 @@ function MemberDetails({
           <div>
             <span className={styles.kicker}>REMOVE ACCESS</span>
             <h3>Remove from workspace</h3>
-            <p>Past contributions remain attributable after access is removed.</p>
+            <p>
+              Past contributions remain attributable after access is removed.
+            </p>
           </div>
           <Button
             color="red"
@@ -354,21 +355,23 @@ export function MemberManagement({ workspaceId }: { workspaceId: string }) {
   const currentUser = useCurrentUser();
   const workspace = useWorkspace(workspaceId);
   const members = useWorkspaceMembers(workspaceId);
-  const mobile = useMediaQuery('(max-width: 767px)');
-  const [query, setQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState<WorkspaceRole | 'all'>('all');
-  const [selectedMemberId, setSelectedMemberId] = useState('');
+  const mobile = useMediaQuery("(max-width: 767px)");
+  const [query, setQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<WorkspaceRole | "all">("all");
+  const [selectedMemberId, setSelectedMemberId] = useState("");
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
   const [addOpened, setAddOpened] = useState(false);
 
   const currentMember = members.data?.find(
     (member) => member.user_id === currentUser.data?.id,
   );
-  const actorRole = currentMember?.role ?? 'viewer';
-  const canManageMembership = ['owner', 'admin'].includes(actorRole);
+  const actorRole = currentMember?.role ?? "viewer";
+  const canManageMembership = ["owner", "admin"].includes(actorRole);
   const canSeeEmail = canManageMembership;
   const assignableRoles: AssignableWorkspaceRole[] =
-    actorRole === 'owner' ? ['admin', 'member', 'viewer'] : ['member', 'viewer'];
+    actorRole === "owner"
+      ? ["admin", "member", "viewer"]
+      : ["member", "viewer"];
 
   const orderedMembers = useMemo(
     () =>
@@ -383,14 +386,17 @@ export function MemberManagement({ workspaceId }: { workspaceId: string }) {
   const filteredMembers = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
     return orderedMembers.filter((member) => {
-      const matchesRole = roleFilter === 'all' || member.role === roleFilter;
+      const matchesRole = roleFilter === "all" || member.role === roleFilter;
       const searchable = [
         member.display_name,
         ...(canSeeEmail ? [member.email] : []),
       ]
-        .join(' ')
+        .join(" ")
         .toLocaleLowerCase();
-      return matchesRole && (!normalizedQuery || searchable.includes(normalizedQuery));
+      return (
+        matchesRole &&
+        (!normalizedQuery || searchable.includes(normalizedQuery))
+      );
     });
   }, [canSeeEmail, orderedMembers, query, roleFilter]);
 
@@ -432,7 +438,7 @@ export function MemberManagement({ workspaceId }: { workspaceId: string }) {
   };
 
   const clearRemovedSelection = () => {
-    setSelectedMemberId('');
+    setSelectedMemberId("");
     setMobileDetailsOpen(false);
   };
 
@@ -469,22 +475,22 @@ export function MemberManagement({ workspaceId }: { workspaceId: string }) {
 
       <section className={styles.memberMetrics} aria-label="Member summary">
         <div>
-          <strong>{String(members.data.length).padStart(2, '0')}</strong>
+          <strong>{String(members.data.length).padStart(2, "0")}</strong>
           <span>TOTAL MEMBERS</span>
         </div>
         <div>
           <strong>
             {String(
-              members.data.filter((member) => member.role === 'admin').length,
-            ).padStart(2, '0')}
+              members.data.filter((member) => member.role === "admin").length,
+            ).padStart(2, "0")}
           </strong>
           <span>ADMINISTRATORS</span>
         </div>
         <div>
           <strong>
             {String(
-              members.data.filter((member) => member.role === 'viewer').length,
-            ).padStart(2, '0')}
+              members.data.filter((member) => member.role === "viewer").length,
+            ).padStart(2, "0")}
           </strong>
           <span>VIEW-ONLY</span>
         </div>
@@ -509,20 +515,20 @@ export function MemberManagement({ workspaceId }: { workspaceId: string }) {
               value={query}
               onChange={(event) => setQuery(event.currentTarget.value)}
               leftSection={<IconSearch size={16} />}
-              placeholder={canSeeEmail ? 'Search name or email' : 'Search name'}
+              placeholder={canSeeEmail ? "Search name or email" : "Search name"}
               aria-label="Search workspace members"
             />
             <Select
               value={roleFilter}
               onChange={(value) =>
-                setRoleFilter((value ?? 'all') as WorkspaceRole | 'all')
+                setRoleFilter((value ?? "all") as WorkspaceRole | "all")
               }
               data={[
-                { value: 'all', label: 'All roles' },
-                { value: 'owner', label: 'Owner' },
-                { value: 'admin', label: 'Admin' },
-                { value: 'member', label: 'Member' },
-                { value: 'viewer', label: 'Viewer' },
+                { value: "all", label: "All roles" },
+                { value: "owner", label: "Owner" },
+                { value: "admin", label: "Admin" },
+                { value: "member", label: "Member" },
+                { value: "viewer", label: "Viewer" },
               ]}
               allowDeselect={false}
               aria-label="Filter members by role"
@@ -544,8 +550,8 @@ export function MemberManagement({ workspaceId }: { workspaceId: string }) {
                 variant="light"
                 color="rust"
                 onClick={() => {
-                  setQuery('');
-                  setRoleFilter('all');
+                  setQuery("");
+                  setRoleFilter("all");
                 }}
               >
                 Clear filters
@@ -560,7 +566,7 @@ export function MemberManagement({ workspaceId }: { workspaceId: string }) {
                   className={`${styles.memberRow} ${
                     selectedMember?.user_id === member.user_id
                       ? styles.memberRowSelected
-                      : ''
+                      : ""
                   }`}
                   onClick={() => selectMember(member.user_id)}
                   aria-pressed={selectedMember?.user_id === member.user_id}
@@ -576,7 +582,7 @@ export function MemberManagement({ workspaceId }: { workspaceId: string }) {
                   <span className={styles.memberIdentity}>
                     <strong>
                       {member.display_name}
-                      {member.user_id === currentUser.data.id ? ' (you)' : ''}
+                      {member.user_id === currentUser.data.id ? " (you)" : ""}
                     </strong>
                     {canSeeEmail && <small>{member.email}</small>}
                   </span>
@@ -643,7 +649,7 @@ export function MemberManagement({ workspaceId }: { workspaceId: string }) {
         }}
       />
 
-      {canManageMembership && actorRole === 'admin' && (
+      {canManageMembership && actorRole === "admin" && (
         <div className={styles.adminBoundary}>
           <IconAlertTriangle size={17} aria-hidden="true" />
           <span>

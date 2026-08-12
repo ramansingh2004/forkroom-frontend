@@ -226,7 +226,10 @@ export function NotificationInbox() {
           onChange={(value) => setMode(value as InboxMode)}
           data={[
             { label: "All", value: "all" },
-            { label: `Unread${unreadCount > 0 ? ` (${unreadCount})` : ""}`, value: "unread" },
+            {
+              label: `Unread${unreadCount > 0 ? ` (${unreadCount})` : ""}`,
+              value: "unread",
+            },
           ]}
           aria-label="Notification read-state filter"
         />
@@ -278,7 +281,11 @@ export function NotificationInbox() {
       ) : items.length === 0 ? (
         <div className={styles.statePanel}>
           <IconInbox size={30} />
-          <strong>{mode === "unread" ? "You are all caught up" : "No notifications yet"}</strong>
+          <strong>
+            {mode === "unread"
+              ? "You are all caught up"
+              : "No notifications yet"}
+          </strong>
           <p>
             {mode === "unread"
               ? "New attention items will appear here when work is assigned or a decision reaches a time-sensitive stage."
@@ -329,7 +336,7 @@ export function NotificationInbox() {
 
       <Button
         variant="subtle"
-        color="dark"
+        color="gray"
         className={styles.backButton}
         onClick={() => router.back()}
       >

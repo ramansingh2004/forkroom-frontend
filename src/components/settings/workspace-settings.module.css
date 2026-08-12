@@ -16,7 +16,7 @@
 
 .eyebrow {
   color: #7a6458;
-  font-family: 'JetBrains Mono Variable', monospace;
+  font-family: "JetBrains Mono Variable", monospace;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -105,7 +105,7 @@
 .sectionHeading > span {
   padding-top: 4px;
   color: var(--fr-primary);
-  font-family: 'JetBrains Mono Variable', monospace;
+  font-family: "JetBrains Mono Variable", monospace;
   font-size: 10px;
   font-weight: 750;
 }
@@ -176,7 +176,7 @@
 .ownerCard span,
 .metadataGrid small {
   color: #7a6458;
-  font-family: 'JetBrains Mono Variable', monospace;
+  font-family: "JetBrains Mono Variable", monospace;
   font-size: 8px;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -412,4 +412,39 @@
   .metadataGrid > div:last-child {
     border-bottom: 0;
   }
+}
+
+/* Settings hierarchy comes from grouped paper surfaces, not elevation. */
+.settingsContent {
+  gap: 18px;
+}
+
+.settingsSection,
+.settingsNav,
+.saveBar,
+.permissionState {
+  box-shadow: none;
+}
+
+.saveBar {
+  background: var(--fr-raised);
+  backdrop-filter: none;
+}
+
+.ownerCard,
+.metadataGrid,
+.dangerAction,
+.deleteChecklist {
+  border-radius: var(--fr-control-radius);
+  box-shadow: none;
+}
+
+.ownerCard {
+  background: var(--fr-raised);
+}
+
+.ownerCard :global(.mantine-Badge-root) {
+  color: var(--fr-text-muted);
+  border: 1px solid var(--fr-border-strong);
+  background: var(--fr-surface);
 }

@@ -14,6 +14,9 @@
   --fr-warning: #a26312;
   --fr-danger: #b42318;
   --fr-info: #2f5d8a;
+  --fr-gutter: 8px;
+  --fr-control-radius: 6px;
+  --fr-card-radius: 8px;
   --fr-header-height: 56px;
   --fr-nav-width: 232px;
   --fr-nav-compact-width: 72px;
@@ -32,8 +35,13 @@ body {
 body {
   background: var(--fr-canvas);
   color: var(--fr-text);
-  font-family: 'Manrope Variable', 'Manrope', sans-serif;
+  font-family: "Manrope Variable", "Manrope", sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Application hierarchy is carried by paper surfaces, borders, and gutters. */
+::backdrop {
+  background: rgb(17 24 39 / 42%);
 }
 
 button,
