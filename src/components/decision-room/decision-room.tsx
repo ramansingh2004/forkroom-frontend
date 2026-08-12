@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActionIcon,
   Alert,
@@ -26,10 +26,12 @@ import {
   IconChevronRight,
   IconDotsVertical,
   IconEdit,
+  IconFileExport,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarRightCollapse,
   IconLock,
   IconPlayerPlay,
+  IconPlayerStop,
   IconPlus,
   IconMessageExclamation,
   IconRestore,
@@ -56,12 +58,14 @@ import {
   useDecisionCriteria,
   useDecisionLock,
   useDecisionProposals,
+  useOpenBlockingObjections,
   useProposalObjections,
   useTransitionDecision,
   useTransitionProposal,
   useWorkspace,
   useWorkspaceMembers,
   useVotingSessions,
+  useVotingResult,
 } from "@/hooks/use-workspaces";
 import { getApiErrorMessage } from "@/services/auth.service";
 import type {
@@ -77,6 +81,11 @@ import type {
 import { useUiStore } from "@/stores/use-ui-store";
 
 import styles from "./decision-room.module.css";
+import {
+  DecisionLifecycleIndicator,
+  type DecisionLifecycleStage,
+  type VotingReadiness,
+} from "./decision-lifecycle";
 import { ObjectionEditorModal } from "./objection-editor-modal";
 import { ObjectionStatusModal } from "./objection-status-modal";
 import { LockedDecisionPanel } from "./locked-decision-panel";
@@ -86,7 +95,11 @@ import {
   LockedEvidencePanel,
 } from "./locked-evidence-panel";
 import { ProposalEditorModal } from "./proposal-editor-modal";
-import { VotingPanel } from "./voting-panel";
+import {
+  type VotingPanelAction,
+  type VotingPanelActionRequest,
+  VotingPanel,
+} from "./voting-panel";
 import { MeetingDock } from "./meeting-room/meeting-dock";
 
 type WorkMode = "document" | "proposal" | "compare" | "vote";
@@ -660,11 +673,14 @@ function DocumentPanel({
   canRequestExport,
   canCreateActions,
   canManageFollowThrough,
+  votingReadiness,
+  votingActionRequest,
   transitionPending,
   onModeChange,
   onCreateProposal,
   onEditProposal,
   onTransitionProposal,
+  onVotingActionHandled,
   onEnterFocus,
 }: {
   workspaceId: string;
@@ -686,6 +702,8 @@ function DocumentPanel({
   canRequestExport: boolean;
   canCreateActions: boolean;
   canManageFollowThrough: boolean;
+  votingReadiness: VotingReadiness;
+  votingActionRequest: VotingPanelActionRequest | null;
   transitionPending: boolean;
   onModeChange: (mode: WorkMode) => void;
   onCreateProposal: () => void;
@@ -694,6 +712,7 @@ function DocumentPanel({
     proposal: Proposal,
     status: Proposal["status"],
   ) => void;
+  onVotingActionHandled: (requestId: number) => void;
   onEnterFocus?: () => void;
 }) {
   return (
@@ -762,6 +781,9 @@ function DocumentPanel({
             proposals={proposals}
             sessions={votingSessions}
             canManageVoting={canManageVoting}
+            readiness={votingReadiness}
+            actionRequest={votingActionRequest}
+            onActionHandled={onVotingActionHandled}
           />
         ) : mode === "proposal" && selectedProposal ? (
           <article className={`${styles.document} ${styles.proposalDocument}`}>
@@ -1083,6 +1105,32 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     decisionId,
     decision.data?.status === "locked",
   );
+  const submittedProposalIds = (proposals.data ?? [])
+    .filter((proposal) => proposal.status === "submitted")
+    .map((proposal) => proposal.id);
+  const readinessObjections = useOpenBlockingObjections(
+    workspaceId,
+    decisionId,
+    decision.data?.status === "locked" ? [] : submittedProposalIds,
+  );
+  const orderedVotingSessions = [...(votingSessions.data ?? [])].sort(
+    (left, right) =>
+      new Date(right.created_at).getTime() -
+      new Date(left.created_at).getTime(),
+  );
+  const unfinishedVotingSession = orderedVotingSessions.find(
+    (session) => session.status === "draft" || session.status === "open",
+  );
+  const latestVotingSession = orderedVotingSessions[0] ?? null;
+  const latestClosedVotingSession = orderedVotingSessions.find(
+    (session) => session.status === "closed",
+  );
+  const latestClosedVotingResult = useVotingResult(
+    workspaceId,
+    decisionId,
+    latestClosedVotingSession?.id,
+    decision.data?.status !== "locked",
+  );
   const transitionProposal = useTransitionProposal(workspaceId, decisionId);
   const transitionDecision = useTransitionDecision(workspaceId, decisionId);
   const deleteProposal = useDeleteProposal(workspaceId, decisionId);
@@ -1114,6 +1162,9 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
   const [selectedProposalId, setSelectedProposalId] = useState<string | null>(
     null,
   );
+  const [votingActionRequest, setVotingActionRequest] =
+    useState<VotingPanelActionRequest | null>(null);
+  const votingActionSequence = useRef(0);
   const [editorProposal, setEditorProposal] = useState<
     Proposal | null | undefined
   >(undefined);
@@ -1249,6 +1300,112 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     : (attachments.data ?? []).filter(
         (attachment) => attachment.status !== "deleted",
       ).length;
+  const eligibleVoterCount = members.data.filter((member) =>
+    ["owner", "admin", "member"].includes(member.role),
+  ).length;
+  const processingEvidenceCount = (attachments.data ?? []).filter(
+    (attachment) =>
+      attachment.status === "pending" || attachment.status === "processing",
+  ).length;
+  const votingIsOpen = unfinishedVotingSession?.status === "open";
+  const draftVotingSession =
+    unfinishedVotingSession?.status === "draft"
+      ? unfinishedVotingSession
+      : null;
+  const readinessChecking =
+    !votingIsOpen && (readinessObjections.isPending || attachments.isPending);
+  const readinessIssues: string[] = [];
+
+  if (!votingIsOpen) {
+    if (decision.data.status === "draft") {
+      readinessIssues.push(
+        "Activate this decision before creating or opening a voting round.",
+      );
+    } else if (decision.data.status !== "active") {
+      readinessIssues.push(
+        `Voting cannot start while the decision is ${decision.data.status}.`,
+      );
+    }
+    if (!draftVotingSession) {
+      readinessIssues.push(
+        "Create a draft voting round and configure its quorum.",
+      );
+    }
+    if (submittedProposalIds.length < 2) {
+      readinessIssues.push(
+        `Submit at least two proposals. ${submittedProposalIds.length} ${
+          submittedProposalIds.length === 1 ? "is" : "are"
+        } currently active.`,
+      );
+    }
+    if (eligibleVoterCount === 0) {
+      readinessIssues.push(
+        "Add at least one owner, admin, or member who is eligible to vote.",
+      );
+    }
+    if (readinessObjections.isError) {
+      readinessIssues.push(
+        "Blocking objections could not be verified. Retry before opening voting.",
+      );
+    } else if (readinessObjections.objections.length > 0) {
+      readinessIssues.push(
+        `Resolve or dismiss ${readinessObjections.objections.length} open blocking objection${
+          readinessObjections.objections.length === 1 ? "" : "s"
+        } before opening voting.`,
+      );
+    }
+    if (attachments.isError) {
+      readinessIssues.push(
+        "Evidence processing could not be verified. Retry before opening voting.",
+      );
+    } else if (processingEvidenceCount > 0) {
+      readinessIssues.push(
+        `Wait for ${processingEvidenceCount} evidence file${
+          processingEvidenceCount === 1 ? "" : "s"
+        } to finish processing.`,
+      );
+    }
+    if (
+      draftVotingSession?.closes_at &&
+      new Date(draftVotingSession.closes_at).getTime() <= Date.now()
+    ) {
+      readinessIssues.push(
+        "The configured voting close time has passed. Cancel this round and create a new one.",
+      );
+    }
+  }
+
+  const votingReadiness: VotingReadiness = {
+    activeProposalCount: submittedProposalIds.length,
+    eligibleVoterCount:
+      votingIsOpen && unfinishedVotingSession
+        ? unfinishedVotingSession.eligible_voter_count
+        : eligibleVoterCount,
+    quorumPercentage: unfinishedVotingSession?.quorum_percentage ?? null,
+    blockingObjectionCount:
+      readinessObjections.isPending || readinessObjections.isError
+        ? null
+        : readinessObjections.objections.length,
+    processingEvidenceCount:
+      attachments.isPending || attachments.isError
+        ? null
+        : processingEvidenceCount,
+    issues: readinessIssues,
+    isChecking: readinessChecking,
+    votingIsOpen,
+  };
+  const lifecycleStage: DecisionLifecycleStage =
+    decision.data.status === "locked"
+      ? "locked"
+      : decision.data.status === "draft"
+        ? "draft"
+        : unfinishedVotingSession
+          ? "voting"
+          : latestVotingSession?.status === "closed" ||
+              decision.data.status === "closed" ||
+              decision.data.status === "archived"
+            ? "closed"
+            : "active";
 
   const openEvidence = () => {
     setCollaborationTab("evidence");
@@ -1329,6 +1486,61 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
           });
         }
       },
+    });
+  };
+
+  const confirmReopenDecision = () => {
+    modals.openConfirmModal({
+      title: "Reopen this decision?",
+      children: (
+        <p className={styles.confirmCopy}>
+          Locking requires an active decision. Reopening returns this decision
+          to active work without changing the closed voting result.
+        </p>
+      ),
+      labels: { confirm: "Reopen decision", cancel: "Keep closed" },
+      confirmProps: { color: "rust" },
+      onConfirm: async () => {
+        try {
+          await transitionDecision.mutateAsync({ status: "active" });
+          notifications.show({
+            color: "green",
+            title: "Decision reopened",
+            message: "The closed result can now be reviewed and locked.",
+          });
+        } catch (error) {
+          notifications.show({
+            color: "red",
+            title: "Could not reopen decision",
+            message: getApiErrorMessage(
+              error,
+              "ForkRoom could not return this decision to active work.",
+            ),
+          });
+        }
+      },
+    });
+  };
+
+  const requestVotingAction = (action: VotingPanelAction) => {
+    setFocusPanel(null);
+    setWorkMode("vote");
+    if (!desktop) setMobileTab("vote");
+    votingActionSequence.current += 1;
+    setVotingActionRequest({ id: votingActionSequence.current, action });
+  };
+
+  const openLockedExport = () => {
+    setFocusPanel(null);
+    setWorkMode("document");
+    if (!desktop) setMobileTab("document");
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.document
+          .getElementById("decision-export-heading")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
     });
   };
 
@@ -1419,6 +1631,132 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     }
   };
 
+  const primaryAction = (() => {
+    if (lifecycleStage === "draft") {
+      if (!canManageVoting) return null;
+      return {
+        label: "Activate decision",
+        icon: <IconPlayerPlay size={17} />,
+        color: "rust",
+        disabled: transitionDecision.isPending,
+        reason: null,
+        onClick: confirmActivateDecision,
+      };
+    }
+
+    if (lifecycleStage === "active") {
+      if (!canManageVoting) return null;
+      return {
+        label: "Create voting round",
+        icon: <IconScale size={17} />,
+        color: "rust",
+        disabled: false,
+        reason: null,
+        onClick: () => requestVotingAction("create-round"),
+      };
+    }
+
+    if (lifecycleStage === "voting") {
+      if (unfinishedVotingSession?.status === "draft") {
+        if (!canManageVoting) return null;
+        return {
+          label: "Open voting",
+          icon: <IconPlayerPlay size={17} />,
+          color: "rust",
+          disabled: readinessChecking || readinessIssues.length > 0,
+          reason: readinessChecking
+            ? "ForkRoom is still verifying voting readiness."
+            : (readinessIssues[0] ?? null),
+          onClick: () => requestVotingAction("open-voting"),
+        };
+      }
+
+      if (canManageVoting) {
+        return {
+          label: "Close voting",
+          icon: <IconPlayerStop size={17} />,
+          color: "dark",
+          disabled: false,
+          reason: null,
+          onClick: () => requestVotingAction("close-voting"),
+        };
+      }
+
+      if (!canContribute) return null;
+      return {
+        label: "Cast vote",
+        icon: <IconCheck size={17} />,
+        color: "rust",
+        disabled: false,
+        reason: null,
+        onClick: () => requestVotingAction("cast-vote"),
+      };
+    }
+
+    if (lifecycleStage === "closed") {
+      if (decision.data.status === "archived") return null;
+
+      if (decision.data.status === "closed") {
+        if (!canManageVoting) return null;
+        return {
+          label: "Reopen to lock",
+          icon: <IconRestore size={17} />,
+          color: "rust",
+          disabled: transitionDecision.isPending,
+          reason:
+            "The backend requires an active decision before a result can be locked.",
+          onClick: confirmReopenDecision,
+        };
+      }
+
+      const resultCanBeLocked = Boolean(
+        latestClosedVotingResult.data?.result_valid &&
+        !latestClosedVotingResult.data.is_tie &&
+        latestClosedVotingResult.data.winner_proposal_id,
+      );
+
+      if (canManageVoting && resultCanBeLocked) {
+        return {
+          label: "Lock decision",
+          icon: <IconLock size={17} />,
+          color: "dark",
+          disabled: false,
+          reason: null,
+          onClick: () => requestVotingAction("lock-decision"),
+        };
+      }
+
+      return {
+        label: "Review result",
+        icon: <IconScale size={17} />,
+        color: "rust",
+        disabled: false,
+        reason: latestClosedVotingResult.isPending
+          ? "The result is still loading."
+          : latestClosedVotingResult.data?.is_tie
+            ? "The result is tied and cannot be locked yet."
+            : latestClosedVotingResult.data &&
+                !latestClosedVotingResult.data.result_valid
+              ? "Quorum was not met, so this result cannot be locked."
+              : null,
+        onClick: () => requestVotingAction("review-result"),
+      };
+    }
+
+    if (lifecycleStage === "locked") {
+      return {
+        label: "Export decision",
+        icon: <IconFileExport size={17} />,
+        color: "dark",
+        disabled: false,
+        reason: null,
+        onClick: openLockedExport,
+      };
+    }
+
+    return null;
+  })();
+
   const outline = (
     <OutlinePanel
       workspaceId={workspaceId}
@@ -1461,11 +1799,18 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
       canRequestExport={canContribute}
       canCreateActions={canContribute}
       canManageFollowThrough={canManageVoting}
+      votingReadiness={votingReadiness}
+      votingActionRequest={votingActionRequest}
       transitionPending={transitionProposal.isPending}
       onModeChange={setWorkMode}
       onCreateProposal={() => setEditorProposal(null)}
       onEditProposal={(proposal) => setEditorProposal(proposal)}
       onTransitionProposal={handleTransitionProposal}
+      onVotingActionHandled={(requestId) =>
+        setVotingActionRequest((current) =>
+          current?.id === requestId ? null : current,
+        )
+      }
       onEnterFocus={
         desktop && !focusPanel ? () => enterFocusMode("document") : undefined
       }
@@ -1514,19 +1859,6 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
           </div>
           <div className={styles.titleRow}>
             <h1>{decision.data.title}</h1>
-            <Badge
-              variant="light"
-              color={
-                decision.data.status === "locked"
-                  ? "green"
-                  : decision.data.status === "active"
-                    ? "rust"
-                    : "gray"
-              }
-              size="sm"
-            >
-              {decision.data.status.toUpperCase()}
-            </Badge>
           </div>
         </div>
 
@@ -1540,17 +1872,6 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
           >
             <span className={styles.meetingButtonLabel}>Meeting</span>
           </Button>
-          {canManageVoting && decision.data.status === "draft" && (
-            <Button
-              variant="light"
-              color="rust"
-              leftSection={<IconPlayerPlay size={17} />}
-              loading={transitionDecision.isPending}
-              onClick={confirmActivateDecision}
-            >
-              Activate decision
-            </Button>
-          )}
           {desktop &&
             (focusPanel ? (
               <Button
@@ -1628,35 +1949,28 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
                 </Menu.Dropdown>
               </Menu>
             ))}
-          {decision.data.status === "locked" ? (
-            <Tooltip label="View the authoritative decision record">
-              <Button
-                color="dark"
-                leftSection={<IconLock size={17} />}
-                onClick={() => {
-                  setWorkMode("document");
-                  if (!desktop) setMobileTab("document");
-                }}
-              >
-                View locked record
-              </Button>
-            </Tooltip>
-          ) : (
-            <Tooltip label="Open voting workspace">
-              <Button
-                className={styles.voteButton}
-                leftSection={<IconScale size={17} />}
-                onClick={() => {
-                  setWorkMode("vote");
-                  if (!desktop) setMobileTab("vote");
-                }}
-              >
-                {hasOpenVotingSession ? "Vote now" : "Voting"}
-              </Button>
+          {primaryAction && (
+            <Tooltip
+              label={primaryAction.reason ?? primaryAction.label}
+              disabled={!primaryAction.reason}
+              withArrow
+            >
+              <div className={styles.primaryActionDesktop}>
+                <Button
+                  color={primaryAction.color}
+                  leftSection={primaryAction.icon}
+                  disabled={primaryAction.disabled}
+                  onClick={primaryAction.onClick}
+                >
+                  {primaryAction.label}
+                </Button>
+              </div>
             </Tooltip>
           )}
         </div>
       </header>
+
+      <DecisionLifecycleIndicator stage={lifecycleStage} />
 
       <div className={styles.workspace}>
         {desktop ? (
@@ -1774,33 +2088,27 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
         )}
       </div>
 
-      <div className={styles.mobileVoteDock}>
-        <Button
-          fullWidth
-          color={decision.data.status === "locked" ? "dark" : "rust"}
-          leftSection={
-            decision.data.status === "locked" ? (
-              <IconLock size={18} />
-            ) : (
-              <IconScale size={18} />
-            )
-          }
-          onClick={() => {
-            setWorkMode(
-              decision.data.status === "locked" ? "document" : "vote",
-            );
-            setMobileTab(
-              decision.data.status === "locked" ? "document" : "vote",
-            );
-          }}
-        >
-          {decision.data.status === "locked"
-            ? "View locked record"
-            : hasOpenVotingSession
-              ? "Vote now"
-              : "Open voting"}
-        </Button>
-      </div>
+      {primaryAction && (
+        <div className={styles.mobileVoteDock}>
+          <Tooltip
+            label={primaryAction.reason ?? primaryAction.label}
+            disabled={!primaryAction.reason}
+            withArrow
+          >
+            <div>
+              <Button
+                fullWidth
+                color={primaryAction.color}
+                leftSection={primaryAction.icon}
+                disabled={primaryAction.disabled}
+                onClick={primaryAction.onClick}
+              >
+                {primaryAction.label}
+              </Button>
+            </div>
+          </Tooltip>
+        </div>
+      )}
 
       <ProposalEditorModal
         workspaceId={workspaceId}
