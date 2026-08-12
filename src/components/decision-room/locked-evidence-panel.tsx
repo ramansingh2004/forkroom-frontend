@@ -5,6 +5,7 @@ import { Alert, Badge, Button, Group } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import {
   IconDownload,
+  IconEye,
   IconFileCheck,
   IconLock,
   IconPaperclip,
@@ -18,6 +19,11 @@ import type {
   WorkspaceMember,
 } from "@/services/workspace.service";
 
+import {
+  EvidencePreview,
+  type EvidencePreviewItem,
+  isEvidencePreviewable,
+} from "./evidence-preview";
 import styles from "./decision-room.module.css";
 
 export type SnapshotEvidence = {
@@ -100,6 +106,7 @@ export function LockedEvidencePanel({
 }: LockedEvidencePanelProps) {
   const download = useAttachmentDownload(workspaceId);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [preview, setPreview] = useState<EvidencePreviewItem | null>(null);
   const evidence = getSnapshotEvidence(decisionLock.snapshot);
   const proposalById = useMemo(
     () => new Map(proposals.map((proposal) => [proposal.id, proposal])),
@@ -110,11 +117,39 @@ export function LockedEvidencePanel({
     [members],
   );
 
-  const openDownload = async (item: SnapshotEvidence) => {
+  const openEvidence = async (
+    item: SnapshotEvidence,
+    mode: "preview" | "download",
+  ) => {
     setActiveId(item.id);
 
     try {
       const result = await download.mutateAsync(item.id);
+
+      if (mode === "preview" && isEvidencePreviewable(item.mediaType)) {
+        const proposal = item.proposalId
+          ? proposalById.get(item.proposalId)
+          : null;
+        const uploader = item.uploadedById
+          ? memberById.get(item.uploadedById)
+          : null;
+
+        setPreview({
+          filename: item.filename,
+          mediaType: item.mediaType ?? "application/octet-stream",
+          sizeLabel: formatBytes(item.sizeBytes),
+          uploaderLabel:
+            uploader?.display_name ?? uploader?.email ?? "Actor not exposed",
+          uploadedAt: item.createdAt,
+          reasoningLabel: proposal
+            ? `Proposal · ${proposal.title}`
+            : "Decision context",
+          url: result.download_url,
+          expiresAt: result.expires_at,
+        });
+        return;
+      }
+
       const link = document.createElement("a");
       link.href = result.download_url;
       link.target = "_blank";
@@ -160,7 +195,9 @@ export function LockedEvidencePanel({
         SHA-256 hash.
       </p>
 
-      {evidence.length === 0 ? (
+      {preview ? (
+        <EvidencePreview item={preview} onBack={() => setPreview(null)} />
+      ) : evidence.length === 0 ? (
         <div className={styles.evidenceEmpty}>
           <IconPaperclip size={24} />
           <strong>No attachment metadata exposed</strong>
@@ -180,7 +217,7 @@ export function LockedEvidencePanel({
               : null;
 
             return (
-              <article key={item.id} className={styles.lockedEvidenceCard}>
+              <article key={item.id} className={styles.evidenceRow}>
                 <div className={styles.evidenceIdentity}>
                   <span className={styles.evidenceFileIcon}>
                     <IconFileCheck size={18} />
@@ -188,8 +225,8 @@ export function LockedEvidencePanel({
                   <div>
                     <strong title={item.filename}>{item.filename}</strong>
                     <span>
-                      {formatBytes(item.sizeBytes)} ·{" "}
-                      {proposal?.title ?? "Decision context"}
+                      {item.mediaType ?? "Type not exposed"} ·{" "}
+                      {formatBytes(item.sizeBytes)}
                     </span>
                   </div>
                   <Badge size="xs" color="green" variant="light">
@@ -207,21 +244,47 @@ export function LockedEvidencePanel({
                   <span>{formatDateTime(item.createdAt)}</span>
                 </div>
 
+                <div className={styles.evidenceReasoningLink}>
+                  <IconFileCheck size={13} />
+                  <span>Linked to</span>
+                  <strong>
+                    {proposal
+                      ? `Proposal · ${proposal.title}`
+                      : "Decision context"}
+                  </strong>
+                </div>
+
                 {item.sha256 && (
                   <code className={styles.evidenceHash} title={item.sha256}>
                     FILE SHA-256 {item.sha256}
                   </code>
                 )}
 
-                <Group justify="flex-end">
+                <Group
+                  justify="flex-end"
+                  gap="xs"
+                  className={styles.evidenceActions}
+                >
+                  {isEvidencePreviewable(item.mediaType) && (
+                    <Button
+                      size="compact-xs"
+                      variant="default"
+                      leftSection={<IconEye size={14} />}
+                      onClick={() => openEvidence(item, "preview")}
+                      loading={download.isPending && activeId === item.id}
+                    >
+                      Preview
+                    </Button>
+                  )}
                   <Button
                     size="compact-xs"
-                    variant="default"
+                    variant="subtle"
+                    color="dark"
                     leftSection={<IconDownload size={14} />}
-                    onClick={() => openDownload(item)}
+                    onClick={() => openEvidence(item, "download")}
                     loading={download.isPending && activeId === item.id}
                   >
-                    Secure download
+                    Download
                   </Button>
                 </Group>
               </article>

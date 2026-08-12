@@ -1025,6 +1025,7 @@ export type AttachmentUploadStage = "preparing" | "uploading" | "processing";
 type UploadAttachmentInput = {
   file: File;
   proposalId?: string | null;
+  onPrepared?: (attachment: Attachment) => void;
   onStageChange?: (stage: AttachmentUploadStage) => void;
 };
 
@@ -1060,7 +1061,7 @@ export function useUploadDecisionAttachment(
   const queryClient = useQueryClient();
 
   return useMutation<Attachment, Error, UploadAttachmentInput>({
-    mutationFn: async ({ file, proposalId, onStageChange }) => {
+    mutationFn: async ({ file, proposalId, onPrepared, onStageChange }) => {
       const mediaType = file.type || "application/octet-stream";
 
       onStageChange?.("preparing");
@@ -1071,6 +1072,7 @@ export function useUploadDecisionAttachment(
         decision_id: decisionId,
         proposal_id: proposalId ?? null,
       });
+      onPrepared?.(prepared.attachment);
 
       onStageChange?.("uploading");
       await uploadAttachmentObject(prepared.upload_url, file, mediaType);
