@@ -11,12 +11,13 @@ import type {
   MeetingConnectionQuality,
   MeetingConnectionStatus,
   MeetingEventEnvelope,
+  MeetingIssue,
   MeetingMediaState,
   MeetingParticipant,
   MeetingReadyPayload,
   PeerConnectionStatus,
 } from "@/lib/meeting/types";
-import { getApiErrorMessage } from "@/services/auth.service";
+import { getApiErrorInfo } from "@/lib/api/errors";
 import {
   issueMeetingToken,
   type MeetingIceServer,
@@ -126,16 +127,103 @@ function peerStatus(state: RTCPeerConnectionState): PeerConnectionStatus {
   return "new";
 }
 
-function socketCloseMessage(code: number, reason: string) {
-  if (code === 4409) return "This meeting is full.";
+function issue(
+  kind: MeetingIssue["kind"],
+  title: string,
+  message: string,
+  retryable = false,
+): MeetingIssue {
+  return { kind, title, message, retryable };
+}
+
+function socketCloseIssue(code: number, reason: string) {
+  if (code === 4409) {
+    return issue(
+      "signaling",
+      "Meeting is full",
+      "This meeting has reached its participant limit.",
+      true,
+    );
+  }
   if (code === 4403) {
-    return "This browser origin is not allowed to join the meeting.";
+    return issue(
+      "permission",
+      "Meeting access blocked",
+      "This browser origin is not allowed to join the meeting. Ask a workspace administrator to verify the allowed meeting origins.",
+    );
   }
-  if (code === 4401) return "The meeting session expired. Please join again.";
+  if (code === 4401) {
+    return issue(
+      "permission",
+      "Meeting session expired",
+      "Your meeting session expired. Join again to request fresh access.",
+      true,
+    );
+  }
   if (code === 4429) {
-    return "The meeting connection sent too many events. Please join again.";
+    return issue(
+      "signaling",
+      "Meeting connection paused",
+      "The meeting connection sent too many live updates. Wait a moment, then join again.",
+      true,
+    );
   }
-  return reason || "The live meeting connection was interrupted.";
+  return issue(
+    "signaling",
+    "Live connection interrupted",
+    reason ||
+      "ForkRoom could not maintain the live meeting connection. Check your network and try again.",
+    true,
+  );
+}
+
+function deviceIssue(error: unknown, device: "camera" | "microphone") {
+  if (error instanceof DOMException && error.name === "NotAllowedError") {
+    return issue(
+      "permission",
+      `${device === "camera" ? "Camera" : "Microphone"} permission denied`,
+      `Allow ${device} access in your browser's site settings, then try again.`,
+      true,
+    );
+  }
+  if (error instanceof DOMException && error.name === "NotFoundError") {
+    return issue(
+      "media",
+      `${device === "camera" ? "Camera" : "Microphone"} not found`,
+      `ForkRoom could not find an available ${device} on this device.`,
+    );
+  }
+  if (error instanceof DOMException && error.name === "NotReadableError") {
+    return issue(
+      "media",
+      `${device === "camera" ? "Camera" : "Microphone"} is unavailable`,
+      `Another application may be using your ${device}. Close it there, then try again.`,
+      true,
+    );
+  }
+  return issue(
+    "media",
+    `${device === "camera" ? "Camera" : "Microphone"} unavailable`,
+    `ForkRoom could not start your ${device}. Check the selected device and try again.`,
+    true,
+  );
+}
+
+function initialMediaIssue(error: unknown) {
+  if (error instanceof DOMException && error.name === "NotAllowedError") {
+    return issue(
+      "permission",
+      "Camera and microphone blocked",
+      "You joined without camera or microphone access. Allow access in your browser settings, then enable either device from the meeting controls.",
+      true,
+    );
+  }
+  return issue(
+    "media",
+    "Camera or microphone unavailable",
+    "You joined without camera or microphone. Check that your devices are connected and not in use by another application.",
+    true,
+  );
 }
 
 export function useMeeting({
@@ -153,8 +241,9 @@ export function useMeeting({
   const [videoEnabled, setVideoEnabled] = useState(false);
   const [screenSharing, setScreenSharing] = useState(false);
   const [quality, setQuality] = useState<MeetingConnectionQuality>("waiting");
-  const [error, setError] = useState<string | null>(null);
-  const [warning, setWarning] = useState<string | null>(null);
+  const [error, setError] = useState<MeetingIssue | null>(null);
+  const [warning, setWarning] = useState<MeetingIssue | null>(null);
+  const [activeSpeakerId, setActiveSpeakerId] = useState<string | null>(null);
 
   const socketRef = useRef<WebSocket | null>(null);
   const peersRef = useRef(new Map<string, RTCPeerConnection>());
@@ -331,6 +420,16 @@ export function useMeeting({
               ...participant,
               connectionStatus: peerStatus(connectionState),
             });
+          }
+          if (connectionState === "failed") {
+            setWarning(
+              issue(
+                "relay",
+                "Media connection failed",
+                "ForkRoom reached the meeting, but audio and video could not establish a direct or relayed path. Check the TURN service or network firewall, then retry media.",
+                true,
+              ),
+            );
           }
         },
       });
@@ -600,15 +699,29 @@ export function useMeeting({
         const code = event.payload.code;
         setWarning(
           code === "facilitator_required"
-            ? "Only an owner or administrator can use that meeting control."
-            : "The meeting could not apply that live update.",
+            ? issue(
+                "permission",
+                "Facilitator permission required",
+                "Only a workspace owner or administrator can use that meeting control.",
+              )
+            : issue(
+                "signaling",
+                "Meeting update failed",
+                "The meeting could not apply that live update. Refresh the participant state or retry the action.",
+                true,
+              ),
         );
       }
     } catch (eventError) {
       setWarning(
-        eventError instanceof Error
-          ? eventError.message
-          : "A live meeting update could not be processed.",
+        issue(
+          "signaling",
+          "Meeting update failed",
+          eventError instanceof Error
+            ? eventError.message
+            : "A live meeting update could not be processed.",
+          true,
+        ),
       );
     }
   };
@@ -643,10 +756,8 @@ export function useMeeting({
           setAudioEnabled(Boolean(stream.getAudioTracks()[0]));
           setVideoEnabled(Boolean(stream.getVideoTracks()[0]));
           setLocalParticipantStream(stream);
-        } catch {
-          setWarning(
-            "You joined without camera or microphone access. You can enable either device from the call controls.",
-          );
+        } catch (mediaError) {
+          setWarning(initialMediaIssue(mediaError));
         }
       }
 
@@ -660,7 +771,14 @@ export function useMeeting({
         try {
           parsed = JSON.parse(String(message.data));
         } catch {
-          setWarning("ForkRoom received an unreadable meeting update.");
+          setWarning(
+            issue(
+              "signaling",
+              "Unreadable meeting update",
+              "ForkRoom received a live update it could not read. The meeting will continue while the connection recovers.",
+              true,
+            ),
+          );
           return;
         }
         if (isMeetingEnvelope(parsed)) void handleEventRef.current(parsed);
@@ -681,7 +799,7 @@ export function useMeeting({
           stopLocalMedia();
           resetParticipants();
           setStatus("error");
-          setError(socketCloseMessage(closeEvent.code, closeEvent.reason));
+          setError(socketCloseIssue(closeEvent.code, closeEvent.reason));
           return;
         }
 
@@ -699,7 +817,7 @@ export function useMeeting({
         stopLocalMedia();
         resetParticipants();
         setStatus("error");
-        setError(socketCloseMessage(closeEvent.code, closeEvent.reason));
+        setError(socketCloseIssue(closeEvent.code, closeEvent.reason));
       };
 
       socket.onerror = () => {
@@ -726,10 +844,18 @@ export function useMeeting({
       stopLocalMedia();
       resetParticipants();
       setStatus("error");
+      const apiError = getApiErrorInfo(
+        connectionError,
+        "ForkRoom could not open the live meeting.",
+      );
       setError(
-        getApiErrorMessage(
-          connectionError,
-          "ForkRoom could not open the live meeting.",
+        issue(
+          apiError.kind === "forbidden" ? "permission" : "signaling",
+          apiError.kind === "forbidden"
+            ? "Meeting access denied"
+            : "Could not start meeting",
+          apiError.message,
+          apiError.retryable,
         ),
       );
     }
@@ -739,12 +865,24 @@ export function useMeeting({
     if (activeSessionRef.current) return;
     if (!window.isSecureContext) {
       setStatus("error");
-      setError("Camera and microphone access require HTTPS or localhost.");
+      setError(
+        issue(
+          "permission",
+          "Secure connection required",
+          "Camera and microphone access require HTTPS or localhost.",
+        ),
+      );
       return;
     }
     if (!("RTCPeerConnection" in window) || !("WebSocket" in window)) {
       setStatus("error");
-      setError("This browser does not support live WebRTC meetings.");
+      setError(
+        issue(
+          "media",
+          "Browser not supported",
+          "This browser does not support live audio and video meetings. Use a current version of Chrome, Edge, Firefox, or Safari.",
+        ),
+      );
       return;
     }
 
@@ -831,10 +969,8 @@ export function useMeeting({
       else track.enabled = !track.enabled;
       setAudioEnabled(track.enabled);
       setWarning(null);
-    } catch {
-      setWarning(
-        "Microphone access was not granted or no microphone is available.",
-      );
+    } catch (mediaError) {
+      setWarning(deviceIssue(mediaError, "microphone"));
     }
   }, [acquireTrack]);
 
@@ -847,8 +983,8 @@ export function useMeeting({
       else track.enabled = !track.enabled;
       setVideoEnabled(track.enabled);
       setWarning(null);
-    } catch {
-      setWarning("Camera access was not granted or no camera is available.");
+    } catch (mediaError) {
+      setWarning(deviceIssue(mediaError, "camera"));
     }
   }, [acquireTrack]);
 
@@ -919,7 +1055,14 @@ export function useMeeting({
       ) {
         return;
       }
-      setWarning("Screen sharing could not be started in this browser.");
+      setWarning(
+        issue(
+          "media",
+          "Screen sharing unavailable",
+          "ForkRoom could not start screen sharing in this browser. Check browser and system screen-recording permissions, then try again.",
+          true,
+        ),
+      );
     }
   }, [renegotiatePeers, setLocalParticipantStream, stopScreenShare]);
 
@@ -947,6 +1090,86 @@ export function useMeeting({
     videoEnabled,
   ]);
 
+  useEffect(() => {
+    if (status !== "connected") {
+      setActiveSpeakerId(null);
+      return;
+    }
+
+    const audibleParticipants = participants.filter(
+      (participant) =>
+        participant.audioEnabled &&
+        Boolean(participant.stream?.getAudioTracks().length),
+    );
+    if (audibleParticipants.length === 0 || !("AudioContext" in window)) {
+      setActiveSpeakerId(null);
+      return;
+    }
+
+    const audioContext = new AudioContext();
+    const meters = audibleParticipants.flatMap((participant) => {
+      const track = participant.stream?.getAudioTracks()[0];
+      if (!track) return [];
+      const source = audioContext.createMediaStreamSource(
+        new MediaStream([track]),
+      );
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.65;
+      source.connect(analyser);
+      return [{ userId: participant.userId, analyser, source }];
+    });
+    let lastVoiceAt = 0;
+
+    void audioContext.resume().catch(() => undefined);
+    const meter = window.setInterval(() => {
+      let loudestUserId: string | null = null;
+      let loudestLevel = 0.035;
+
+      meters.forEach(({ userId, analyser }) => {
+        const samples = new Uint8Array(analyser.fftSize);
+        analyser.getByteTimeDomainData(samples);
+        const meanSquare =
+          samples.reduce((total, sample) => {
+            const normalized = (sample - 128) / 128;
+            return total + normalized * normalized;
+          }, 0) / samples.length;
+        const level = Math.sqrt(meanSquare);
+        if (level > loudestLevel) {
+          loudestLevel = level;
+          loudestUserId = userId;
+        }
+      });
+
+      if (loudestUserId) {
+        lastVoiceAt = Date.now();
+        setActiveSpeakerId(loudestUserId);
+      } else if (Date.now() - lastVoiceAt > 900) {
+        setActiveSpeakerId(null);
+      }
+    }, 180);
+
+    return () => {
+      window.clearInterval(meter);
+      meters.forEach(({ source }) => source.disconnect());
+      void audioContext.close();
+    };
+  }, [participants, status]);
+
+  const retryMediaConnection = useCallback(async () => {
+    const remoteParticipants = [...participantStoreRef.current.values()].filter(
+      (participant) => !participant.isLocal,
+    );
+    setWarning(null);
+    await Promise.allSettled(
+      remoteParticipants.map(async (participant) => {
+        closePeer(participant.userId);
+        await startOffer(participant.userId);
+      }),
+    );
+    await measureQuality();
+  }, [closePeer, measureQuality, startOffer]);
+
   const leaveRef = useRef(leave);
   leaveRef.current = leave;
   useEffect(() => () => leaveRef.current(), []);
@@ -959,6 +1182,7 @@ export function useMeeting({
     audioEnabled,
     videoEnabled,
     screenSharing,
+    activeSpeakerId,
     quality,
     error,
     warning,
@@ -967,5 +1191,6 @@ export function useMeeting({
     toggleAudio,
     toggleVideo,
     toggleScreenShare,
+    retryMediaConnection,
   };
 }

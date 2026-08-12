@@ -2170,6 +2170,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
           role: currentMember?.role ?? "viewer",
         }}
         opened={meetingOpened}
+        protectedActionVisible={Boolean(primaryAction)}
         onOpen={() => setMeetingOpened(true)}
         onClose={() => setMeetingOpened(false)}
       />

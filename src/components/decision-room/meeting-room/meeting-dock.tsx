@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ActionIcon, Alert, Button, Loader, Tooltip } from "@mantine/core";
 import {
   IconAlertTriangle,
   IconArrowsMaximize,
   IconArrowsMinimize,
   IconEye,
+  IconMicrophone,
+  IconMicrophoneOff,
+  IconRefresh,
   IconUsers,
   IconVideo,
   IconWifi,
@@ -29,6 +32,7 @@ type MeetingDockProps = {
     role: string;
   };
   opened: boolean;
+  protectedActionVisible: boolean;
   onOpen: () => void;
   onClose: () => void;
 };
@@ -38,6 +42,7 @@ export function MeetingDock({
   decisionId,
   currentUser,
   opened,
+  protectedActionVisible,
   onOpen,
   onClose,
 }: MeetingDockProps) {
@@ -45,6 +50,23 @@ export function MeetingDock({
   const meeting = useMeeting({ workspaceId, decisionId, currentUser });
   const connected = meeting.status === "connected";
   const connecting = ["joining", "reconnecting"].includes(meeting.status);
+  const orderedParticipants = useMemo(
+    () =>
+      [...meeting.participants].sort((left, right) => {
+        if (left.screenSharing !== right.screenSharing) {
+          return left.screenSharing ? -1 : 1;
+        }
+        if (
+          (left.userId === meeting.activeSpeakerId) !==
+          (right.userId === meeting.activeSpeakerId)
+        ) {
+          return left.userId === meeting.activeSpeakerId ? -1 : 1;
+        }
+        if (left.isLocal !== right.isLocal) return left.isLocal ? 1 : -1;
+        return (left.joinedAt ?? "").localeCompare(right.joinedAt ?? "");
+      }),
+    [meeting.activeSpeakerId, meeting.participants],
+  );
 
   const leaveMeeting = () => {
     meeting.leave();
@@ -52,18 +74,44 @@ export function MeetingDock({
     onClose();
   };
 
+  useEffect(() => {
+    if (!expanded) return;
+    const exitFocus = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setExpanded(false);
+    };
+    window.addEventListener("keydown", exitFocus);
+    return () => window.removeEventListener("keydown", exitFocus);
+  }, [expanded]);
+
   if (!opened) {
     if (!connected && meeting.status !== "reconnecting") return null;
     return (
       <button
         type="button"
-        className={styles.minimizedMeeting}
+        className={`${styles.minimizedMeeting} ${
+          protectedActionVisible ? styles.aboveProtectedAction : ""
+        }`}
         onClick={onOpen}
+        aria-label={`Open live meeting. ${meeting.participants.length} participants. Your microphone is ${meeting.audioEnabled ? "on" : "muted"}.`}
       >
         <span className={styles.liveDot} />
         <IconVideo size={17} />
         <strong>Meeting live</strong>
-        <span>{meeting.participants.length}</span>
+        <span className={styles.minimizedCount}>
+          <IconUsers size={13} /> {meeting.participants.length}
+        </span>
+        <span
+          className={`${styles.minimizedMic} ${
+            meeting.audioEnabled ? styles.minimizedMicOn : ""
+          }`}
+          title={meeting.audioEnabled ? "Microphone on" : "Microphone muted"}
+        >
+          {meeting.audioEnabled ? (
+            <IconMicrophone size={14} />
+          ) : (
+            <IconMicrophoneOff size={14} />
+          )}
+        </span>
       </button>
     );
   }
@@ -74,14 +122,23 @@ export function MeetingDock({
         expanded ? styles.meetingExpanded : ""
       }`}
       aria-label="Live decision meeting"
+      aria-modal={expanded || undefined}
+      role={expanded ? "dialog" : "complementary"}
     >
       <header className={styles.meetingHeader}>
         <div>
-          <span className={styles.meetingKicker}>LIVE MEETING</span>
+          <span className={styles.meetingKicker}>
+            {expanded ? "MEETING FOCUS" : "LIVE MEETING"}
+          </span>
           <div className={styles.meetingTitleRow}>
             <h2>Decision call</h2>
             {connected && <span className={styles.liveLabel}>LIVE</span>}
           </div>
+          {expanded && (
+            <span className={styles.focusHint}>
+              Press Esc to return to the Decision Room
+            </span>
+          )}
         </div>
         <div className={styles.meetingHeaderActions}>
           {connected && (
@@ -129,20 +186,35 @@ export function MeetingDock({
       <div className={styles.meetingBody}>
         {meeting.error && (
           <Alert
-            color="red"
-            title="Could not join meeting"
+            className={styles.meetingIssue}
+            color={meeting.error.kind === "permission" ? "orange" : "red"}
+            title={meeting.error.title}
             icon={<IconAlertTriangle />}
+            data-issue-kind={meeting.error.kind}
           >
-            {meeting.error}
+            {meeting.error.message}
           </Alert>
         )}
         {meeting.warning && (
           <Alert
-            color="orange"
-            title="Meeting notice"
+            className={styles.meetingIssue}
+            color={meeting.warning.kind === "relay" ? "red" : "orange"}
+            title={meeting.warning.title}
             icon={<IconAlertTriangle />}
+            data-issue-kind={meeting.warning.kind}
           >
-            {meeting.warning}
+            <span>{meeting.warning.message}</span>
+            {meeting.warning.kind === "relay" && meeting.warning.retryable && (
+              <Button
+                className={styles.issueAction}
+                variant="default"
+                size="compact-xs"
+                leftSection={<IconRefresh size={14} />}
+                onClick={() => void meeting.retryMediaConnection()}
+              >
+                Retry media
+              </Button>
+            )}
           </Alert>
         )}
 
@@ -171,6 +243,12 @@ export function MeetingDock({
               color="rust"
               leftSection={<IconVideo size={18} />}
               onClick={() => void meeting.join()}
+              disabled={Boolean(meeting.error && !meeting.error.retryable)}
+              title={
+                meeting.error && !meeting.error.retryable
+                  ? meeting.error.message
+                  : undefined
+              }
             >
               {meeting.status === "error"
                 ? "Try joining again"
@@ -221,11 +299,20 @@ export function MeetingDock({
               </span>
             </div>
 
-            <div className={styles.tileGrid}>
-              {meeting.participants.map((participant) => (
+            <div
+              className={`${styles.tileGrid} ${
+                orderedParticipants.some((participant) =>
+                  Boolean(participant.screenSharing),
+                )
+                  ? styles.tileGridWithShare
+                  : ""
+              }`}
+            >
+              {orderedParticipants.map((participant) => (
                 <MeetingTile
                   key={participant.userId}
                   participant={participant}
+                  activeSpeaker={participant.userId === meeting.activeSpeakerId}
                 />
               ))}
             </div>

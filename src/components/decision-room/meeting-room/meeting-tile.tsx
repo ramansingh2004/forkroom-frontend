@@ -5,6 +5,7 @@ import {
   IconMicrophone,
   IconMicrophoneOff,
   IconScreenShare,
+  IconVideo,
   IconVideoOff,
 } from "@tabler/icons-react";
 
@@ -23,9 +24,10 @@ function initials(name: string) {
 
 type MeetingTileProps = {
   participant: MeetingParticipant;
+  activeSpeaker: boolean;
 };
 
-export function MeetingTile({ participant }: MeetingTileProps) {
+export function MeetingTile({ participant, activeSpeaker }: MeetingTileProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const label = useMemo(
     () => initials(participant.displayName) || "?",
@@ -47,8 +49,12 @@ export function MeetingTile({ participant }: MeetingTileProps) {
 
   return (
     <article
-      className={styles.tile}
+      className={`${styles.tile} ${
+        participant.screenSharing ? styles.tileScreenShare : ""
+      } ${activeSpeaker ? styles.tileSpeaking : ""}`}
       aria-label={`${participant.displayName} video`}
+      data-screen-sharing={participant.screenSharing || undefined}
+      data-speaking={activeSpeaker || undefined}
     >
       <video
         ref={videoRef}
@@ -81,20 +87,38 @@ export function MeetingTile({ participant }: MeetingTileProps) {
           </strong>
           <span>{participant.role}</span>
         </div>
-        <span
-          className={`${styles.mediaIndicator} ${
-            participant.audioEnabled ? styles.mediaOn : styles.mediaOff
-          }`}
-          aria-label={
-            participant.audioEnabled ? "Microphone on" : "Microphone muted"
-          }
-        >
-          {participant.audioEnabled ? (
-            <IconMicrophone size={15} />
-          ) : (
-            <IconMicrophoneOff size={15} />
-          )}
-        </span>
+        <div className={styles.tileMedia}>
+          <span
+            className={`${styles.mediaIndicator} ${
+              participant.audioEnabled ? styles.mediaOn : styles.mediaOff
+            }`}
+            aria-label={
+              participant.audioEnabled ? "Microphone on" : "Microphone muted"
+            }
+            title={
+              participant.audioEnabled ? "Microphone on" : "Microphone muted"
+            }
+          >
+            {participant.audioEnabled ? (
+              <IconMicrophone size={14} />
+            ) : (
+              <IconMicrophoneOff size={14} />
+            )}
+          </span>
+          <span
+            className={`${styles.mediaIndicator} ${
+              participant.videoEnabled ? styles.mediaOn : styles.mediaOff
+            }`}
+            aria-label={participant.videoEnabled ? "Camera on" : "Camera off"}
+            title={participant.videoEnabled ? "Camera on" : "Camera off"}
+          >
+            {participant.videoEnabled ? (
+              <IconVideo size={14} />
+            ) : (
+              <IconVideoOff size={14} />
+            )}
+          </span>
+        </div>
       </footer>
 
       {!participant.isLocal && participant.connectionStatus !== "connected" && (

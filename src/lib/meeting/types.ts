@@ -1,12 +1,29 @@
 import type { MeetingPermission } from "@/services/meeting .service";
 
 export type MeetingConnectionStatus =
-  "idle" | "joining" | "connected" | "reconnecting" | "error";
+  | "idle"
+  | "joining"
+  | "connected"
+  | "reconnecting"
+  | "error";
 
 export type MeetingConnectionQuality = "waiting" | "good" | "fair" | "poor";
 
+export type MeetingIssueKind = "permission" | "signaling" | "relay" | "media";
+
+export type MeetingIssue = {
+  kind: MeetingIssueKind;
+  title: string;
+  message: string;
+  retryable: boolean;
+};
+
 export type PeerConnectionStatus =
-  "new" | "connecting" | "connected" | "disconnected" | "failed";
+  | "new"
+  | "connecting"
+  | "connected"
+  | "disconnected"
+  | "failed";
 
 export type MeetingMediaState = {
   audioEnabled: boolean;

@@ -19,11 +19,11 @@ type ConnectionState = "online" | "offline" | "reconnecting" | "reconnected";
 
 export function ConnectionStatus() {
   const queryClient = useQueryClient();
-  const [state, setState] = useState<ConnectionState>(() =>
-    typeof navigator !== "undefined" && !navigator.onLine
-      ? "offline"
-      : "online",
-  );
+  // Keep the server render and the client's first render identical. Reading
+  // navigator.onLine in the state initializer makes an offline client render
+  // this banner before hydration while the server renders nothing, shifting
+  // every sibling that follows (including Next.js route scripts).
+  const [state, setState] = useState<ConnectionState>("online");
 
   useEffect(() => {
     let successTimer: ReturnType<typeof setTimeout> | undefined;
@@ -38,6 +38,13 @@ export function ConnectionStatus() {
       setState("reconnected");
       successTimer = setTimeout(() => setState("online"), 4_000);
     };
+
+    // Browser-only state is synchronized after hydration. If the page loaded
+    // while offline, the banner appears immediately after the component mounts
+    // without changing the server/client hydration tree.
+    if (!navigator.onLine) {
+      setState("offline");
+    }
 
     window.addEventListener("offline", handleOffline);
     window.addEventListener("online", handleOnline);

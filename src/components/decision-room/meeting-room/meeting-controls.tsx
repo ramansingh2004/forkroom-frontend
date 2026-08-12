@@ -54,7 +54,7 @@ export function MeetingControls({
             className={styles.controlButton}
             variant={audioEnabled ? "light" : "filled"}
             color={audioEnabled ? "dark" : "red"}
-            size={44}
+            size={42}
             radius="xl"
             disabled={receiveOnly}
             aria-label={audioEnabled ? "Mute microphone" : "Turn on microphone"}
@@ -86,7 +86,7 @@ export function MeetingControls({
             className={styles.controlButton}
             variant={videoEnabled ? "light" : "filled"}
             color={videoEnabled ? "dark" : "red"}
-            size={44}
+            size={42}
             radius="xl"
             disabled={receiveOnly || screenSharing}
             aria-label={videoEnabled ? "Turn off camera" : "Turn on camera"}
@@ -116,7 +116,7 @@ export function MeetingControls({
             className={styles.controlButton}
             variant={screenSharing ? "filled" : "light"}
             color={screenSharing ? "rust" : "dark"}
-            size={44}
+            size={42}
             radius="xl"
             disabled={receiveOnly}
             aria-label={screenSharing ? "Stop sharing screen" : "Share screen"}
@@ -137,7 +137,7 @@ export function MeetingControls({
           className={`${styles.controlButton} ${styles.leaveButton}`}
           variant="filled"
           color="red"
-          size={44}
+          size={42}
           radius="xl"
           aria-label="Leave meeting"
           onClick={onLeave}
