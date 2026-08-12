@@ -182,6 +182,7 @@ export function AttachmentUploadModal({
             {getApiErrorMessage(
               upload.error,
               "ForkRoom could not complete this upload. The selected file is still available here, so you can retry.",
+              "attachment-upload",
             )}
           </Alert>
         )}

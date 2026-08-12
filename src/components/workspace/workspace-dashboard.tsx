@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Alert, Avatar, Badge, Button, Loader, Skeleton } from "@mantine/core";
+import { Alert, Avatar, Badge, Button, Skeleton, Tooltip } from "@mantine/core";
 import {
   IconAlertTriangle,
   IconArrowRight,
@@ -37,6 +37,10 @@ import type {
   DecisionReview,
   WorkspaceMember,
 } from "@/services/workspace.service";
+import {
+  PageSkeleton,
+  RecoveryState,
+} from "@/components/feedback/app-feedback";
 
 import styles from "./workspace.module.css";
 
@@ -136,12 +140,7 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
     decisions.isPending ||
     members.isPending
   ) {
-    return (
-      <div className={styles.centerState}>
-        <Loader color="rust" size="sm" />
-        <span>Preparing workspace…</span>
-      </div>
-    );
+    return <PageSkeleton label="Preparing workspace dashboard" />;
   }
 
   if (
@@ -151,12 +150,21 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
     members.isError ||
     !currentUser.data
   ) {
+    const error =
+      currentUser.error ?? workspace.error ?? decisions.error ?? members.error;
     return (
       <div className={styles.page}>
-        <Alert color="red" title="Workspace unavailable">
-          ForkRoom could not load this workspace or you no longer have access to
-          it.
-        </Alert>
+        <RecoveryState
+          error={error}
+          title="Workspace unavailable"
+          fallback="ForkRoom could not load this workspace or your access changed."
+          onRetry={() => {
+            void currentUser.refetch();
+            void workspace.refetch();
+            void decisions.refetch();
+            void members.refetch();
+          }}
+        />
       </div>
     );
   }
@@ -459,6 +467,15 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
             >
               Create decision
             </Button>
+          )}
+          {!canCreateDecision && (
+            <Tooltip label="Viewers can follow decisions but cannot create them.">
+              <span>
+                <Button leftSection={<IconPlus size={17} />} disabled>
+                  Create decision
+                </Button>
+              </span>
+            </Tooltip>
           )}
         </div>
       </header>
@@ -850,6 +867,13 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
             <span>
               The workspace is still usable. Refresh notifications to try again.
             </span>
+            <Button
+              size="compact-sm"
+              variant="default"
+              onClick={() => void notifications.refetch()}
+            >
+              Retry activity
+            </Button>
           </div>
         ) : workspaceActivity.length === 0 ? (
           <div className={styles.dashboardRowEmpty}>

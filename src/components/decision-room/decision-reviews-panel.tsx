@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import { Alert, Badge, Button, Group, Loader, Menu } from '@mantine/core';
-import { modals } from '@mantine/modals';
-import { notifications } from '@mantine/notifications';
+import { useMemo, useState } from "react";
+import { Alert, Badge, Button, Group, Loader, Menu } from "@mantine/core";
+import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
 import {
   IconBan,
   IconCalendarEvent,
@@ -11,22 +11,23 @@ import {
   IconDots,
   IconEdit,
   IconPlus,
-} from '@tabler/icons-react';
+  IconRefresh,
+} from "@tabler/icons-react";
 
 import {
   useCancelDecisionReview,
   useDecisionReviews,
-} from '@/hooks/use-workspaces';
-import { getApiErrorMessage } from '@/services/auth.service';
+} from "@/hooks/use-workspaces";
+import { getApiErrorMessage } from "@/services/auth.service";
 import type {
   DecisionReview,
   ReviewOutcomeResponse,
   WorkspaceMember,
-} from '@/services/workspace.service';
+} from "@/services/workspace.service";
 
-import styles from './decision-room.module.css';
-import { ReviewOutcomeModal } from './review-outcome-modal';
-import { ReviewScheduleModal } from './review-schedule-modal';
+import styles from "./decision-room.module.css";
+import { ReviewOutcomeModal } from "./review-outcome-modal";
+import { ReviewScheduleModal } from "./review-schedule-modal";
 
 type DecisionReviewsPanelProps = {
   workspaceId: string;
@@ -36,15 +37,15 @@ type DecisionReviewsPanelProps = {
 };
 
 const formatDateTime = (value: string) =>
-  new Intl.DateTimeFormat('en', {
-    dateStyle: 'long',
-    timeStyle: 'short',
+  new Intl.DateTimeFormat("en", {
+    dateStyle: "long",
+    timeStyle: "short",
   }).format(new Date(value));
 
 const outcomeLabel = {
-  confirmed: 'Decision confirmed',
-  reopened: 'Reopened for revision',
-  superseded: 'Decision superseded',
+  confirmed: "Decision confirmed",
+  reopened: "Reopened for revision",
+  superseded: "Decision superseded",
 };
 
 export function DecisionReviewsPanel({
@@ -55,42 +56,53 @@ export function DecisionReviewsPanel({
 }: DecisionReviewsPanelProps) {
   const reviews = useDecisionReviews(workspaceId, decisionId);
   const cancelReview = useCancelDecisionReview(workspaceId, decisionId);
-  const [scheduleEditor, setScheduleEditor] = useState<DecisionReview | null | undefined>();
-  const [outcomeReview, setOutcomeReview] = useState<DecisionReview | null>(null);
+  const [scheduleEditor, setScheduleEditor] = useState<
+    DecisionReview | null | undefined
+  >();
+  const [outcomeReview, setOutcomeReview] = useState<DecisionReview | null>(
+    null,
+  );
   const memberById = useMemo(
     () => new Map(members.map((member) => [member.user_id, member])),
     [members],
   );
   const [referenceTime] = useState(() => Date.now());
   const reviewItems = [...(reviews.data ?? [])].sort((left, right) => {
-    if (left.status === 'scheduled' && right.status !== 'scheduled') return -1;
-    if (right.status === 'scheduled' && left.status !== 'scheduled') return 1;
-    return new Date(left.scheduled_for).getTime() - new Date(right.scheduled_for).getTime();
+    if (left.status === "scheduled" && right.status !== "scheduled") return -1;
+    if (right.status === "scheduled" && left.status !== "scheduled") return 1;
+    return (
+      new Date(left.scheduled_for).getTime() -
+      new Date(right.scheduled_for).getTime()
+    );
   });
-  const scheduledReviews = reviewItems.filter((review) => review.status === 'scheduled');
+  const scheduledReviews = reviewItems.filter(
+    (review) => review.status === "scheduled",
+  );
   const dueCount = scheduledReviews.filter(
     (review) => new Date(review.scheduled_for).getTime() <= referenceTime,
   ).length;
-  const completedCount = reviewItems.filter((review) => review.status === 'completed').length;
+  const completedCount = reviewItems.filter(
+    (review) => review.status === "completed",
+  ).length;
 
   const confirmCancel = (review: DecisionReview) => {
     modals.openConfirmModal({
-      title: 'Cancel this review checkpoint?',
+      title: "Cancel this review checkpoint?",
       children: (
         <p className={styles.confirmCopy}>
           The cancelled checkpoint remains in the decision timeline for
           traceability. No review outcome will be recorded.
         </p>
       ),
-      labels: { confirm: 'Cancel review', cancel: 'Keep scheduled' },
-      confirmProps: { color: 'red' },
+      labels: { confirm: "Cancel review", cancel: "Keep scheduled" },
+      confirmProps: { color: "red" },
       onConfirm: async () => {
         try {
           await cancelReview.mutateAsync(review.id);
           notifications.show({
-            color: 'orange',
-            title: 'Review cancelled',
-            message: 'The cancelled checkpoint remains in the review history.',
+            color: "orange",
+            title: "Review cancelled",
+            message: "The cancelled checkpoint remains in the review history.",
           });
         } catch {
           // The panel exposes the backend error.
@@ -102,13 +114,13 @@ export function DecisionReviewsPanel({
   const handleOutcome = (result: ReviewOutcomeResponse) => {
     const outcome = result.review.outcome;
     notifications.show({
-      color: outcome === 'confirmed' ? 'green' : 'orange',
-      title: outcome ? outcomeLabel[outcome] : 'Review completed',
+      color: outcome === "confirmed" ? "green" : "orange",
+      title: outcome ? outcomeLabel[outcome] : "Review completed",
       message: result.successor_decision
         ? `Successor decision created: ${result.successor_decision.title}.`
         : result.revision
-          ? 'A linked decision revision was created.'
-          : 'The outcome is now part of the locked decision record.',
+          ? "A linked decision revision was created."
+          : "The outcome is now part of the locked decision record.",
     });
   };
 
@@ -125,8 +137,17 @@ export function DecisionReviewsPanel({
       <Alert color="red" title="Reviews could not be loaded">
         {getApiErrorMessage(
           reviews.error,
-          'ForkRoom could not load this decision review timeline.',
+          "ForkRoom could not load this decision review timeline.",
         )}
+        <Button
+          mt="sm"
+          size="compact-sm"
+          variant="default"
+          leftSection={<IconRefresh size={14} />}
+          onClick={() => void reviews.refetch()}
+        >
+          Retry reviews
+        </Button>
       </Alert>
     );
   }
@@ -171,7 +192,7 @@ export function DecisionReviewsPanel({
         <Alert color="red" title="Review was not cancelled">
           {getApiErrorMessage(
             cancelReview.error,
-            'ForkRoom rejected this review transition.',
+            "ForkRoom rejected this review transition.",
           )}
         </Alert>
       )}
@@ -189,7 +210,7 @@ export function DecisionReviewsPanel({
         <div className={styles.reviewTimeline}>
           {reviewItems.map((review) => {
             const due =
-              review.status === 'scheduled' &&
+              review.status === "scheduled" &&
               new Date(review.scheduled_for).getTime() <= referenceTime;
             const scheduledBy = memberById.get(review.scheduled_by_id);
             const completedBy = review.completed_by_id
@@ -198,25 +219,32 @@ export function DecisionReviewsPanel({
 
             return (
               <article key={review.id} className={styles.reviewRow}>
-                <div className={styles.reviewTimelineMarker} aria-hidden="true" />
+                <div
+                  className={styles.reviewTimelineMarker}
+                  aria-hidden="true"
+                />
                 <div className={styles.reviewContent}>
-                  <Group justify="space-between" align="flex-start" wrap="nowrap">
+                  <Group
+                    justify="space-between"
+                    align="flex-start"
+                    wrap="nowrap"
+                  >
                     <div>
                       <Group gap="xs">
                         <Badge
                           color={
-                            review.status === 'completed'
-                              ? 'green'
-                              : review.status === 'cancelled'
-                                ? 'gray'
+                            review.status === "completed"
+                              ? "green"
+                              : review.status === "cancelled"
+                                ? "gray"
                                 : due
-                                  ? 'orange'
-                                  : 'blue'
+                                  ? "orange"
+                                  : "blue"
                           }
                           variant="light"
                         >
-                          {review.status === 'scheduled' && due
-                            ? 'Due for review'
+                          {review.status === "scheduled" && due
+                            ? "Due for review"
                             : review.status}
                         </Badge>
                         {review.outcome && (
@@ -228,7 +256,7 @@ export function DecisionReviewsPanel({
                       <h3>{formatDateTime(review.scheduled_for)}</h3>
                     </div>
 
-                    {canManageReviews && review.status === 'scheduled' && (
+                    {canManageReviews && review.status === "scheduled" && (
                       <Menu position="bottom-end" withinPortal>
                         <Menu.Target>
                           <Button
@@ -274,9 +302,11 @@ export function DecisionReviewsPanel({
 
                   <div className={styles.reviewMetadata}>
                     <span>
-                      Scheduled by{' '}
+                      Scheduled by{" "}
                       <strong>
-                        {scheduledBy?.display_name ?? scheduledBy?.email ?? 'Workspace admin'}
+                        {scheduledBy?.display_name ??
+                          scheduledBy?.email ??
+                          "Workspace admin"}
                       </strong>
                     </span>
                     {review.completed_at && (
@@ -284,7 +314,7 @@ export function DecisionReviewsPanel({
                         Completed {formatDateTime(review.completed_at)}
                         {completedBy
                           ? ` by ${completedBy.display_name ?? completedBy.email}`
-                          : ''}
+                          : ""}
                       </span>
                     )}
                   </div>

@@ -288,9 +288,7 @@ export function useUpdateWorkspace(workspaceId: string) {
       queryClient.setQueryData(
         workspaceKeys.list(),
         (current: Workspace[] | undefined) =>
-          current?.map((item) =>
-            item.id === workspace.id ? workspace : item,
-          ),
+          current?.map((item) => (item.id === workspace.id ? workspace : item)),
       );
       await queryClient.invalidateQueries({ queryKey: workspaceKeys.list() });
     },
@@ -559,6 +557,7 @@ export function useOpenBlockingObjections(
     objections: queries.flatMap((query) => query.data ?? []),
     isPending: queries.some((query) => query.isPending),
     isError: queries.some((query) => query.isError),
+    refetch: () => Promise.all(queries.map((query) => query.refetch())),
   };
 }
 
@@ -584,6 +583,7 @@ export function useDecisionOpenObjections(
     objections: queries.flatMap((query) => query.data ?? []),
     isPending: queries.some((query) => query.isPending),
     isError: queries.some((query) => query.isError),
+    refetch: () => Promise.all(queries.map((query) => query.refetch())),
   };
 }
 

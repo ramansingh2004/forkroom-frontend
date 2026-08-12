@@ -68,6 +68,10 @@ import {
   useVotingResult,
 } from "@/hooks/use-workspaces";
 import { getApiErrorMessage } from "@/services/auth.service";
+import {
+  DecisionRoomSkeleton,
+  RecoveryState,
+} from "@/components/feedback/app-feedback";
 import type {
   Criterion,
   DecisionLock,
@@ -480,7 +484,18 @@ function ProposalObjectionsSection({
 
       {objections.isError && (
         <Alert color="red" title="Could not load objections">
-          ForkRoom could not load the objections for this proposal.
+          {getApiErrorMessage(
+            objections.error,
+            "ForkRoom could not load the objections for this proposal.",
+          )}
+          <Button
+            mt="sm"
+            size="compact-sm"
+            variant="default"
+            onClick={() => void objections.refetch()}
+          >
+            Retry objections
+          </Button>
         </Alert>
       )}
 
@@ -1235,12 +1250,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     votingSessions.isPending ||
     (decision.data?.status === "locked" && decisionLock.isPending)
   ) {
-    return (
-      <div className={styles.roomState}>
-        <Loader color="rust" size="sm" />
-        <span>Opening decision room…</span>
-      </div>
-    );
+    return <DecisionRoomSkeleton />;
   }
 
   if (
@@ -1261,12 +1271,33 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     !votingSessions.data ||
     (decision.data.status === "locked" && !decisionLock.data)
   ) {
+    const loadError =
+      workspace.error ??
+      currentUser.error ??
+      members.error ??
+      decision.error ??
+      proposals.error ??
+      criteria.error ??
+      votingSessions.error ??
+      decisionLock.error;
+
     return (
       <div className={styles.roomState}>
-        <Alert color="red" title="Could not open decision">
-          The decision could not be loaded. It may have been removed or you may
-          not have access to it.
-        </Alert>
+        <RecoveryState
+          error={loadError}
+          title="Decision Room unavailable"
+          fallback="The decision could not be loaded. It may have been removed or your workspace access changed."
+          onRetry={() => {
+            void currentUser.refetch();
+            void workspace.refetch();
+            void members.refetch();
+            void decision.refetch();
+            void proposals.refetch();
+            void criteria.refetch();
+            void votingSessions.refetch();
+            if (decision.data?.status === "locked") void decisionLock.refetch();
+          }}
+        />
       </div>
     );
   }
@@ -1451,6 +1482,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
         message: getApiErrorMessage(
           error,
           "ForkRoom could not change this proposal state.",
+          "decision-transition",
         ),
       });
     }
@@ -1482,6 +1514,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
             message: getApiErrorMessage(
               error,
               "ForkRoom could not activate this decision.",
+              "decision-transition",
             ),
           });
         }
@@ -1515,6 +1548,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
             message: getApiErrorMessage(
               error,
               "ForkRoom could not return this decision to active work.",
+              "decision-transition",
             ),
           });
         }
@@ -1711,8 +1745,8 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
 
       const resultCanBeLocked = Boolean(
         latestClosedVotingResult.data?.result_valid &&
-        !latestClosedVotingResult.data.is_tie &&
-        latestClosedVotingResult.data.winner_proposal_id,
+          !latestClosedVotingResult.data.is_tie &&
+          latestClosedVotingResult.data.winner_proposal_id,
       );
 
       if (canManageVoting && resultCanBeLocked) {

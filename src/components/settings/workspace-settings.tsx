@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Avatar,
   Badge,
   Button,
-  Loader,
   Textarea,
   TextInput,
-} from '@mantine/core';
-import { notifications } from '@mantine/notifications';
+  Tooltip,
+} from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import {
   IconAlertTriangle,
   IconCalendar,
@@ -19,36 +19,40 @@ import {
   IconLock,
   IconShieldCheck,
   IconTrash,
-} from '@tabler/icons-react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { useCurrentUser } from '@/hooks/use-auth';
+} from "@tabler/icons-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useCurrentUser } from "@/hooks/use-auth";
 import {
   useUpdateWorkspace,
   useWorkspace,
   useWorkspaceMembers,
-} from '@/hooks/use-workspaces';
-import { getApiErrorMessage } from '@/services/auth.service';
-import { WorkspaceDeleteModal } from './workspace-delete-modal';
-import styles from './workspace-settings.module.css';
+} from "@/hooks/use-workspaces";
+import { getApiErrorMessage } from "@/services/auth.service";
+import {
+  PageSkeleton,
+  RecoveryState,
+} from "@/components/feedback/app-feedback";
+import { WorkspaceDeleteModal } from "./workspace-delete-modal";
+import styles from "./workspace-settings.module.css";
 
 const workspaceSettingsSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, 'Use at least 2 characters.')
-    .max(120, 'Keep the name under 120 characters.'),
+    .min(2, "Use at least 2 characters.")
+    .max(120, "Keep the name under 120 characters."),
   description: z
     .string()
     .trim()
-    .max(500, 'Keep the description under 500 characters.'),
+    .max(500, "Keep the description under 500 characters."),
 });
 
 type WorkspaceSettingsValues = z.infer<typeof workspaceSettingsSchema>;
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(
+  return new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(
     new Date(value),
   );
 }
@@ -61,21 +65,21 @@ export function WorkspaceSettings({ workspaceId }: { workspaceId: string }) {
   const [deleteOpened, setDeleteOpened] = useState(false);
   const form = useForm<WorkspaceSettingsValues>({
     resolver: zodResolver(workspaceSettingsSchema),
-    defaultValues: { name: '', description: '' },
+    defaultValues: { name: "", description: "" },
   });
 
   const member = members.data?.find(
     (item) => item.user_id === currentUser.data?.id,
   );
-  const canManage = ['owner', 'admin'].includes(member?.role ?? 'viewer');
-  const isOwner = member?.role === 'owner';
+  const canManage = ["owner", "admin"].includes(member?.role ?? "viewer");
+  const isOwner = member?.role === "owner";
   const owner = members.data?.find(
     (item) => item.user_id === workspace.data?.owner_id,
   );
   const initialValues = useMemo(
     () => ({
-      name: workspace.data?.name ?? '',
-      description: workspace.data?.description ?? '',
+      name: workspace.data?.name ?? "",
+      description: workspace.data?.description ?? "",
     }),
     [workspace.data?.description, workspace.data?.name],
   );
@@ -91,17 +95,12 @@ export function WorkspaceSettings({ workspaceId }: { workspaceId: string }) {
       event.preventDefault();
     };
 
-    window.addEventListener('beforeunload', warnBeforeUnload);
-    return () => window.removeEventListener('beforeunload', warnBeforeUnload);
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
   }, [form.formState.isDirty]);
 
   if (currentUser.isPending || workspace.isPending || members.isPending) {
-    return (
-      <div className={styles.centerState}>
-        <Loader color="rust" size="sm" />
-        <span>Loading workspace settings...</span>
-      </div>
-    );
+    return <PageSkeleton label="Loading workspace settings" />;
   }
 
   if (
@@ -113,9 +112,16 @@ export function WorkspaceSettings({ workspaceId }: { workspaceId: string }) {
   ) {
     return (
       <div className={styles.settingsPage}>
-        <Alert color="red" title="Workspace settings unavailable">
-          ForkRoom could not load this workspace or you no longer have access.
-        </Alert>
+        <RecoveryState
+          error={currentUser.error ?? workspace.error ?? members.error}
+          title="Workspace settings unavailable"
+          fallback="ForkRoom could not load this workspace or your access changed."
+          onRetry={() => {
+            void currentUser.refetch();
+            void workspace.refetch();
+            void members.refetch();
+          }}
+        />
       </div>
     );
   }
@@ -128,9 +134,9 @@ export function WorkspaceSettings({ workspaceId }: { workspaceId: string }) {
           <span className={styles.eyebrow}>WORKSPACE SETTINGS</span>
           <h1>Administrator access required</h1>
           <p>
-            Workspace identity and governance settings are available only to
-            the Owner and Administrators. Your workspace content remains
-            available through the regular navigation.
+            Workspace identity and governance settings are available only to the
+            Owner and Administrators. Your workspace content remains available
+            through the regular navigation.
           </p>
         </section>
       </div>
@@ -144,18 +150,18 @@ export function WorkspaceSettings({ workspaceId }: { workspaceId: string }) {
     try {
       const updated = await updateWorkspace.mutateAsync({
         ...(nextName !== workspace.data.name ? { name: nextName } : {}),
-        ...(nextDescription !== (workspace.data.description ?? '')
+        ...(nextDescription !== (workspace.data.description ?? "")
           ? { description: nextDescription || null }
           : {}),
       });
       form.reset({
         name: updated.name,
-        description: updated.description ?? '',
+        description: updated.description ?? "",
       });
       notifications.show({
-        color: 'green',
-        title: 'Workspace settings saved',
-        message: 'The workspace identity is now up to date.',
+        color: "green",
+        title: "Workspace settings saved",
+        message: "The workspace identity is now up to date.",
       });
     } catch {
       // Keep edited values in place and expose the server error below.
@@ -169,16 +175,18 @@ export function WorkspaceSettings({ workspaceId }: { workspaceId: string }) {
           <span className={styles.eyebrow}>WORKSPACE GOVERNANCE</span>
           <h1>Workspace settings</h1>
           <p>
-            Maintain the identity and ownership boundary for{' '}
+            Maintain the identity and ownership boundary for{" "}
             <strong>{workspace.data.name}</strong>.
           </p>
         </div>
         <Badge
-          color={isOwner ? 'dark' : 'rust'}
+          color={isOwner ? "dark" : "rust"}
           variant="light"
-          leftSection={isOwner ? <IconCrown size={13} /> : <IconShieldCheck size={13} />}
+          leftSection={
+            isOwner ? <IconCrown size={13} /> : <IconShieldCheck size={13} />
+          }
         >
-          {isOwner ? 'Owner access' : 'Administrator access'}
+          {isOwner ? "Owner access" : "Administrator access"}
         </Badge>
       </header>
 
@@ -207,7 +215,7 @@ export function WorkspaceSettings({ workspaceId }: { workspaceId: string }) {
                 <TextInput
                   label="Workspace name"
                   placeholder="Platform Architecture"
-                  {...form.register('name')}
+                  {...form.register("name")}
                   error={form.formState.errors.name?.message}
                 />
                 <Textarea
@@ -217,7 +225,7 @@ export function WorkspaceSettings({ workspaceId }: { workspaceId: string }) {
                   autosize
                   minRows={4}
                   maxRows={8}
-                  {...form.register('description')}
+                  {...form.register("description")}
                   error={form.formState.errors.description?.message}
                 />
               </div>
@@ -226,7 +234,7 @@ export function WorkspaceSettings({ workspaceId }: { workspaceId: string }) {
                 <Alert color="red" title="Settings were not saved">
                   {getApiErrorMessage(
                     updateWorkspace.error,
-                    'ForkRoom could not update this workspace. Your saved settings remain unchanged.',
+                    "ForkRoom could not update this workspace. Your saved settings remain unchanged.",
                   )}
                 </Alert>
               )}
@@ -234,10 +242,10 @@ export function WorkspaceSettings({ workspaceId }: { workspaceId: string }) {
               <div className={styles.saveBar}>
                 <span aria-live="polite">
                   {updateWorkspace.isPending
-                    ? 'Saving workspace settings...'
+                    ? "Saving workspace settings..."
                     : form.formState.isDirty
-                      ? 'You have unsaved changes.'
-                      : 'All workspace changes are saved.'}
+                      ? "You have unsaved changes."
+                      : "All workspace changes are saved."}
                 </span>
                 <div>
                   {form.formState.isDirty && (
@@ -249,15 +257,25 @@ export function WorkspaceSettings({ workspaceId }: { workspaceId: string }) {
                       Discard
                     </Button>
                   )}
-                  <Button
-                    type="submit"
-                    color="rust"
-                    leftSection={<IconDeviceFloppy size={16} />}
-                    disabled={!form.formState.isDirty}
-                    loading={updateWorkspace.isPending}
+                  <Tooltip
+                    label={
+                      form.formState.isDirty
+                        ? "Save workspace identity changes"
+                        : "Change the name or description before saving."
+                    }
                   >
-                    Save settings
-                  </Button>
+                    <span>
+                      <Button
+                        type="submit"
+                        color="rust"
+                        leftSection={<IconDeviceFloppy size={16} />}
+                        disabled={!form.formState.isDirty}
+                        loading={updateWorkspace.isPending}
+                      >
+                        Save settings
+                      </Button>
+                    </span>
+                  </Tooltip>
                 </div>
               </div>
             </section>
@@ -273,15 +291,24 @@ export function WorkspaceSettings({ workspaceId }: { workspaceId: string }) {
             </div>
 
             <div className={styles.ownerCard}>
-              <Avatar src={owner?.avatar_url} color="rust" size={48} radius="xl">
-                {owner?.display_name.slice(0, 2).toUpperCase() ?? 'OW'}
+              <Avatar
+                src={owner?.avatar_url}
+                color="rust"
+                size={48}
+                radius="xl"
+              >
+                {owner?.display_name.slice(0, 2).toUpperCase() ?? "OW"}
               </Avatar>
               <div>
                 <span>WORKSPACE OWNER</span>
-                <strong>{owner?.display_name ?? 'Owner account'}</strong>
+                <strong>{owner?.display_name ?? "Owner account"}</strong>
                 <small>{owner?.email ?? workspace.data.owner_id}</small>
               </div>
-              <Badge color="dark" variant="light" leftSection={<IconCrown size={13} />}>
+              <Badge
+                color="dark"
+                variant="light"
+                leftSection={<IconCrown size={13} />}
+              >
                 Owner
               </Badge>
             </div>
@@ -303,14 +330,21 @@ export function WorkspaceSettings({ workspaceId }: { workspaceId: string }) {
               </div>
             </div>
 
-            <Alert color="gray" icon={<IconLock size={18} />} title="Ownership transfer is unavailable">
+            <Alert
+              color="gray"
+              icon={<IconLock size={18} />}
+              title="Ownership transfer is unavailable"
+            >
               The current backend does not expose ownership transfer. ForkRoom
               therefore keeps the Owner immutable instead of presenting a
               non-functional transfer control.
             </Alert>
           </section>
 
-          <section id="danger" className={`${styles.settingsSection} ${styles.dangerSection}`}>
+          <section
+            id="danger"
+            className={`${styles.settingsSection} ${styles.dangerSection}`}
+          >
             <div className={styles.sectionHeading}>
               <span>03</span>
               <div>
@@ -337,9 +371,18 @@ export function WorkspaceSettings({ workspaceId }: { workspaceId: string }) {
                   Delete workspace
                 </Button>
               ) : (
-                <Button color="red" variant="light" leftSection={<IconLock size={16} />} disabled>
-                  Owner only
-                </Button>
+                <Tooltip label="Only the workspace owner can permanently delete this workspace.">
+                  <span>
+                    <Button
+                      color="red"
+                      variant="light"
+                      leftSection={<IconLock size={16} />}
+                      disabled
+                    >
+                      Owner only
+                    </Button>
+                  </span>
+                </Tooltip>
               )}
             </div>
 

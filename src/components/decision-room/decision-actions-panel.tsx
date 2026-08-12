@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 import {
   Alert,
   Badge,
@@ -9,9 +9,9 @@ import {
   Loader,
   Menu,
   Select,
-} from '@mantine/core';
-import { modals } from '@mantine/modals';
-import { notifications } from '@mantine/notifications';
+} from "@mantine/core";
+import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
 import {
   IconAlertTriangle,
   IconCalendarDue,
@@ -20,21 +20,22 @@ import {
   IconEdit,
   IconPlayerPlay,
   IconPlus,
-} from '@tabler/icons-react';
+  IconRefresh,
+} from "@tabler/icons-react";
 
 import {
   useDecisionActions,
   useTransitionDecisionAction,
-} from '@/hooks/use-workspaces';
-import { getApiErrorMessage } from '@/services/auth.service';
+} from "@/hooks/use-workspaces";
+import { getApiErrorMessage } from "@/services/auth.service";
 import type {
   ActionStatus,
   DecisionAction,
   WorkspaceMember,
-} from '@/services/workspace.service';
+} from "@/services/workspace.service";
 
-import { ActionItemModal } from './action-item-modal';
-import styles from './decision-room.module.css';
+import { ActionItemModal } from "./action-item-modal";
+import styles from "./decision-room.module.css";
 
 type DecisionActionsPanelProps = {
   workspaceId: string;
@@ -45,36 +46,36 @@ type DecisionActionsPanelProps = {
   canManageActions: boolean;
 };
 
-const activeStatuses: ActionStatus[] = ['todo', 'in_progress', 'blocked'];
+const activeStatuses: ActionStatus[] = ["todo", "in_progress", "blocked"];
 
 const statusLabel: Record<ActionStatus, string> = {
-  todo: 'To do',
-  in_progress: 'In progress',
-  blocked: 'Blocked',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
+  todo: "To do",
+  in_progress: "In progress",
+  blocked: "Blocked",
+  completed: "Completed",
+  cancelled: "Cancelled",
 };
 
 const statusColor: Record<ActionStatus, string> = {
-  todo: 'gray',
-  in_progress: 'blue',
-  blocked: 'orange',
-  completed: 'green',
-  cancelled: 'gray',
+  todo: "gray",
+  in_progress: "blue",
+  blocked: "orange",
+  completed: "green",
+  cancelled: "gray",
 };
 
 const transitionTargets: Record<ActionStatus, ActionStatus[]> = {
-  todo: ['in_progress', 'blocked', 'completed', 'cancelled'],
-  in_progress: ['todo', 'blocked', 'completed', 'cancelled'],
-  blocked: ['todo', 'in_progress', 'completed', 'cancelled'],
+  todo: ["in_progress", "blocked", "completed", "cancelled"],
+  in_progress: ["todo", "blocked", "completed", "cancelled"],
+  blocked: ["todo", "in_progress", "completed", "cancelled"],
   completed: [],
   cancelled: [],
 };
 
 const formatDateTime = (value: string) =>
-  new Intl.DateTimeFormat('en', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
+  new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
   }).format(new Date(value));
 
 export function DecisionActionsPanel({
@@ -87,9 +88,11 @@ export function DecisionActionsPanel({
 }: DecisionActionsPanelProps) {
   const actions = useDecisionActions(workspaceId, decisionId);
   const transitionAction = useTransitionDecisionAction(workspaceId, decisionId);
-  const [statusFilter, setStatusFilter] = useState('active');
-  const [assigneeFilter, setAssigneeFilter] = useState('all');
-  const [editorAction, setEditorAction] = useState<DecisionAction | null | undefined>();
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [assigneeFilter, setAssigneeFilter] = useState("all");
+  const [editorAction, setEditorAction] = useState<
+    DecisionAction | null | undefined
+  >();
   const memberById = useMemo(
     () => new Map(members.map((member) => [member.user_id, member])),
     [members],
@@ -104,14 +107,14 @@ export function DecisionActionsPanel({
     );
   const filteredActions = actionItems
     .filter((action) =>
-      statusFilter === 'all'
+      statusFilter === "all"
         ? true
-        : statusFilter === 'active'
+        : statusFilter === "active"
           ? activeStatuses.includes(action.status)
           : action.status === statusFilter,
     )
     .filter((action) =>
-      assigneeFilter === 'all' ? true : action.assignee_id === assigneeFilter,
+      assigneeFilter === "all" ? true : action.assignee_id === assigneeFilter,
     )
     .sort((left, right) => {
       if (isOverdue(left) !== isOverdue(right)) return isOverdue(left) ? -1 : 1;
@@ -120,9 +123,11 @@ export function DecisionActionsPanel({
       return new Date(left.due_at).getTime() - new Date(right.due_at).getTime();
     });
   const overdueCount = actionItems.filter(isOverdue).length;
-  const blockedCount = actionItems.filter((action) => action.status === 'blocked').length;
+  const blockedCount = actionItems.filter(
+    (action) => action.status === "blocked",
+  ).length;
   const completedCount = actionItems.filter(
-    (action) => action.status === 'completed',
+    (action) => action.status === "completed",
   ).length;
 
   const changeStatus = (action: DecisionAction, status: ActionStatus) => {
@@ -133,8 +138,8 @@ export function DecisionActionsPanel({
           payload: { status },
         });
         notifications.show({
-          color: status === 'completed' ? 'green' : 'blue',
-          title: 'Action status updated',
+          color: status === "completed" ? "green" : "blue",
+          title: "Action status updated",
           message: `${action.title} is now ${statusLabel[status].toLowerCase()}.`,
         });
       } catch {
@@ -142,21 +147,24 @@ export function DecisionActionsPanel({
       }
     };
 
-    if (status === 'completed' || status === 'cancelled') {
+    if (status === "completed" || status === "cancelled") {
       modals.openConfirmModal({
-        title: status === 'completed' ? 'Complete this action?' : 'Cancel this action?',
+        title:
+          status === "completed"
+            ? "Complete this action?"
+            : "Cancel this action?",
         children: (
           <p className={styles.confirmCopy}>
-            {status === 'completed'
-              ? 'The completion time will be recorded in the decision history.'
-              : 'The action remains visible for traceability and cannot be treated as completed.'}
+            {status === "completed"
+              ? "The completion time will be recorded in the decision history."
+              : "The action remains visible for traceability and cannot be treated as completed."}
           </p>
         ),
         labels: {
-          confirm: status === 'completed' ? 'Mark completed' : 'Cancel action',
-          cancel: 'Keep current status',
+          confirm: status === "completed" ? "Mark completed" : "Cancel action",
+          cancel: "Keep current status",
         },
-        confirmProps: { color: status === 'completed' ? 'green' : 'red' },
+        confirmProps: { color: status === "completed" ? "green" : "red" },
         onConfirm: execute,
       });
       return;
@@ -178,8 +186,17 @@ export function DecisionActionsPanel({
       <Alert color="red" title="Actions could not be loaded">
         {getApiErrorMessage(
           actions.error,
-          'ForkRoom could not load follow-through actions.',
+          "ForkRoom could not load follow-through actions.",
         )}
+        <Button
+          mt="sm"
+          size="compact-sm"
+          variant="default"
+          leftSection={<IconRefresh size={14} />}
+          onClick={() => void actions.refetch()}
+        >
+          Retry actions
+        </Button>
       </Alert>
     );
   }
@@ -224,25 +241,28 @@ export function DecisionActionsPanel({
         <Select
           label="Status"
           data={[
-            { value: 'active', label: 'Active' },
-            { value: 'all', label: 'All statuses' },
-            ...Object.entries(statusLabel).map(([value, label]) => ({ value, label })),
+            { value: "active", label: "Active" },
+            { value: "all", label: "All statuses" },
+            ...Object.entries(statusLabel).map(([value, label]) => ({
+              value,
+              label,
+            })),
           ]}
           value={statusFilter}
-          onChange={(value) => setStatusFilter(value ?? 'active')}
+          onChange={(value) => setStatusFilter(value ?? "active")}
           allowDeselect={false}
         />
         <Select
           label="Assignee"
           data={[
-            { value: 'all', label: 'All assignees' },
+            { value: "all", label: "All assignees" },
             ...members.map((member) => ({
               value: member.user_id,
               label: member.display_name ?? member.email,
             })),
           ]}
           value={assigneeFilter}
-          onChange={(value) => setAssigneeFilter(value ?? 'all')}
+          onChange={(value) => setAssigneeFilter(value ?? "all")}
           searchable
           allowDeselect={false}
         />
@@ -252,7 +272,7 @@ export function DecisionActionsPanel({
         <Alert color="red" title="Action status was not changed">
           {getApiErrorMessage(
             transitionAction.error,
-            'ForkRoom rejected this action transition.',
+            "ForkRoom rejected this action transition.",
           )}
         </Alert>
       )}
@@ -260,11 +280,15 @@ export function DecisionActionsPanel({
       {filteredActions.length === 0 ? (
         <div className={styles.followThroughEmpty}>
           <IconCheck size={24} />
-          <strong>{actionItems.length === 0 ? 'No action items yet' : 'No matching actions'}</strong>
+          <strong>
+            {actionItems.length === 0
+              ? "No action items yet"
+              : "No matching actions"}
+          </strong>
           <p>
             {actionItems.length === 0
-              ? 'Add the first owned task required to implement this decision.'
-              : 'Change the status or assignee filters to see other actions.'}
+              ? "Add the first owned task required to implement this decision."
+              : "Change the status or assignee filters to see other actions."}
           </p>
         </div>
       ) : (
@@ -294,13 +318,19 @@ export function DecisionActionsPanel({
 
                 <div className={styles.actionMetadata}>
                   <span>ASSIGNEE</span>
-                  <strong>{assignee?.display_name ?? assignee?.email ?? 'Unknown member'}</strong>
+                  <strong>
+                    {assignee?.display_name ??
+                      assignee?.email ??
+                      "Unknown member"}
+                  </strong>
                 </div>
 
                 <div className={styles.actionMetadata}>
                   <span>DUE</span>
                   <strong className={overdue ? styles.overdueText : undefined}>
-                    {action.due_at ? formatDateTime(action.due_at) : 'No due date'}
+                    {action.due_at
+                      ? formatDateTime(action.due_at)
+                      : "No due date"}
                   </strong>
                 </div>
 
@@ -317,25 +347,26 @@ export function DecisionActionsPanel({
                       </Button>
                     </Menu.Target>
                     <Menu.Dropdown>
-                      {canManageActions && activeStatuses.includes(action.status) && (
-                        <Menu.Item
-                          leftSection={<IconEdit size={15} />}
-                          onClick={() => setEditorAction(action)}
-                        >
-                          Edit or reassign
-                        </Menu.Item>
-                      )}
+                      {canManageActions &&
+                        activeStatuses.includes(action.status) && (
+                          <Menu.Item
+                            leftSection={<IconEdit size={15} />}
+                            onClick={() => setEditorAction(action)}
+                          >
+                            Edit or reassign
+                          </Menu.Item>
+                        )}
                       {canTransition &&
                         transitionTargets[action.status].map((status) => (
                           <Menu.Item
                             key={status}
-                            color={status === 'cancelled' ? 'red' : undefined}
+                            color={status === "cancelled" ? "red" : undefined}
                             leftSection={
-                              status === 'completed' ? (
+                              status === "completed" ? (
                                 <IconCheck size={15} />
-                              ) : status === 'blocked' ? (
+                              ) : status === "blocked" ? (
                                 <IconAlertTriangle size={15} />
-                              ) : status === 'in_progress' ? (
+                              ) : status === "in_progress" ? (
                                 <IconPlayerPlay size={15} />
                               ) : (
                                 <IconCalendarDue size={15} />

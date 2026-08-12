@@ -7,7 +7,6 @@ import {
   Badge,
   Button,
   Drawer,
-  Loader,
   Select,
   TextInput,
   Tooltip,
@@ -41,6 +40,10 @@ import type {
   WorkspaceRole,
 } from "@/services/workspace.service";
 import { MemberAddModal } from "./member-add-modal";
+import {
+  PageSkeleton,
+  RecoveryState,
+} from "@/components/feedback/app-feedback";
 import styles from "./members.module.css";
 
 const roleOrder: Record<WorkspaceRole, number> = {
@@ -405,12 +408,7 @@ export function MemberManagement({ workspaceId }: { workspaceId: string }) {
     orderedMembers[0];
 
   if (currentUser.isPending || workspace.isPending || members.isPending) {
-    return (
-      <div className={styles.centerState}>
-        <Loader color="rust" size="sm" />
-        <span>Loading workspace access…</span>
-      </div>
-    );
+    return <PageSkeleton label="Loading workspace member access" />;
   }
 
   if (
@@ -424,10 +422,16 @@ export function MemberManagement({ workspaceId }: { workspaceId: string }) {
   ) {
     return (
       <div className={styles.membersPage}>
-        <Alert color="red" title="Members unavailable">
-          ForkRoom could not load this member directory or you no longer have
-          access to the workspace.
-        </Alert>
+        <RecoveryState
+          error={currentUser.error ?? workspace.error ?? members.error}
+          title="Members are unavailable"
+          fallback="ForkRoom could not load this member directory or your access changed."
+          onRetry={() => {
+            void currentUser.refetch();
+            void workspace.refetch();
+            void members.refetch();
+          }}
+        />
       </div>
     );
   }

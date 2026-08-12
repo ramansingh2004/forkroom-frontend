@@ -10,6 +10,7 @@ import {
   Progress,
   Radio,
   Select,
+  Tooltip,
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
@@ -163,13 +164,18 @@ export function VotingPanel({
     : null;
   const canLockResult = Boolean(
     result.data?.result_valid &&
-    !result.data.is_tie &&
-    result.data.winner_proposal_id &&
-    winningProposal,
+      !result.data.is_tie &&
+      result.data.winner_proposal_id &&
+      winningProposal,
   );
   const readinessBlocked = readiness.isChecking || readiness.issues.length > 0;
   const actionError =
     openSession.error ?? closeSession.error ?? cancelSession.error;
+  const actionErrorContext = openSession.error
+    ? "open-voting"
+    : closeSession.error
+      ? "close-voting"
+      : undefined;
 
   const confirmOpen = () => {
     if (!selectedSession) return;
@@ -436,6 +442,7 @@ export function VotingPanel({
               {getApiErrorMessage(
                 actionError,
                 "ForkRoom rejected this voting-session transition.",
+                actionErrorContext,
               )}
             </Alert>
           )}
@@ -457,15 +464,26 @@ export function VotingPanel({
               )}
               {canManageVoting ? (
                 <Group>
-                  <Button
-                    color="rust"
-                    leftSection={<IconLockOpen size={16} />}
-                    onClick={confirmOpen}
-                    disabled={readinessBlocked}
-                    loading={openSession.isPending}
+                  <Tooltip
+                    label={
+                      readinessBlocked
+                        ? (readiness.issues[0] ??
+                          "ForkRoom is still checking voting readiness.")
+                        : "Open voting to eligible workspace contributors"
+                    }
                   >
-                    Open voting
-                  </Button>
+                    <span>
+                      <Button
+                        color="rust"
+                        leftSection={<IconLockOpen size={16} />}
+                        onClick={confirmOpen}
+                        disabled={readinessBlocked}
+                        loading={openSession.isPending}
+                      >
+                        Open voting
+                      </Button>
+                    </span>
+                  </Tooltip>
                   <Button
                     variant="light"
                     color="red"
@@ -544,6 +562,7 @@ export function VotingPanel({
                   {getApiErrorMessage(
                     castVote.error,
                     "ForkRoom could not record this ballot. Check your eligibility and try again.",
+                    "vote",
                   )}
                 </Alert>
               )}
@@ -553,15 +572,28 @@ export function VotingPanel({
                   Your recorded ballot cannot be restored after reload until the
                   API exposes a current-user vote endpoint.
                 </span>
-                <Button
-                  color="rust"
-                  leftSection={<IconCheck size={16} />}
-                  onClick={confirmVote}
-                  disabled={!selectedProposalId || readinessBlocked}
-                  loading={castVote.isPending}
+                <Tooltip
+                  label={
+                    !selectedProposalId
+                      ? "Select one submitted proposal before recording your vote."
+                      : readinessBlocked
+                        ? (readiness.issues[0] ??
+                          "Voting readiness is still being checked.")
+                        : "Record this ballot"
+                  }
                 >
-                  {recordedVote ? "Update vote" : "Submit vote"}
-                </Button>
+                  <span>
+                    <Button
+                      color="rust"
+                      leftSection={<IconCheck size={16} />}
+                      onClick={confirmVote}
+                      disabled={!selectedProposalId || readinessBlocked}
+                      loading={castVote.isPending}
+                    >
+                      {recordedVote ? "Update vote" : "Submit vote"}
+                    </Button>
+                  </span>
+                </Tooltip>
               </Group>
 
               {canManageVoting && (
@@ -603,6 +635,14 @@ export function VotingPanel({
                     result.error,
                     "ForkRoom could not load this round result.",
                   )}
+                  <Button
+                    mt="sm"
+                    size="compact-sm"
+                    variant="default"
+                    onClick={() => void result.refetch()}
+                  >
+                    Retry result
+                  </Button>
                 </Alert>
               )}
 
@@ -711,6 +751,14 @@ export function VotingPanel({
                           ForkRoom could not load all unresolved objections. The
                           lock action remains disabled until this check
                           succeeds.
+                          <Button
+                            mt="sm"
+                            size="compact-sm"
+                            variant="default"
+                            onClick={() => void openObjections.refetch()}
+                          >
+                            Retry readiness check
+                          </Button>
                         </Alert>
                       )}
 

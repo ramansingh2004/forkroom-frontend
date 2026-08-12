@@ -1,0 +1,130 @@
+.connectionBanner {
+  position: fixed;
+  z-index: 500;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 11px 14px;
+  border: 1px solid var(--mantine-color-gray-4);
+  border-left: 3px solid var(--mantine-color-orange-7);
+  border-radius: 8px;
+  background: #fffdfc;
+  color: var(--mantine-color-dark-8);
+  font-size: 0.84rem;
+}
+
+.connectionBanner[data-state="offline"] {
+  border-left-color: var(--mantine-color-red-7);
+}
+
+.connectionBanner[data-state="reconnected"] {
+  border-left-color: var(--mantine-color-green-7);
+}
+
+.connectionBanner strong {
+  display: block;
+  font-size: 0.84rem;
+}
+
+.connectionBanner span {
+  color: var(--mantine-color-gray-7);
+}
+
+.statePanel {
+  display: grid;
+  justify-items: start;
+  gap: 9px;
+  padding: 20px;
+  border: 1px solid var(--mantine-color-gray-4);
+  border-left: 3px solid var(--mantine-color-red-7);
+  border-radius: 8px;
+  background: #fffdfc;
+}
+
+.statePanel[data-kind="permission"] {
+  border-left-color: var(--mantine-color-gray-7);
+}
+
+.statePanel h2,
+.statePanel p {
+  margin: 0;
+}
+
+.statePanel h2 {
+  font-size: 1rem;
+}
+
+.statePanel p {
+  max-width: 64ch;
+  color: var(--mantine-color-gray-7);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.stateActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.pageSkeleton,
+.roomSkeleton {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  padding: 24px;
+}
+
+.skeletonHeader {
+  display: grid;
+  gap: 10px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--mantine-color-gray-3);
+}
+
+.skeletonGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.roomSkeleton {
+  grid-template-columns: minmax(220px, 0.7fr) minmax(420px, 1.7fr) minmax(
+      280px,
+      0.9fr
+    );
+  min-height: calc(100vh - 56px);
+  padding: 8px;
+  background: #f4eeea;
+}
+
+@media (max-width: 760px) {
+  .connectionBanner {
+    right: 16px;
+    bottom: 72px;
+    left: 16px;
+  }
+
+  .pageSkeleton {
+    padding: 16px;
+  }
+
+  .skeletonGrid,
+  .roomSkeleton {
+    grid-template-columns: 1fr;
+  }
+
+  .roomSkeleton > :not(:nth-child(2)) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connectionBanner {
+    transition: none;
+  }
+}

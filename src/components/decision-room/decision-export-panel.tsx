@@ -324,6 +324,7 @@ export function DecisionExportPanel({
           {getApiErrorMessage(
             requestExport.error,
             "ForkRoom could not queue this locked decision for PDF rendering.",
+            "export-request",
           )}
         </Alert>
       )}
@@ -333,6 +334,7 @@ export function DecisionExportPanel({
           {getApiErrorMessage(
             downloadExport.error,
             "The previous link may have expired. Request a fresh download link and try again.",
+            "export-download",
           )}
         </Alert>
       )}

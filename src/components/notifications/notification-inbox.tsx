@@ -194,15 +194,27 @@ export function NotificationInbox() {
           </p>
         </div>
 
-        <Button
-          variant="default"
-          leftSection={<IconChecks size={17} />}
-          onClick={() => void handleMarkAllRead()}
-          loading={markAllRead.isPending}
-          disabled={unreadCount === 0 || !feed.data}
+        <Tooltip
+          label={
+            !feed.data
+              ? "Wait for the inbox to finish loading."
+              : unreadCount === 0
+                ? "There are no unread notifications."
+                : "Mark every loaded unread notification as read."
+          }
         >
-          Mark all read
-        </Button>
+          <span>
+            <Button
+              variant="default"
+              leftSection={<IconChecks size={17} />}
+              onClick={() => void handleMarkAllRead()}
+              loading={markAllRead.isPending}
+              disabled={unreadCount === 0 || !feed.data}
+            >
+              Mark all read
+            </Button>
+          </span>
+        </Tooltip>
       </header>
 
       <section className={styles.summaryBar} aria-label="Notification summary">
@@ -251,8 +263,18 @@ export function NotificationInbox() {
           title="Showing the last loaded inbox"
           className={styles.staleAlert}
         >
-          ForkRoom could not refresh these notifications. Read state and the
-          unread count may be stale.
+          {getApiErrorMessage(
+            feed.error,
+            "ForkRoom could not refresh these notifications. Read state and the unread count may be stale.",
+          )}
+          <Button
+            mt="sm"
+            size="compact-sm"
+            variant="default"
+            onClick={() => void feed.refetch()}
+          >
+            Retry refresh
+          </Button>
         </Alert>
       )}
 
@@ -267,8 +289,10 @@ export function NotificationInbox() {
           <IconAlertTriangle size={28} />
           <strong>Notifications are unavailable</strong>
           <p>
-            ForkRoom could not load your attention inbox. Check your connection
-            and try again.
+            {getApiErrorMessage(
+              feed.error,
+              "ForkRoom could not load your attention inbox.",
+            )}
           </p>
           <Button
             variant="default"

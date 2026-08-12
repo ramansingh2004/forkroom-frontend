@@ -1,15 +1,9 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import {
-  Alert,
-  Avatar,
-  Badge,
-  Button,
-  Loader,
-} from '@mantine/core';
-import { notifications } from '@mantine/notifications';
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Alert, Avatar, Badge, Button } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import {
   IconAlertTriangle,
   IconAt,
@@ -22,22 +16,26 @@ import {
   IconMailForward,
   IconShieldCheck,
   IconUser,
-} from '@tabler/icons-react';
+} from "@tabler/icons-react";
 import {
   useCurrentUser,
   useLogout,
   useRequestEmailVerification,
   useRequestPasswordReset,
-} from '@/hooks/use-auth';
-import { getApiErrorMessage } from '@/services/auth.service';
-import styles from './account-settings.module.css';
+} from "@/hooks/use-auth";
+import { getApiErrorMessage } from "@/services/auth.service";
+import {
+  PageSkeleton,
+  RecoveryState,
+} from "@/components/feedback/app-feedback";
+import styles from "./account-settings.module.css";
 
 type AccountSettingsProps = {
-  section: 'profile' | 'security';
+  section: "profile" | "security";
 };
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(
+  return new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(
     new Date(value),
   );
 }
@@ -50,29 +48,18 @@ export function AccountSettings({ section }: AccountSettingsProps) {
   const logout = useLogout();
 
   if (currentUser.isPending) {
-    return (
-      <div className={styles.centerState}>
-        <Loader color="rust" size="sm" />
-        <span>Loading account settings...</span>
-      </div>
-    );
+    return <PageSkeleton label="Loading account settings" />;
   }
 
   if (currentUser.isError || !currentUser.data) {
     return (
       <div className={styles.accountPage}>
-        <Alert color="red" title="Account settings unavailable">
-          ForkRoom could not verify the current account. Retry after checking
-          your connection.
-        </Alert>
-        <Button
-          className={styles.retryButton}
-          variant="light"
-          color="rust"
-          onClick={() => void currentUser.refetch()}
-        >
-          Try again
-        </Button>
+        <RecoveryState
+          error={currentUser.error}
+          title="Account settings unavailable"
+          fallback="ForkRoom could not verify the current account."
+          onRetry={() => void currentUser.refetch()}
+        />
       </div>
     );
   }
@@ -84,15 +71,15 @@ export function AccountSettings({ section }: AccountSettingsProps) {
       .filter(Boolean)
       .slice(0, 2)
       .map((part) => part[0]?.toUpperCase())
-      .join('') || 'FR';
+      .join("") || "FR";
 
   const resendVerification = async () => {
     try {
       await verification.mutateAsync(user.email);
       notifications.show({
-        color: 'green',
-        title: 'Verification email requested',
-        message: 'Check your inbox for a fresh verification link.',
+        color: "green",
+        title: "Verification email requested",
+        message: "Check your inbox for a fresh verification link.",
       });
     } catch {
       // The inline error keeps this action and its retry context together.
@@ -103,9 +90,9 @@ export function AccountSettings({ section }: AccountSettingsProps) {
     try {
       await passwordReset.mutateAsync(user.email);
       notifications.show({
-        color: 'green',
-        title: 'Password reset requested',
-        message: 'Check your inbox for the secure reset link.',
+        color: "green",
+        title: "Password reset requested",
+        message: "Check your inbox for the secure reset link.",
       });
     } catch {
       // The inline error keeps this action and its retry context together.
@@ -115,7 +102,7 @@ export function AccountSettings({ section }: AccountSettingsProps) {
   const signOut = async () => {
     try {
       await logout.mutateAsync();
-      router.replace('/login');
+      router.replace("/login");
     } catch {
       // The session remains active and the error is shown in this section.
     }
@@ -126,19 +113,19 @@ export function AccountSettings({ section }: AccountSettingsProps) {
       <header className={styles.accountHeader}>
         <div>
           <span className={styles.eyebrow}>PERSONAL SETTINGS</span>
-          <h1>{section === 'profile' ? 'Profile' : 'Security'}</h1>
+          <h1>{section === "profile" ? "Profile" : "Security"}</h1>
           <p>
-            {section === 'profile'
-              ? 'Review the personal identity attached to your ForkRoom account.'
-              : 'Protect access to your account and manage this browser session.'}
+            {section === "profile"
+              ? "Review the personal identity attached to your ForkRoom account."
+              : "Protect access to your account and manage this browser session."}
           </p>
         </div>
         <Badge
-          color={user.is_active ? 'green' : 'gray'}
+          color={user.is_active ? "green" : "gray"}
           variant="light"
           leftSection={<IconShieldCheck size={13} />}
         >
-          {user.is_active ? 'Active account' : 'Inactive account'}
+          {user.is_active ? "Active account" : "Inactive account"}
         </Badge>
       </header>
 
@@ -146,16 +133,16 @@ export function AccountSettings({ section }: AccountSettingsProps) {
         <nav className={styles.accountNav} aria-label="Personal settings">
           <Link
             href="/settings/profile"
-            className={section === 'profile' ? styles.activeNav : undefined}
-            aria-current={section === 'profile' ? 'page' : undefined}
+            className={section === "profile" ? styles.activeNav : undefined}
+            aria-current={section === "profile" ? "page" : undefined}
           >
             <IconUser size={17} aria-hidden="true" />
             Profile
           </Link>
           <Link
             href="/settings/security"
-            className={section === 'security' ? styles.activeNav : undefined}
-            aria-current={section === 'security' ? 'page' : undefined}
+            className={section === "security" ? styles.activeNav : undefined}
+            aria-current={section === "security" ? "page" : undefined}
           >
             <IconLock size={17} aria-hidden="true" />
             Security
@@ -163,7 +150,7 @@ export function AccountSettings({ section }: AccountSettingsProps) {
         </nav>
 
         <main className={styles.accountContent}>
-          {section === 'profile' ? (
+          {section === "profile" ? (
             <>
               <section className={styles.settingsSection}>
                 <div className={styles.sectionHeading}>
@@ -245,7 +232,7 @@ export function AccountSettings({ section }: AccountSettingsProps) {
                     </span>
                   </div>
                   <Badge
-                    color={user.is_email_verified ? 'green' : 'orange'}
+                    color={user.is_email_verified ? "green" : "orange"}
                     variant="light"
                     leftSection={
                       user.is_email_verified ? (
@@ -255,7 +242,7 @@ export function AccountSettings({ section }: AccountSettingsProps) {
                       )
                     }
                   >
-                    {user.is_email_verified ? 'Verified' : 'Not verified'}
+                    {user.is_email_verified ? "Verified" : "Not verified"}
                   </Badge>
                 </div>
 
@@ -282,15 +269,15 @@ export function AccountSettings({ section }: AccountSettingsProps) {
 
                 {verification.isSuccess && (
                   <Alert color="green" title="Verification link requested">
-                    Check {user.email}. The account status will update after
-                    the verification link is completed.
+                    Check {user.email}. The account status will update after the
+                    verification link is completed.
                   </Alert>
                 )}
                 {verification.isError && (
                   <Alert color="red" title="Verification email was not sent">
                     {getApiErrorMessage(
                       verification.error,
-                      'ForkRoom could not request a new verification email.',
+                      "ForkRoom could not request a new verification email.",
                     )}
                   </Alert>
                 )}
@@ -314,8 +301,8 @@ export function AccountSettings({ section }: AccountSettingsProps) {
                   <div>
                     <strong>Reset your password</strong>
                     <p>
-                      A reset request will be sent to {user.email}. Your
-                      current password is never displayed here.
+                      A reset request will be sent to {user.email}. Your current
+                      password is never displayed here.
                     </p>
                   </div>
                   <Button
@@ -338,7 +325,7 @@ export function AccountSettings({ section }: AccountSettingsProps) {
                   <Alert color="red" title="Reset link was not sent">
                     {getApiErrorMessage(
                       passwordReset.error,
-                      'ForkRoom could not request a password reset.',
+                      "ForkRoom could not request a password reset.",
                     )}
                   </Alert>
                 )}
@@ -359,8 +346,8 @@ export function AccountSettings({ section }: AccountSettingsProps) {
                   <div>
                     <h2>Browser session</h2>
                     <p>
-                      Manage the session currently being used to access
-                      ForkRoom on this device.
+                      Manage the session currently being used to access ForkRoom
+                      on this device.
                     </p>
                   </div>
                 </div>
@@ -401,7 +388,7 @@ export function AccountSettings({ section }: AccountSettingsProps) {
                   <Alert color="red" title="Session was not closed">
                     {getApiErrorMessage(
                       logout.error,
-                      'ForkRoom could not sign out this browser. Your session remains active.',
+                      "ForkRoom could not sign out this browser. Your session remains active.",
                     )}
                   </Alert>
                 )}
@@ -421,7 +408,10 @@ export function AccountSettings({ section }: AccountSettingsProps) {
                   <span>03</span>
                   <div>
                     <h2>Account lifecycle</h2>
-                    <p>Destructive personal-account controls require backend support.</p>
+                    <p>
+                      Destructive personal-account controls require backend
+                      support.
+                    </p>
                   </div>
                 </div>
 

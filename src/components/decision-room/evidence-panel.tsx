@@ -10,6 +10,8 @@ import {
   Loader,
   Modal,
   Select,
+  Skeleton,
+  Tooltip,
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
@@ -206,6 +208,7 @@ export function EvidencePanel({
         message: getApiErrorMessage(
           error,
           "ForkRoom could not create a fresh download link.",
+          "attachment-download",
         ),
       });
     } finally {
@@ -254,15 +257,25 @@ export function EvidencePanel({
           <span className={styles.kicker}>EVIDENCE</span>
           <strong>Supporting files</strong>
         </div>
-        <Button
-          size="compact-xs"
-          color="rust"
-          leftSection={<IconPlus size={14} />}
-          onClick={() => setUploadOpened(true)}
-          disabled={!canUpload}
+        <Tooltip
+          label={
+            canUpload
+              ? "Add supporting evidence"
+              : "Uploads are unavailable during voting and after the decision becomes read-only."
+          }
         >
-          Add
-        </Button>
+          <span>
+            <Button
+              size="compact-xs"
+              color="rust"
+              leftSection={<IconPlus size={14} />}
+              onClick={() => setUploadOpened(true)}
+              disabled={!canUpload}
+            >
+              Add
+            </Button>
+          </span>
+        </Tooltip>
       </div>
 
       {!canUpload && (
@@ -288,8 +301,14 @@ export function EvidencePanel({
       />
 
       {attachments.isPending && (
-        <div className={styles.evidenceLoading} role="status">
-          <Loader size="xs" color="rust" /> Loading evidence…
+        <div
+          className={styles.evidenceList}
+          role="status"
+          aria-label="Loading evidence"
+        >
+          {Array.from({ length: 3 }, (_, index) => (
+            <Skeleton key={index} height={94} radius={0} />
+          ))}
         </div>
       )}
 
@@ -299,6 +318,15 @@ export function EvidencePanel({
             attachments.error,
             "ForkRoom could not load attachments for this decision.",
           )}
+          <Button
+            mt="sm"
+            size="compact-sm"
+            variant="default"
+            leftSection={<IconRefresh size={14} />}
+            onClick={() => void attachments.refetch()}
+          >
+            Retry evidence
+          </Button>
         </Alert>
       )}
 
