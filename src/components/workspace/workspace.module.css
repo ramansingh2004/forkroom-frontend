@@ -913,3 +913,939 @@
     padding: 0;
   }
 }
+
+/* Attention-first workspace dashboard */
+.workspaceHeader {
+  min-height: 118px;
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(260px, 380px) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 24px;
+  background: var(--fr-raised);
+  border: 1px solid var(--fr-border-strong);
+  border-radius: var(--fr-card-radius);
+}
+
+.workspaceHeading {
+  min-width: 0;
+}
+
+.workspaceHeader h1 {
+  margin: 4px 0 5px;
+  overflow: hidden;
+  font-size: clamp(25px, 3vw, 34px);
+  font-weight: 570;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspaceHeader p {
+  margin: 0;
+  overflow: hidden;
+  color: var(--fr-text-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.continueWorking {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  padding: 11px 13px;
+  color: var(--fr-text);
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-control-radius);
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.continueWorking:hover {
+  background: var(--fr-primary-soft);
+  border-color: var(--fr-border-strong);
+}
+
+.continueWorking > span,
+.continueWorking > small,
+.sectionIndex,
+.partialLabel,
+.queueCopy small,
+.queueAction,
+.viewAllLinkNew,
+.sectionCount,
+.activityKind,
+.rowDate,
+.deadlineCell,
+.lastActivityCell {
+  font-family: "JetBrains Mono Variable", monospace;
+}
+
+.continueWorking > span {
+  color: var(--fr-primary);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.continueWorking > strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.continueWorking > small {
+  grid-column: 1;
+  color: var(--fr-text-muted);
+  font-size: 8px;
+}
+
+.continueWorking > svg {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  align-self: center;
+  color: var(--fr-primary);
+}
+
+.workspaceHeaderActions,
+.panelHeaderActions,
+.emptyActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.workspaceHeaderActions {
+  justify-content: flex-end;
+}
+
+.workspaceHeaderActions :global(.mantine-Button-root),
+.emptyActions :global(.mantine-Button-root) {
+  height: 38px;
+  padding-inline: 14px;
+  font-size: 11px;
+}
+
+.dashboardPanel,
+.firstDecisionState {
+  margin-top: 10px;
+  overflow: hidden;
+  background: var(--fr-raised);
+  border: 1px solid var(--fr-border-strong);
+  border-radius: var(--fr-card-radius);
+  box-shadow: none;
+}
+
+.firstDecisionState {
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 44px;
+}
+
+.firstDecisionState h2 {
+  margin: 8px 0 7px;
+  font-size: 24px;
+}
+
+.firstDecisionState p {
+  max-width: 610px;
+  margin: 0 0 20px;
+  color: var(--fr-text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.attentionPanelNew {
+  border-left: 3px solid var(--fr-primary);
+}
+
+.dashboardPanelHeader {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 10px 16px;
+  background: var(--fr-surface);
+  border-bottom: 1px solid var(--fr-border-strong);
+}
+
+summary.dashboardPanelHeader {
+  cursor: pointer;
+  list-style: none;
+}
+
+summary.dashboardPanelHeader::-webkit-details-marker {
+  display: none;
+}
+
+.dashboardPanelHeader h2 {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.sectionIndex {
+  color: #7a6458;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.partialLabel {
+  color: var(--fr-warning);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.attentionSummary {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  border-bottom: 1px solid var(--fr-border);
+}
+
+.attentionSummary > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 8px 12px;
+  border-right: 1px solid var(--fr-border);
+}
+
+.attentionSummary > div:last-child {
+  border-right: 0;
+}
+
+.attentionSummary strong {
+  min-width: 21px;
+  color: var(--fr-text);
+  font-size: 18px;
+  font-weight: 580;
+  line-height: 1;
+}
+
+.attentionSummary span {
+  color: var(--fr-text-muted);
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+.attentionQueue,
+.compactDashboardList,
+.activityList {
+  display: grid;
+}
+
+.attentionQueueRow {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto 18px;
+  align-items: center;
+  gap: 10px;
+  min-height: 62px;
+  padding: 8px 14px;
+  color: var(--fr-text);
+  border-bottom: 1px solid var(--fr-border);
+  transition: background-color 100ms ease;
+}
+
+.attentionQueueRow:last-child {
+  border-bottom: 0;
+}
+
+.attentionQueueRow:hover {
+  background: #faf5f1;
+}
+
+.attentionQueueRow::before {
+  position: absolute;
+  inset: 12px auto 12px 0;
+  width: 2px;
+  background: var(--fr-border-strong);
+  content: "";
+}
+
+.attentionQueueRow[data-tone="rust"]::before {
+  background: var(--fr-primary);
+}
+
+.attentionQueueRow[data-tone="warning"]::before {
+  background: var(--fr-warning);
+}
+
+.attentionQueueRow[data-tone="danger"]::before {
+  background: var(--fr-danger);
+}
+
+.queueIcon,
+.activityIcon,
+.lockedMark {
+  display: grid;
+  place-items: center;
+  color: var(--fr-text-muted);
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-control-radius);
+}
+
+.queueIcon {
+  width: 30px;
+  height: 30px;
+}
+
+.attentionQueueRow[data-tone="rust"] .queueIcon {
+  color: var(--fr-primary);
+}
+
+.attentionQueueRow[data-tone="warning"] .queueIcon {
+  color: var(--fr-warning);
+}
+
+.attentionQueueRow[data-tone="danger"] .queueIcon {
+  color: var(--fr-danger);
+}
+
+.queueCopy {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 9px;
+}
+
+.queueCopy small {
+  align-self: center;
+  color: var(--fr-text-muted);
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.queueCopy strong {
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queueCopy > span {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  color: var(--fr-text-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queueAction,
+.viewAllLinkNew {
+  color: var(--fr-text-muted);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.attentionQueueRow:hover .queueAction,
+.viewAllLinkNew:hover {
+  color: var(--fr-primary);
+}
+
+.attentionClear {
+  min-height: 112px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 20px 16px;
+}
+
+.clearMark {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  color: var(--fr-success);
+  background: #edf6f0;
+  border: 1px solid #cfe4d6;
+  border-radius: 50%;
+  font-weight: 800;
+}
+
+.attentionClear strong {
+  font-size: 12px;
+}
+
+.attentionClear p {
+  margin: 3px 0 0;
+  color: var(--fr-text-muted);
+  font-size: 10px;
+}
+
+.dashboardSkeleton {
+  display: grid;
+  gap: 1px;
+  padding: 1px 0;
+  background: var(--fr-border);
+}
+
+.activeDecisionTable {
+  min-width: 0;
+}
+
+.activeDecisionHeader,
+.activeDecisionTableRow {
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 1.65fr) 82px minmax(120px, 0.9fr) 108px 108px
+    92px minmax(140px, 1fr) 18px;
+  align-items: center;
+  gap: 12px;
+}
+
+.activeDecisionHeader {
+  min-height: 34px;
+  padding: 7px 14px;
+  color: #7a6458;
+  background: #fbf8f5;
+  border-bottom: 1px solid var(--fr-border);
+  font-family: "JetBrains Mono Variable", monospace;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.activeDecisionTableRow {
+  min-height: 66px;
+  padding: 9px 14px;
+  color: var(--fr-text);
+  border-bottom: 1px solid var(--fr-border);
+  transition: background-color 100ms ease;
+}
+
+.activeDecisionTableRow:last-child {
+  border-bottom: 0;
+}
+
+.activeDecisionTableRow:hover {
+  background: #faf5f1;
+}
+
+.activeDecisionTableRow > span {
+  min-width: 0;
+}
+
+.activeDecisionTableRow :global(.mantine-Badge-root) {
+  color: var(--fr-text-muted);
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border-strong);
+}
+
+.activeDecisionTableRow :global(.mantine-Badge-root[data-color="rust"]) {
+  color: var(--fr-primary);
+  background: var(--fr-primary-soft);
+  border-color: #dfb7a3;
+}
+
+.tableDecisionTitle {
+  display: grid;
+  gap: 3px;
+}
+
+.tableDecisionTitle strong,
+.tableDecisionTitle small,
+.ownerCell > span,
+.compactDashboardRow strong,
+.compactDashboardRow small,
+.lockedDecisionRow strong,
+.lockedDecisionRow small,
+.activityRow strong,
+.activityRow small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tableDecisionTitle strong {
+  font-size: 11px;
+}
+
+.tableDecisionTitle small {
+  color: var(--fr-text-muted);
+  font-size: 9px;
+}
+
+.ownerCell,
+.participantCell,
+.avatarStack {
+  display: flex;
+  align-items: center;
+}
+
+.ownerCell {
+  gap: 7px;
+  font-size: 9px;
+}
+
+.participantCell {
+  gap: 7px;
+}
+
+.avatarStack :global(.mantine-Avatar-root) {
+  margin-left: -5px;
+  border: 2px solid var(--fr-raised);
+}
+
+.avatarStack :global(.mantine-Avatar-root):first-child {
+  margin-left: 0;
+}
+
+.participantCell small,
+.deadlineCell,
+.lastActivityCell {
+  color: var(--fr-text-muted);
+  font-size: 8px;
+}
+
+.deadlineCell[data-tone="warning"] {
+  color: var(--fr-warning);
+  font-weight: 750;
+}
+
+.deadlineCell[data-tone="danger"] {
+  color: var(--fr-danger);
+  font-weight: 750;
+}
+
+.signalCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  color: var(--fr-text-muted);
+  font-size: 9px;
+}
+
+.signalCell small {
+  padding: 2px 5px;
+  color: var(--fr-text-muted);
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: 4px;
+  font-size: 8px;
+}
+
+.clearSignal {
+  color: var(--fr-success);
+}
+
+.dashboardLowerGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+  gap: 10px;
+}
+
+.sectionCount {
+  min-width: 25px;
+  height: 25px;
+  display: grid;
+  place-items: center;
+  color: var(--fr-text-muted);
+  background: var(--fr-raised);
+  border: 1px solid var(--fr-border);
+  border-radius: 50%;
+  font-size: 8px;
+}
+
+.compactDashboardRow,
+.lockedDecisionRow {
+  min-width: 0;
+  display: grid;
+  align-items: center;
+  gap: 10px;
+  min-height: 55px;
+  padding: 8px 13px;
+  color: var(--fr-text);
+  border-bottom: 1px solid var(--fr-border);
+}
+
+.compactDashboardRow {
+  grid-template-columns: 8px minmax(0, 1fr) auto 16px;
+}
+
+.lockedDecisionRow {
+  grid-template-columns: 28px minmax(0, 1fr) 16px;
+}
+
+.compactDashboardRow:last-child,
+.lockedDecisionRow:last-child {
+  border-bottom: 0;
+}
+
+.compactDashboardRow:hover,
+.lockedDecisionRow:hover,
+.activityRow:hover {
+  background: #faf5f1;
+}
+
+.compactDashboardRow > span:nth-child(2),
+.lockedDecisionRow > span:nth-child(2),
+.activityRow > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.compactDashboardRow strong,
+.lockedDecisionRow strong,
+.activityRow strong {
+  font-size: 10px;
+}
+
+.compactDashboardRow small,
+.lockedDecisionRow small,
+.activityRow small {
+  color: var(--fr-text-muted);
+  font-size: 8px;
+}
+
+.rowStatusMark {
+  width: 7px;
+  height: 7px;
+  background: var(--fr-border-strong);
+  border-radius: 50%;
+}
+
+.rowStatusMark[data-status="in_progress"] {
+  background: var(--fr-primary);
+}
+
+.rowStatusMark[data-status="blocked"] {
+  background: var(--fr-warning);
+}
+
+.rowDate {
+  color: var(--fr-text-muted);
+  font-size: 8px;
+}
+
+.rowDate[data-overdue="true"] {
+  color: var(--fr-danger);
+  font-weight: 800;
+}
+
+.lockedMark {
+  width: 27px;
+  height: 27px;
+  color: var(--fr-black);
+}
+
+.activityRow {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 110px 82px 8px;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 8px 14px;
+  color: var(--fr-text);
+  border-bottom: 1px solid var(--fr-border);
+}
+
+.activityRow:last-child {
+  border-bottom: 0;
+}
+
+.activityIcon {
+  width: 29px;
+  height: 29px;
+}
+
+.activityKind,
+.activityRow time {
+  color: var(--fr-text-muted);
+  font-size: 8px;
+}
+
+.activityRow time {
+  text-align: right;
+}
+
+.unreadDot {
+  width: 6px;
+  height: 6px;
+  background: var(--fr-primary);
+  border-radius: 50%;
+}
+
+.dashboardRowEmpty {
+  min-height: 108px;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding: 18px 16px;
+}
+
+.dashboardRowEmpty strong {
+  font-size: 11px;
+}
+
+.dashboardRowEmpty span {
+  color: var(--fr-text-muted);
+  font-size: 9px;
+}
+
+.dashboardDataNotice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 9px 12px;
+  color: var(--fr-warning);
+  background: #fff9ec;
+  border: 1px solid #ead7ae;
+  border-radius: var(--fr-control-radius);
+  font-size: 9px;
+}
+
+@media (max-width: 1180px) {
+  .workspaceHeader {
+    grid-template-columns: minmax(260px, 1fr) minmax(250px, 340px);
+  }
+
+  .workspaceHeaderActions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    padding-top: 10px;
+    border-top: 1px solid var(--fr-border);
+  }
+
+  .attentionSummary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .attentionSummary > div:nth-child(3) {
+    border-right: 0;
+  }
+
+  .attentionSummary > div:nth-child(-n + 3) {
+    border-bottom: 1px solid var(--fr-border);
+  }
+
+  .activeDecisionTable {
+    overflow-x: auto;
+  }
+
+  .activeDecisionHeader,
+  .activeDecisionTableRow {
+    min-width: 1060px;
+  }
+}
+
+@media (max-width: 900px) {
+  .workspaceHeader {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .workspaceHeaderActions {
+    grid-column: auto;
+  }
+
+  .dashboardLowerGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .activeDecisionTable {
+    overflow: visible;
+  }
+
+  .activeDecisionHeader {
+    display: none;
+  }
+
+  .activeDecisionTableRow {
+    position: relative;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 14px;
+    padding: 13px 36px 13px 14px;
+  }
+
+  .activeDecisionTableRow > :nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .activeDecisionTableRow > :nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .activeDecisionTableRow > :nth-child(3) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .activeDecisionTableRow > :nth-child(4) {
+    display: none;
+  }
+
+  .activeDecisionTableRow > :nth-child(5) {
+    grid-column: 2;
+    grid-row: 2;
+    text-align: right;
+  }
+
+  .activeDecisionTableRow > :nth-child(6) {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .activeDecisionTableRow > :nth-child(7) {
+    grid-column: 2;
+    grid-row: 3;
+    justify-content: flex-end;
+  }
+
+  .activeDecisionTableRow > svg {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+  }
+}
+
+@media (max-width: 640px) {
+  .workspaceHeader {
+    min-height: 0;
+    padding: 18px 16px;
+  }
+
+  .workspaceHeader h1 {
+    font-size: 26px;
+  }
+
+  .workspaceHeader p {
+    white-space: normal;
+  }
+
+  .workspaceHeaderActions {
+    flex-direction: column-reverse;
+  }
+
+  .workspaceHeaderActions :global(.mantine-Button-root) {
+    width: 100%;
+  }
+
+  .dashboardPanelHeader {
+    min-height: 54px;
+    padding-inline: 12px;
+  }
+
+  .dashboardPanelHeader h2 {
+    font-size: 14px;
+  }
+
+  .panelHeaderActions :global(.mantine-Button-label),
+  .panelHeaderActions :global(.mantine-Button-section) {
+    font-size: 0;
+  }
+
+  .attentionSummary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .attentionSummary > div:nth-child(3) {
+    border-right: 1px solid var(--fr-border);
+  }
+
+  .attentionSummary > div:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .attentionSummary > div:nth-child(-n + 4) {
+    border-bottom: 1px solid var(--fr-border);
+  }
+
+  .attentionQueueRow {
+    grid-template-columns: 30px minmax(0, 1fr) 16px;
+    padding-inline: 10px;
+  }
+
+  .queueAction {
+    display: none;
+  }
+
+  .queueCopy {
+    grid-template-columns: 1fr;
+  }
+
+  .queueCopy > span {
+    grid-column: 1;
+  }
+
+  .queueCopy strong,
+  .queueCopy > span {
+    white-space: normal;
+  }
+
+  .activeDecisionTableRow {
+    padding-right: 14px;
+  }
+
+  .activeDecisionTableRow > svg,
+  .activeDecisionTableRow > :nth-child(6) {
+    display: none;
+  }
+
+  .activeDecisionTableRow > :nth-child(7) {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-content: flex-start;
+  }
+
+  .rowDate {
+    display: none;
+  }
+
+  .compactDashboardRow {
+    grid-template-columns: 8px minmax(0, 1fr) 16px;
+  }
+
+  .activityRow {
+    grid-template-columns: 29px minmax(0, 1fr) auto 6px;
+    padding-inline: 10px;
+  }
+
+  .activityKind,
+  .activityRow time {
+    display: none;
+  }
+
+  .firstDecisionState {
+    min-height: 320px;
+    padding: 28px 20px;
+  }
+
+  .emptyActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .emptyActions :global(.mantine-Button-root) {
+    width: 100%;
+  }
+}
