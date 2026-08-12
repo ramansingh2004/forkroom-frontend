@@ -125,6 +125,7 @@
 }
 
 .workspace {
+  position: relative;
   min-height: 0;
   flex: 1;
   padding: 8px;
@@ -145,7 +146,7 @@
   overflow: hidden;
   background: var(--fr-raised);
   border: 1px solid var(--fr-border-strong);
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .panelHeader {
@@ -164,6 +165,28 @@
   font-size: 14px;
   font-weight: 680;
   letter-spacing: -0.01em;
+}
+
+.panelHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.layoutButton {
+  color: var(--fr-text);
+  border-color: var(--fr-border-strong);
+  background: var(--fr-raised);
+}
+
+.menuShortcut {
+  padding: 1px 4px;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: 4px;
+  color: var(--fr-text-muted);
+  background: var(--fr-canvas);
+  font-family: "JetBrains Mono Variable", monospace;
+  font-size: 8px;
 }
 
 .kicker,
@@ -1229,6 +1252,122 @@
   background: var(--fr-primary);
 }
 
+.resizeHandle:focus-visible {
+  outline: 2px solid var(--fr-primary);
+  outline-offset: -2px;
+}
+
+.focusWorkspace {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: 6px;
+  background: var(--fr-raised);
+}
+
+.focusBar {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 8px 4px 12px;
+  background: var(--fr-surface);
+  border-bottom: 1px solid var(--fr-border-strong);
+}
+
+.focusBar > div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.focusBar span {
+  color: var(--fr-primary);
+  font-family: "JetBrains Mono Variable", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+}
+
+.focusBar strong {
+  overflow: hidden;
+  color: var(--fr-text);
+  font-size: 11px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.focusBar kbd {
+  margin-left: 4px;
+  padding: 1px 5px;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: 4px;
+  color: var(--fr-text-muted);
+  background: var(--fr-raised);
+  font-family: "JetBrains Mono Variable", monospace;
+  font-size: 8px;
+}
+
+.focusSurface {
+  min-height: 0;
+  flex: 1;
+}
+
+.focusSurface > .panel {
+  border: 0;
+  border-radius: 0;
+}
+
+.restorePanelButton {
+  position: absolute;
+  z-index: 12;
+  top: 50%;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 9px;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: 6px;
+  color: var(--fr-text);
+  background: var(--fr-raised);
+  box-shadow: 0 3px 10px rgba(17, 24, 39, 0.08);
+  font-family: "JetBrains Mono Variable", monospace;
+  font-size: 9px;
+  font-weight: 650;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition:
+    color 100ms ease,
+    border-color 100ms ease,
+    background-color 100ms ease;
+}
+
+.restorePanelButton:hover {
+  color: var(--fr-primary);
+  border-color: var(--fr-primary);
+  background: var(--fr-primary-soft);
+}
+
+.restorePanelButton:focus-visible {
+  outline: 2px solid var(--fr-primary);
+  outline-offset: 2px;
+}
+
+.restorePanelLeft {
+  left: 14px;
+}
+
+.restorePanelRight {
+  right: 14px;
+}
+
 .documentToolbar {
   min-height: 46px;
   display: flex;
@@ -1436,6 +1575,12 @@
 .collabTabList :global(.mantine-Tabs-tab[data-active]) {
   color: var(--fr-primary);
   border-color: var(--fr-primary);
+}
+
+.collaborationFocusButton {
+  flex: 0 0 32px;
+  align-self: center;
+  margin-left: 2px;
 }
 
 .tabCount {
@@ -1921,12 +2066,14 @@
   border-radius: 8px 8px 0 0;
 }
 
-.responsiveTab {
+.responsiveTabs :global(.mantine-Tabs-tab) {
+  min-width: 0;
+  padding-inline: 10px;
   font-size: 11px;
   font-weight: 650;
 }
 
-.responsiveTab[data-active] {
+.responsiveTabs :global(.mantine-Tabs-tab[data-active]) {
   color: var(--fr-primary);
   border-color: var(--fr-primary);
 }
@@ -2023,6 +2170,12 @@
   .responsiveTabs {
     border-inline: 0;
     border-radius: 0;
+  }
+
+  .responsiveTabs :global(.mantine-Tabs-tab) {
+    min-height: 44px;
+    padding-inline: 4px;
+    font-size: 10px;
   }
 
   .responsivePanel > .panel {

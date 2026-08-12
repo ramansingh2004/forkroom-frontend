@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActionIcon,
   Alert,
@@ -18,6 +18,9 @@ import { useMediaQuery } from "@mantine/hooks";
 import {
   IconArrowBackUp,
   IconAlertTriangle,
+  IconAdjustmentsHorizontal,
+  IconArrowsMaximize,
+  IconArrowsMinimize,
   IconCheck,
   IconCircleOff,
   IconChevronRight,
@@ -41,6 +44,7 @@ import {
   Panel,
   Separator,
   useDefaultLayout,
+  useGroupRef,
   usePanelRef,
 } from "react-resizable-panels";
 
@@ -87,6 +91,10 @@ import { MeetingDock } from "./meeting-room/meeting-dock";
 
 type WorkMode = "document" | "proposal" | "compare" | "vote";
 type CollaborationTab = "discussion" | "evidence" | "people";
+type FocusPanel = "outline" | "document" | "collaboration";
+
+const DECISION_ROOM_LAYOUT_STORAGE_KEY =
+  "react-resizable-panels:forkroom-decision-room:outline:document:collaboration";
 
 function ProposalObjectionCount({
   workspaceId,
@@ -131,6 +139,7 @@ function OutlinePanel({
   onTransitionProposal,
   onDeleteProposal,
   onOpenEvidence,
+  onEnterFocus,
 }: {
   workspaceId: string;
   decisionId: string;
@@ -149,6 +158,7 @@ function OutlinePanel({
   ) => void;
   onDeleteProposal: (proposal: Proposal) => void;
   onOpenEvidence: () => void;
+  onEnterFocus?: () => void;
 }) {
   return (
     <section className={styles.panel} aria-label="Decision outline">
@@ -157,19 +167,33 @@ function OutlinePanel({
           <span className={styles.kicker}>OUTLINE</span>
           <h2>Decision context</h2>
         </div>
-        <Tooltip
-          label={canEdit ? "Add proposal" : "This decision is read-only"}
-        >
-          <ActionIcon
-            variant="subtle"
-            color="dark"
-            aria-label="Add proposal"
-            onClick={onCreateProposal}
-            disabled={!canEdit}
+        <div className={styles.panelHeaderActions}>
+          {onEnterFocus && (
+            <Tooltip label="Focus on outline">
+              <ActionIcon
+                variant="subtle"
+                color="dark"
+                aria-label="Focus on decision outline"
+                onClick={onEnterFocus}
+              >
+                <IconArrowsMaximize size={17} stroke={1.8} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+          <Tooltip
+            label={canEdit ? "Add proposal" : "This decision is read-only"}
           >
-            <IconPlus size={18} stroke={1.8} />
-          </ActionIcon>
-        </Tooltip>
+            <ActionIcon
+              variant="subtle"
+              color="dark"
+              aria-label="Add proposal"
+              onClick={onCreateProposal}
+              disabled={!canEdit}
+            >
+              <IconPlus size={18} stroke={1.8} />
+            </ActionIcon>
+          </Tooltip>
+        </div>
       </div>
 
       <ScrollArea className={styles.panelScroll} type="auto">
@@ -641,6 +665,7 @@ function DocumentPanel({
   onCreateProposal,
   onEditProposal,
   onTransitionProposal,
+  onEnterFocus,
 }: {
   workspaceId: string;
   decisionId: string;
@@ -669,6 +694,7 @@ function DocumentPanel({
     proposal: Proposal,
     status: Proposal["status"],
   ) => void;
+  onEnterFocus?: () => void;
 }) {
   return (
     <section
@@ -699,6 +725,18 @@ function DocumentPanel({
             )}
           </Tabs.List>
         </Tabs>
+        {onEnterFocus && (
+          <Tooltip label="Focus on primary canvas">
+            <ActionIcon
+              variant="subtle"
+              color="dark"
+              aria-label="Focus on primary decision canvas"
+              onClick={onEnterFocus}
+            >
+              <IconArrowsMaximize size={17} stroke={1.8} />
+            </ActionIcon>
+          </Tooltip>
+        )}
       </div>
 
       <ScrollArea className={styles.documentScroll} type="auto">
@@ -937,6 +975,7 @@ function CollaborationPanel({
   decisionLock,
   value,
   onChange,
+  onEnterFocus,
 }: {
   workspaceId: string;
   decisionId: string;
@@ -948,6 +987,7 @@ function CollaborationPanel({
   decisionLock: DecisionLock | null;
   value: CollaborationTab;
   onChange: (value: CollaborationTab) => void;
+  onEnterFocus?: () => void;
 }) {
   return (
     <section className={styles.panel} aria-label="Collaboration">
@@ -965,6 +1005,19 @@ function CollaborationPanel({
           <Tabs.Tab value="discussion">Discussion</Tabs.Tab>
           <Tabs.Tab value="evidence">Evidence</Tabs.Tab>
           <Tabs.Tab value="people">People</Tabs.Tab>
+          {onEnterFocus && (
+            <Tooltip label="Focus on collaboration">
+              <ActionIcon
+                className={styles.collaborationFocusButton}
+                variant="subtle"
+                color="dark"
+                aria-label="Focus on collaboration panel"
+                onClick={onEnterFocus}
+              >
+                <IconArrowsMaximize size={16} stroke={1.8} />
+              </ActionIcon>
+            </Tooltip>
+          )}
         </Tabs.List>
         <Tabs.Panel value="discussion" className={styles.emptyPanel}>
           <strong>No discussion yet</strong>
@@ -1036,10 +1089,24 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
   const desktop = useMediaQuery("(min-width: 80em)");
   const mobileTab = useUiStore((state) => state.mobileDecisionTab);
   const setMobileTab = useUiStore((state) => state.setMobileDecisionTab);
+  const leftCollapsed = useUiStore((state) => state.decisionRoomLeftCollapsed);
+  const rightCollapsed = useUiStore(
+    (state) => state.decisionRoomRightCollapsed,
+  );
+  const focusPanel = useUiStore((state) => state.decisionRoomFocus);
+  const setLeftCollapsed = useUiStore(
+    (state) => state.setDecisionRoomLeftCollapsed,
+  );
+  const setRightCollapsed = useUiStore(
+    (state) => state.setDecisionRoomRightCollapsed,
+  );
+  const setFocusPanel = useUiStore((state) => state.setDecisionRoomFocus);
+  const resetStoredDecisionRoomLayout = useUiStore(
+    (state) => state.resetDecisionRoomLayout,
+  );
+  const panelGroupRef = useGroupRef();
   const leftPanelRef = usePanelRef();
   const rightPanelRef = usePanelRef();
-  const [leftCollapsed, setLeftCollapsed] = useState(false);
-  const [rightCollapsed, setRightCollapsed] = useState(false);
   const [meetingOpened, setMeetingOpened] = useState(false);
   const [workMode, setWorkMode] = useState<WorkMode>("document");
   const [collaborationTab, setCollaborationTab] =
@@ -1055,6 +1122,57 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     panelIds: ["outline", "document", "collaboration"],
     onlySaveAfterUserInteractions: true,
   });
+
+  useEffect(() => {
+    if (!desktop || focusPanel) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      if (leftCollapsed) leftPanelRef.current?.collapse();
+      else leftPanelRef.current?.expand();
+
+      if (rightCollapsed) rightPanelRef.current?.collapse();
+      else rightPanelRef.current?.expand();
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [desktop, focusPanel, leftCollapsed, rightCollapsed]);
+
+  useEffect(() => {
+    if (!desktop) return;
+
+    const handleWorkspaceShortcut = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.matches("input, textarea, select") ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+
+      if (event.key === "Escape" && focusPanel) {
+        event.preventDefault();
+        setFocusPanel(null);
+        return;
+      }
+
+      if (!event.altKey) return;
+      const panel =
+        event.key === "1"
+          ? "outline"
+          : event.key === "2"
+            ? "document"
+            : event.key === "3"
+              ? "collaboration"
+              : null;
+      if (!panel) return;
+
+      event.preventDefault();
+      setFocusPanel(panel);
+    };
+
+    window.addEventListener("keydown", handleWorkspaceShortcut);
+    return () => window.removeEventListener("keydown", handleWorkspaceShortcut);
+  }, [desktop, focusPanel, setFocusPanel]);
 
   if (
     currentUser.isPending ||
@@ -1258,6 +1376,49 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     else ref.current?.collapse();
   };
 
+  const enterFocusMode = (panel: FocusPanel) => {
+    setFocusPanel(panel);
+  };
+
+  const resetDecisionRoomLayout = () => {
+    resetStoredDecisionRoomLayout();
+    leftPanelRef.current?.expand();
+    rightPanelRef.current?.expand();
+
+    window.requestAnimationFrame(() => {
+      leftPanelRef.current?.resize(260);
+      rightPanelRef.current?.resize(340);
+
+      window.requestAnimationFrame(() => {
+        const layout = panelGroupRef.current?.getLayout();
+        if (layout) {
+          window.localStorage.setItem(
+            DECISION_ROOM_LAYOUT_STORAGE_KEY,
+            JSON.stringify(layout),
+          );
+        }
+      });
+    });
+
+    notifications.show({
+      color: "gray",
+      title: "Decision Room layout reset",
+      message: "Outline, primary canvas, and collaboration are visible again.",
+    });
+  };
+
+  const changeMobileSurface = (value: string | null) => {
+    if (!value) return;
+
+    const nextTab = value as typeof mobileTab;
+    setMobileTab(nextTab);
+
+    if (nextTab === "vote") setWorkMode("vote");
+    else if (nextTab === "document" && workMode === "vote") {
+      setWorkMode("document");
+    }
+  };
+
   const outline = (
     <OutlinePanel
       workspaceId={workspaceId}
@@ -1274,6 +1435,9 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
       onTransitionProposal={handleTransitionProposal}
       onDeleteProposal={confirmDeleteProposal}
       onOpenEvidence={openEvidence}
+      onEnterFocus={
+        desktop && !focusPanel ? () => enterFocusMode("outline") : undefined
+      }
     />
   );
   const document = (
@@ -1302,6 +1466,9 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
       onCreateProposal={() => setEditorProposal(null)}
       onEditProposal={(proposal) => setEditorProposal(proposal)}
       onTransitionProposal={handleTransitionProposal}
+      onEnterFocus={
+        desktop && !focusPanel ? () => enterFocusMode("document") : undefined
+      }
     />
   );
   const collaboration = (
@@ -1316,8 +1483,26 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
       decisionLock={decisionLock.data ?? null}
       value={collaborationTab}
       onChange={setCollaborationTab}
+      onEnterFocus={
+        desktop && !focusPanel
+          ? () => enterFocusMode("collaboration")
+          : undefined
+      }
     />
   );
+
+  const focusedContent =
+    focusPanel === "outline"
+      ? outline
+      : focusPanel === "collaboration"
+        ? collaboration
+        : document;
+  const focusLabel =
+    focusPanel === "outline"
+      ? "Decision outline"
+      : focusPanel === "collaboration"
+        ? "Collaboration"
+        : "Primary canvas";
 
   return (
     <div className={styles.room}>
@@ -1366,34 +1551,83 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
               Activate decision
             </Button>
           )}
-          {desktop && (
-            <>
-              <Tooltip label={leftCollapsed ? "Show outline" : "Hide outline"}>
-                <ActionIcon
-                  variant="subtle"
-                  color="dark"
-                  onClick={() => togglePanel("left")}
-                  aria-label="Toggle decision outline"
-                >
-                  <IconLayoutSidebarLeftCollapse size={19} />
-                </ActionIcon>
-              </Tooltip>
-              <Tooltip
-                label={
-                  rightCollapsed ? "Show collaboration" : "Hide collaboration"
-                }
+          {desktop &&
+            (focusPanel ? (
+              <Button
+                variant="default"
+                size="compact-sm"
+                leftSection={<IconArrowsMinimize size={16} />}
+                onClick={() => setFocusPanel(null)}
               >
-                <ActionIcon
-                  variant="subtle"
-                  color="dark"
-                  onClick={() => togglePanel("right")}
-                  aria-label="Toggle collaboration panel"
-                >
-                  <IconLayoutSidebarRightCollapse size={19} />
-                </ActionIcon>
-              </Tooltip>
-            </>
-          )}
+                Exit focus
+              </Button>
+            ) : (
+              <Menu position="bottom-end" withinPortal>
+                <Menu.Target>
+                  <Button
+                    className={styles.layoutButton}
+                    variant="default"
+                    size="compact-sm"
+                    leftSection={<IconAdjustmentsHorizontal size={16} />}
+                  >
+                    Layout
+                  </Button>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Label>Decision Room panels</Menu.Label>
+                  <Menu.Item
+                    leftSection={<IconLayoutSidebarLeftCollapse size={16} />}
+                    onClick={() => togglePanel("left")}
+                  >
+                    {leftCollapsed ? "Show outline" : "Hide outline"}
+                  </Menu.Item>
+                  <Menu.Item
+                    leftSection={<IconLayoutSidebarRightCollapse size={16} />}
+                    onClick={() => togglePanel("right")}
+                  >
+                    {rightCollapsed
+                      ? "Show collaboration"
+                      : "Hide collaboration"}
+                  </Menu.Item>
+                  <Menu.Divider />
+                  <Menu.Label>Focus mode</Menu.Label>
+                  <Menu.Item
+                    leftSection={<IconArrowsMaximize size={16} />}
+                    rightSection={
+                      <kbd className={styles.menuShortcut}>Alt+1</kbd>
+                    }
+                    onClick={() => enterFocusMode("outline")}
+                  >
+                    Focus outline
+                  </Menu.Item>
+                  <Menu.Item
+                    leftSection={<IconArrowsMaximize size={16} />}
+                    rightSection={
+                      <kbd className={styles.menuShortcut}>Alt+2</kbd>
+                    }
+                    onClick={() => enterFocusMode("document")}
+                  >
+                    Focus primary canvas
+                  </Menu.Item>
+                  <Menu.Item
+                    leftSection={<IconArrowsMaximize size={16} />}
+                    rightSection={
+                      <kbd className={styles.menuShortcut}>Alt+3</kbd>
+                    }
+                    onClick={() => enterFocusMode("collaboration")}
+                  >
+                    Focus collaboration
+                  </Menu.Item>
+                  <Menu.Divider />
+                  <Menu.Item
+                    leftSection={<IconRestore size={16} />}
+                    onClick={resetDecisionRoomLayout}
+                  >
+                    Reset layout
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            ))}
           {decision.data.status === "locked" ? (
             <Tooltip label="View the authoritative decision record">
               <Button
@@ -1414,7 +1648,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
                 leftSection={<IconScale size={17} />}
                 onClick={() => {
                   setWorkMode("vote");
-                  if (!desktop) setMobileTab("document");
+                  if (!desktop) setMobileTab("vote");
                 }}
               >
                 {hasOpenVotingSession ? "Vote now" : "Voting"}
@@ -1426,71 +1660,115 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
 
       <div className={styles.workspace}>
         {desktop ? (
-          <Group
-            id="decision-room-layout"
-            orientation="horizontal"
-            defaultLayout={defaultLayout}
-            onLayoutChanged={onLayoutChanged}
-            className={styles.panelGroup}
-          >
-            <Panel
-              id="outline"
-              panelRef={leftPanelRef}
-              defaultSize={260}
-              minSize={220}
-              maxSize={360}
-              collapsedSize={0}
-              collapsible
-              onResize={(size) => setLeftCollapsed(size.inPixels < 1)}
-            >
-              {outline}
-            </Panel>
-            <Separator
-              className={styles.resizeHandle}
-              aria-label="Resize decision outline"
-            />
-            <Panel id="document" minSize={520} defaultSize="55%">
-              {document}
-            </Panel>
-            <Separator
-              className={styles.resizeHandle}
-              aria-label="Resize collaboration panel"
-            />
-            <Panel
-              id="collaboration"
-              panelRef={rightPanelRef}
-              defaultSize={340}
-              minSize={280}
-              maxSize={440}
-              collapsedSize={0}
-              collapsible
-              onResize={(size) => setRightCollapsed(size.inPixels < 1)}
-            >
-              {collaboration}
-            </Panel>
-          </Group>
+          focusPanel ? (
+            <section className={styles.focusWorkspace} aria-label={focusLabel}>
+              <div className={styles.focusBar}>
+                <div>
+                  <IconArrowsMaximize size={15} />
+                  <span>FOCUS MODE</span>
+                  <strong>{focusLabel}</strong>
+                </div>
+                <Button
+                  variant="subtle"
+                  color="dark"
+                  size="compact-sm"
+                  leftSection={<IconArrowsMinimize size={16} />}
+                  onClick={() => setFocusPanel(null)}
+                >
+                  Exit focus <kbd>Esc</kbd>
+                </Button>
+              </div>
+              <div className={styles.focusSurface}>{focusedContent}</div>
+            </section>
+          ) : (
+            <>
+              <Group
+                id="decision-room-layout"
+                groupRef={panelGroupRef}
+                orientation="horizontal"
+                defaultLayout={defaultLayout}
+                onLayoutChanged={onLayoutChanged}
+                className={styles.panelGroup}
+              >
+                <Panel
+                  id="outline"
+                  panelRef={leftPanelRef}
+                  defaultSize={260}
+                  minSize={220}
+                  maxSize={360}
+                  collapsedSize={0}
+                  collapsible
+                  onResize={(size) => setLeftCollapsed(size.inPixels < 1)}
+                >
+                  {outline}
+                </Panel>
+                <Separator
+                  className={styles.resizeHandle}
+                  aria-label="Resize decision outline"
+                />
+                <Panel id="document" minSize={520} defaultSize="55%">
+                  {document}
+                </Panel>
+                <Separator
+                  className={styles.resizeHandle}
+                  aria-label="Resize collaboration panel"
+                />
+                <Panel
+                  id="collaboration"
+                  panelRef={rightPanelRef}
+                  defaultSize={340}
+                  minSize={280}
+                  maxSize={440}
+                  collapsedSize={0}
+                  collapsible
+                  onResize={(size) => setRightCollapsed(size.inPixels < 1)}
+                >
+                  {collaboration}
+                </Panel>
+              </Group>
+
+              {leftCollapsed && (
+                <button
+                  type="button"
+                  className={`${styles.restorePanelButton} ${styles.restorePanelLeft}`}
+                  onClick={() => togglePanel("left")}
+                >
+                  <IconLayoutSidebarLeftCollapse size={16} />
+                  <span>Show outline</span>
+                </button>
+              )}
+              {rightCollapsed && (
+                <button
+                  type="button"
+                  className={`${styles.restorePanelButton} ${styles.restorePanelRight}`}
+                  onClick={() => togglePanel("right")}
+                >
+                  <span>Show collaboration</span>
+                  <IconLayoutSidebarRightCollapse size={16} />
+                </button>
+              )}
+            </>
+          )
         ) : (
           <div className={styles.responsiveWorkspace}>
-            <Tabs
-              value={mobileTab}
-              onChange={(value) =>
-                value && setMobileTab(value as typeof mobileTab)
-              }
-            >
+            <Tabs value={mobileTab} onChange={changeMobileSurface}>
               <Tabs.List grow className={styles.responsiveTabs}>
                 <Tabs.Tab value="outline">Outline</Tabs.Tab>
                 <Tabs.Tab value="document">Document</Tabs.Tab>
+                <Tabs.Tab value="vote">Vote</Tabs.Tab>
                 <Tabs.Tab value="discussion">Discussion</Tabs.Tab>
               </Tabs.List>
-              <Tabs.Panel value="outline" className={styles.responsivePanel}>
-                {outline}
-              </Tabs.Panel>
-              <Tabs.Panel value="document" className={styles.responsivePanel}>
-                {document}
-              </Tabs.Panel>
-              <Tabs.Panel value="discussion" className={styles.responsivePanel}>
-                {collaboration}
-              </Tabs.Panel>
+              <div
+                className={styles.responsivePanel}
+                role="tabpanel"
+                aria-label={`${mobileTab} decision view`}
+              >
+                {mobileTab === "outline"
+                  ? outline
+                  : mobileTab === "discussion"
+                    ? collaboration
+                    : document}
+              </div>
             </Tabs>
           </div>
         )}
@@ -1511,7 +1789,9 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
             setWorkMode(
               decision.data.status === "locked" ? "document" : "vote",
             );
-            setMobileTab("document");
+            setMobileTab(
+              decision.data.status === "locked" ? "document" : "vote",
+            );
           }}
         >
           {decision.data.status === "locked"
