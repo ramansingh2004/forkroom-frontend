@@ -1,4 +1,5 @@
 .room {
+  position: relative;
   height: calc(100dvh - var(--fr-header-height));
   min-height: 0;
   display: flex;
@@ -117,6 +118,10 @@
 
 .voteButton {
   margin-left: 4px;
+}
+
+.meetingButtonLabel {
+  display: inline;
 }
 
 .workspace {
@@ -1992,6 +1997,20 @@
     gap: 3px;
   }
 
+  .meetingButton {
+    width: 40px;
+    min-width: 40px;
+    padding-inline: 0;
+  }
+
+  .meetingButton :global(.mantine-Button-section) {
+    margin: 0;
+  }
+
+  .meetingButtonLabel {
+    display: none;
+  }
+
   .syncState {
     font-size: 8px;
   }
@@ -2296,10 +2315,9 @@
 
 .actionRow {
   display: grid;
-  grid-template-columns: minmax(220px, 2fr) minmax(135px, 1fr) minmax(
-      150px,
-      1fr
-    ) auto;
+  grid-template-columns:
+    minmax(220px, 2fr) minmax(135px, 1fr) minmax(150px, 1fr)
+    auto;
   align-items: center;
   gap: 16px;
   padding: 14px;

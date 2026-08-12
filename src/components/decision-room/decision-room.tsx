@@ -34,6 +34,7 @@ import {
   IconSend,
   IconTrash,
   IconUsers,
+  IconVideo,
 } from "@tabler/icons-react";
 import {
   Group,
@@ -82,6 +83,7 @@ import {
 } from "./locked-evidence-panel";
 import { ProposalEditorModal } from "./proposal-editor-modal";
 import { VotingPanel } from "./voting-panel";
+import { MeetingDock } from "./meeting-room/meeting-dock";
 
 type WorkMode = "document" | "proposal" | "compare" | "vote";
 type CollaborationTab = "discussion" | "evidence" | "people";
@@ -1038,6 +1040,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
   const rightPanelRef = usePanelRef();
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
+  const [meetingOpened, setMeetingOpened] = useState(false);
   const [workMode, setWorkMode] = useState<WorkMode>("document");
   const [collaborationTab, setCollaborationTab] =
     useState<CollaborationTab>("discussion");
@@ -1343,6 +1346,15 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
         </div>
 
         <div className={styles.roomActions}>
+          <Button
+            className={styles.meetingButton}
+            variant="light"
+            color="dark"
+            leftSection={<IconVideo size={17} />}
+            onClick={() => setMeetingOpened(true)}
+          >
+            <span className={styles.meetingButtonLabel}>Meeting</span>
+          </Button>
           {canManageVoting && decision.data.status === "draft" && (
             <Button
               variant="light"
@@ -1526,6 +1538,19 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
             message: "The proposal is available in the decision outline.",
           });
         }}
+      />
+
+      <MeetingDock
+        workspaceId={workspaceId}
+        decisionId={decisionId}
+        currentUser={{
+          id: currentUser.data.id,
+          displayName: currentUser.data.display_name,
+          role: currentMember?.role ?? "viewer",
+        }}
+        opened={meetingOpened}
+        onOpen={() => setMeetingOpened(true)}
+        onClose={() => setMeetingOpened(false)}
       />
     </div>
   );
