@@ -45,7 +45,7 @@
   flex: 0 0 auto;
   height: 42px;
   padding-inline: 18px;
-  font-family: "JetBrains Mono Variable", monospace;
+  font-family: var(--fr-font-interface);
   font-size: 10px;
   font-weight: 750;
   letter-spacing: 0.06em;
@@ -138,7 +138,7 @@
   padding: 0 17px 0 66px;
   color: #7a6458;
   border-bottom: 1px solid var(--fr-border);
-  font-family: "JetBrains Mono Variable", monospace;
+  font-family: var(--fr-font-interface);
   font-size: 8px;
   font-weight: 750;
   letter-spacing: 0.1em;

@@ -63,7 +63,7 @@
   gap: 4px;
   margin-bottom: 3px;
   color: #76665e;
-  font-family: "JetBrains Mono Variable", monospace;
+  font-family: var(--fr-font-interface);
   font-size: 9px;
   font-weight: 650;
   letter-spacing: 0.05em;
@@ -611,7 +611,7 @@
 .objectionCard > p {
   margin: 0;
   color: #303640;
-  font-family: "Source Serif 4", Georgia, serif;
+  font-family: var(--fr-font-interface);
   font-size: 14px;
   line-height: 1.65;
   white-space: pre-wrap;
@@ -1868,7 +1868,7 @@
   color: var(--fr-text);
   background: var(--fr-raised);
   box-shadow: 0 3px 10px rgba(17, 24, 39, 0.08);
-  font-family: "JetBrains Mono Variable", monospace;
+  font-family: var(--fr-font-interface);
   font-size: 9px;
   font-weight: 650;
   cursor: pointer;
@@ -1965,7 +1965,7 @@
 .copySection > p,
 .criteriaList p,
 .leadingProposal p {
-  font-family: "Source Serif 4", Georgia, serif;
+  font-family: var(--fr-font-reading);
 }
 
 .lede {
@@ -2903,7 +2903,7 @@
   border: 0;
   border-radius: 6px;
   color: var(--fr-text-muted);
-  font-family: "JetBrains Mono Variable", monospace;
+  font-family: var(--fr-font-interface);
   font-size: 10px;
   font-weight: 650;
   letter-spacing: 0.04em;

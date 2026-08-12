@@ -4,7 +4,7 @@ import {
   mantineHtmlProps,
 } from '@mantine/core';
 
-import '@fontsource-variable/manrope';
+import '@fontsource-variable/inter';
 import '@fontsource/source-serif-4/400.css';
 import '@fontsource/source-serif-4/600.css';
 import '@fontsource-variable/jetbrains-mono';

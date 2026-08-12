@@ -17,10 +17,10 @@ export const forkRoomTheme = createTheme({
   primaryColor: 'rust',
   primaryShade: 7,
   colors: { rust },
-  fontFamily: "'Manrope Variable', 'Manrope', sans-serif",
+  fontFamily: "'Inter Variable', 'Inter', sans-serif",
   fontFamilyMonospace: "'JetBrains Mono Variable', 'JetBrains Mono', monospace",
   headings: {
-    fontFamily: "'Manrope Variable', 'Manrope', sans-serif",
+    fontFamily: "'Inter Variable', 'Inter', sans-serif",
     fontWeight: '650',
   },
   defaultRadius: 'md',

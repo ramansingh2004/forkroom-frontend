@@ -82,7 +82,7 @@
   padding: 10px 18px;
   color: #7a6458;
   border-bottom: 1px solid var(--fr-border);
-  font-family: "JetBrains Mono Variable", monospace;
+  font-family: var(--fr-font-interface);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -237,7 +237,7 @@
   padding-inline: 18px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  font-family: "JetBrains Mono Variable", monospace;
+  font-family: var(--fr-font-interface);
   font-size: 10px;
   font-weight: 750;
 }
@@ -317,7 +317,7 @@
   color: var(--fr-text-muted);
   background: var(--fr-primary-soft);
   border-radius: 4px;
-  font-family: "JetBrains Mono Variable", monospace;
+  font-family: var(--fr-font-interface);
   font-size: 8px;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -638,7 +638,7 @@
   padding: 10px 18px;
   color: #7a6458;
   border-bottom: 1px solid var(--fr-border);
-  font-family: "JetBrains Mono Variable", monospace;
+  font-family: var(--fr-font-interface);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -971,13 +971,10 @@
   border-color: var(--fr-border-strong);
 }
 
-.continueWorking > span,
 .continueWorking > small,
 .sectionIndex,
 .partialLabel,
 .queueCopy small,
-.queueAction,
-.viewAllLinkNew,
 .sectionCount,
 .activityKind,
 .rowDate,
@@ -988,6 +985,7 @@
 
 .continueWorking > span {
   color: var(--fr-primary);
+  font-family: var(--fr-font-interface);
   font-size: 8px;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -1254,6 +1252,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 .queueAction,
 .viewAllLinkNew {
   color: var(--fr-text-muted);
+  font-family: var(--fr-font-interface);
   font-size: 8px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -1321,7 +1320,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
   color: #7a6458;
   background: #fbf8f5;
   border-bottom: 1px solid var(--fr-border);
-  font-family: "JetBrains Mono Variable", monospace;
+  font-family: var(--fr-font-interface);
   font-size: 7px;
   font-weight: 800;
   letter-spacing: 0.07em;

@@ -20,6 +20,9 @@
   --fr-header-height: 56px;
   --fr-nav-width: 232px;
   --fr-nav-compact-width: 72px;
+  --fr-font-interface: "Inter Variable", "Inter", sans-serif;
+  --fr-font-reading: "Source Serif 4", Georgia, serif;
+  --fr-font-mono: "JetBrains Mono Variable", "JetBrains Mono", monospace;
 }
 
 * {
@@ -35,7 +38,7 @@ body {
 body {
   background: var(--fr-canvas);
   color: var(--fr-text);
-  font-family: "Manrope Variable", "Manrope", sans-serif;
+  font-family: var(--fr-font-interface);
   -webkit-font-smoothing: antialiased;
 }
 
