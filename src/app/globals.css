@@ -23,6 +23,12 @@
   --fr-font-interface: "Inter Variable", "Inter", sans-serif;
   --fr-font-reading: "Source Serif 4", Georgia, serif;
   --fr-font-mono: "JetBrains Mono Variable", "JetBrains Mono", monospace;
+  /* Readability scale: metadata is the only text allowed below 12px. */
+  --fr-type-meta: 11px;
+  --fr-type-label: 12px;
+  --fr-type-ui-sm: 13px;
+  --fr-type-ui: 14px;
+  --fr-type-body: 16px;
 }
 
 * {
@@ -39,6 +45,8 @@ body {
   background: var(--fr-canvas);
   color: var(--fr-text);
   font-family: var(--fr-font-interface);
+  font-size: var(--fr-type-ui);
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 

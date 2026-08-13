@@ -11,13 +11,13 @@
   justify-content: center;
   gap: 10px;
   color: var(--fr-text-muted);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 
 .eyebrow {
   color: #7a6458;
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   font-weight: 700;
   letter-spacing: 0.08em;
 }
@@ -66,7 +66,7 @@
   padding: 10px 12px;
   border-radius: 6px;
   color: var(--fr-text-muted);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   font-weight: 650;
   text-decoration: none;
 }
@@ -106,7 +106,7 @@
   padding-top: 4px;
   color: var(--fr-primary);
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   font-weight: 750;
 }
 
@@ -120,7 +120,7 @@
 .sectionHeading p {
   margin: 0;
   color: var(--fr-text-muted);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   line-height: 1.55;
 }
 
@@ -148,7 +148,7 @@
 
 .saveBar > span {
   color: var(--fr-text-muted);
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
 }
 
 .saveBar > div {
@@ -177,7 +177,7 @@
 .metadataGrid small {
   color: #7a6458;
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
   font-weight: 750;
   letter-spacing: 0.08em;
 }
@@ -193,7 +193,7 @@
 .ownerCard small {
   overflow: hidden;
   color: var(--fr-text-muted);
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -227,7 +227,7 @@
 
 .metadataGrid strong {
   color: var(--fr-text);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
 }
 
 .dangerSection {
@@ -256,14 +256,14 @@
 
 .dangerAction strong {
   color: var(--fr-text);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 
 .dangerAction p {
   max-width: 62ch;
   margin: 5px 0 0;
   color: var(--fr-text-muted);
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   line-height: 1.55;
 }
 
@@ -294,7 +294,7 @@
 .permissionState p {
   max-width: 58ch;
   margin: 0;
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
   line-height: 1.65;
 }
 
@@ -322,7 +322,7 @@
 
 .deleteChecklist strong {
   color: var(--fr-text);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
 }
 
 .deleteChecklist ul {
@@ -331,7 +331,7 @@
   margin: 10px 0 0;
   padding-left: 18px;
   color: var(--fr-text-muted);
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   line-height: 1.5;
 }
 

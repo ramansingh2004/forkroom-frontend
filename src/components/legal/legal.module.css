@@ -35,7 +35,7 @@
   border-radius: 6px;
   color: #fff;
   background: var(--fr-black);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
 }
 
 .headerActions {
@@ -56,7 +56,7 @@
   border-radius: 7px;
   color: var(--fr-text);
   background: var(--fr-raised);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   font-weight: 650;
   cursor: pointer;
 }
@@ -83,7 +83,7 @@
 .documentHeader > span {
   color: var(--fr-primary);
   font-family: 'JetBrains Mono Variable', monospace;
-  font-size: 9px;
+  font-size: var(--fr-type-meta);
   font-weight: 750;
   letter-spacing: 0.1em;
 }
@@ -98,7 +98,7 @@
 .index a {
   padding: 7px 0;
   color: var(--fr-text-muted);
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   line-height: 1.35;
 }
 
@@ -144,7 +144,7 @@
 .documentHeader dt {
   color: var(--fr-text-muted);
   font-family: 'JetBrains Mono Variable', monospace;
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -152,7 +152,7 @@
 
 .documentHeader dd {
   margin: 0;
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   font-weight: 650;
 }
 
@@ -163,7 +163,7 @@
   border-radius: 7px;
   color: #74480e;
   background: #fff5e7;
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   line-height: 1.6;
 }
 
@@ -180,7 +180,7 @@
   padding-top: 6px;
   color: var(--fr-primary);
   font-family: 'JetBrains Mono Variable', monospace;
-  font-size: 9px;
+  font-size: var(--fr-type-meta);
   font-weight: 750;
 }
 
@@ -195,7 +195,7 @@
 .section p {
   margin: 0 0 12px;
   color: #384151;
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
   line-height: 1.75;
 }
 
@@ -211,7 +211,7 @@
   padding-top: 30px;
   color: var(--fr-text-muted);
   font-family: var(--fr-font-interface);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
 }
 
 .documentFooter strong {

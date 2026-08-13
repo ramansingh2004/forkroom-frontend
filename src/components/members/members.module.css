@@ -11,7 +11,7 @@
   justify-content: center;
   gap: 10px;
   color: var(--fr-text-muted);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 
 .membersHeader {
@@ -46,7 +46,7 @@
   height: 42px;
   padding-inline: 18px;
   font-family: var(--fr-font-interface);
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   font-weight: 750;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -56,7 +56,7 @@
 .kicker {
   color: #7a6458;
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 9px;
+  font-size: var(--fr-type-meta);
   font-weight: 750;
   letter-spacing: 0.12em;
 }
@@ -94,7 +94,7 @@
 .memberMetrics span {
   color: #7a6458;
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
   font-weight: 750;
   letter-spacing: 0.11em;
 }
@@ -139,7 +139,7 @@
   color: #7a6458;
   border-bottom: 1px solid var(--fr-border);
   font-family: var(--fr-font-interface);
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
   font-weight: 750;
   letter-spacing: 0.1em;
 }
@@ -199,12 +199,12 @@
 }
 
 .memberIdentity strong {
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
 }
 
 .memberIdentity small {
   color: var(--fr-text-muted);
-  font-size: 10px;
+  font-size: var(--fr-type-label);
 }
 
 .emptyMembers,
@@ -223,13 +223,13 @@
 .emptyMembers strong,
 .detailsPlaceholder strong {
   color: var(--fr-text);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 
 .emptyMembers span,
 .detailsPlaceholder span {
   max-width: 44ch;
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   line-height: 1.5;
 }
 
@@ -306,14 +306,14 @@
 .detailsMetadata small {
   color: #7a6458;
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
   font-weight: 750;
   letter-spacing: 0.08em;
 }
 
 .detailsMetadata strong {
   overflow-wrap: anywhere;
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
 }
 
 .accessCard {
@@ -341,12 +341,12 @@
 }
 
 .accessCardHeading strong {
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 
 .accessCardHeading span {
   color: var(--fr-text-muted);
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   line-height: 1.45;
 }
 
@@ -356,7 +356,7 @@
   margin: 13px 0 0 28px;
   padding: 0;
   color: var(--fr-text-muted);
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   line-height: 1.5;
 }
 
@@ -375,14 +375,14 @@
 .managementSection h3,
 .dangerSection h3 {
   margin: 4px 0 3px;
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 
 .managementSection p,
 .dangerSection p {
   margin: 0;
   color: var(--fr-text-muted);
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   line-height: 1.5;
 }
 
@@ -405,7 +405,7 @@
   border: 1px solid var(--fr-border-strong);
   border-radius: 7px;
   background: var(--fr-surface);
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   line-height: 1.5;
 }
 
@@ -434,7 +434,7 @@
 .confirmCopy {
   margin: 5px 0 0;
   color: var(--fr-text-muted);
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   line-height: 1.55;
 }
 

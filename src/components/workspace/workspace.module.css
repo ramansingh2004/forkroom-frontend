@@ -48,7 +48,7 @@
 .eyebrow {
   color: #7a6458;
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   font-weight: 700;
   letter-spacing: 0.08em;
 }
@@ -83,7 +83,7 @@
   color: #7a6458;
   border-bottom: 1px solid var(--fr-border);
   font-family: var(--fr-font-interface);
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -121,7 +121,7 @@
 .workspaceIdentity span:last-child {
   overflow: hidden;
   color: var(--fr-text-muted);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -142,7 +142,7 @@
 .decisionRow time {
   color: var(--fr-text-muted);
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 10px;
+  font-size: var(--fr-type-label);
 }
 
 .emptyState {
@@ -186,7 +186,7 @@
 .formError {
   margin: 0;
   color: var(--fr-danger);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 
 .dashboardHero,
@@ -238,7 +238,7 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-family: var(--fr-font-interface);
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   font-weight: 750;
 }
 
@@ -272,7 +272,7 @@
 .metricItem span {
   color: #7a6458;
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 9px;
+  font-size: var(--fr-type-meta);
   font-weight: 700;
   letter-spacing: 0.12em;
 }
@@ -318,7 +318,7 @@
   background: var(--fr-primary-soft);
   border-radius: 4px;
   font-family: var(--fr-font-interface);
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
   font-weight: 750;
   letter-spacing: 0.08em;
 }
@@ -364,14 +364,14 @@
   background: var(--fr-primary-soft);
   border-radius: 3px;
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 9px;
+  font-size: var(--fr-type-meta);
   padding: 4px 6px;
 }
 
 .activeDecisionRow p {
   margin: 0;
   color: var(--fr-text-muted);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
   line-height: 1.55;
 }
 
@@ -382,7 +382,7 @@
   gap: 12px;
   color: var(--fr-text-muted);
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 9px;
+  font-size: var(--fr-type-meta);
 }
 
 .decisionMeta span {
@@ -405,7 +405,7 @@
   border-bottom: 0;
 }
 .recentDecisionRow strong {
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 .recentCode {
   background: transparent;
@@ -439,13 +439,13 @@
 .dashboardEmpty strong,
 .dashboardEmptySmall strong {
   color: var(--fr-text);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
 }
 
 .dashboardEmpty span,
 .dashboardEmptySmall span {
   max-width: 520px;
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   line-height: 1.55;
 }
 
@@ -456,7 +456,7 @@
   gap: 8px;
   padding: 18px 8px 8px;
   color: var(--fr-text-muted);
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
 }
 
 .attentionList {
@@ -506,13 +506,13 @@
 }
 
 .attentionRow strong {
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
 }
 
 .attentionRow small {
   color: var(--fr-text-muted);
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
 }
 
 .memberRow {
@@ -535,14 +535,14 @@
 
 .memberRow strong {
   overflow: hidden;
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .memberRow span {
   color: var(--fr-text-muted);
-  font-size: 9px;
+  font-size: var(--fr-type-meta);
   text-transform: capitalize;
 }
 
@@ -579,13 +579,13 @@
 }
 .textLink {
   color: var(--fr-primary);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   font-weight: 700;
 }
 .mutedCopy {
   margin: 0;
   color: var(--fr-text-muted);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
   line-height: 1.6;
 }
 .decisionList,
@@ -609,21 +609,21 @@
 }
 .decisionRow strong {
   overflow: hidden;
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .decisionRow span {
   overflow: hidden;
   color: var(--fr-text-muted);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .compactList strong {
   padding: 12px 0;
   border-top: 1px solid var(--fr-border);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 
 .decisionTableHeader,
@@ -639,7 +639,7 @@
   color: #7a6458;
   border-bottom: 1px solid var(--fr-border);
   font-family: var(--fr-font-interface);
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -660,16 +660,16 @@
   gap: 3px;
 }
 .decisionTableRow strong {
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 .decisionTableRow > div:first-child span {
   color: var(--fr-text-muted);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
 }
 .decisionTableRow time {
   color: var(--fr-text-muted);
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 10px;
+  font-size: var(--fr-type-label);
 }
 
 /* Calm overview pages: sections and rows replace stacked dashboard cards. */
@@ -820,7 +820,7 @@
     font-size: 32px;
   }
   .dashboardHero p {
-    font-size: 13px;
+    font-size: var(--fr-type-ui);
   }
   .heroActions {
     width: 100%;
@@ -946,7 +946,7 @@
   margin: 0;
   overflow: hidden;
   color: var(--fr-text-muted);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -986,14 +986,14 @@
 .continueWorking > span {
   color: var(--fr-primary);
   font-family: var(--fr-font-interface);
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
   font-weight: 800;
   letter-spacing: 0.1em;
 }
 
 .continueWorking > strong {
   overflow: hidden;
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1001,7 +1001,7 @@
 .continueWorking > small {
   grid-column: 1;
   color: var(--fr-text-muted);
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
 }
 
 .continueWorking > svg {
@@ -1027,7 +1027,7 @@
 .emptyActions :global(.mantine-Button-root) {
   height: 38px;
   padding-inline: 14px;
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
 }
 
 .dashboardPanel,
@@ -1058,7 +1058,7 @@
   max-width: 610px;
   margin: 0 0 20px;
   color: var(--fr-text-muted);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
   line-height: 1.6;
 }
 
@@ -1095,14 +1095,14 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 
 .sectionIndex {
   color: #7a6458;
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
   font-weight: 800;
   letter-spacing: 0.1em;
 }
 
 .partialLabel {
   color: var(--fr-warning);
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
   font-weight: 800;
   letter-spacing: 0.08em;
 }
@@ -1138,7 +1138,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 
 .attentionSummary span {
   color: var(--fr-text-muted);
-  font-size: 9px;
+  font-size: var(--fr-type-meta);
   line-height: 1.25;
 }
 
@@ -1228,14 +1228,14 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 .queueCopy small {
   align-self: center;
   color: var(--fr-text-muted);
-  font-size: 7px;
+  font-size: var(--fr-type-meta);
   font-weight: 800;
   letter-spacing: 0.08em;
 }
 
 .queueCopy strong {
   overflow: hidden;
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1244,7 +1244,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
   grid-column: 1 / -1;
   overflow: hidden;
   color: var(--fr-text-muted);
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1253,7 +1253,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 .viewAllLinkNew {
   color: var(--fr-text-muted);
   font-family: var(--fr-font-interface);
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
   font-weight: 800;
   letter-spacing: 0.08em;
 }
@@ -1284,13 +1284,13 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 }
 
 .attentionClear strong {
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
 }
 
 .attentionClear p {
   margin: 3px 0 0;
   color: var(--fr-text-muted);
-  font-size: 10px;
+  font-size: var(--fr-type-label);
 }
 
 .dashboardSkeleton {
@@ -1321,7 +1321,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
   background: #fbf8f5;
   border-bottom: 1px solid var(--fr-border);
   font-family: var(--fr-font-interface);
-  font-size: 7px;
+  font-size: var(--fr-type-meta);
   font-weight: 800;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -1379,12 +1379,12 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 }
 
 .tableDecisionTitle strong {
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
 }
 
 .tableDecisionTitle small {
   color: var(--fr-text-muted);
-  font-size: 9px;
+  font-size: var(--fr-type-meta);
 }
 
 .ownerCell,
@@ -1396,7 +1396,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 
 .ownerCell {
   gap: 7px;
-  font-size: 9px;
+  font-size: var(--fr-type-meta);
 }
 
 .participantCell {
@@ -1416,7 +1416,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 .deadlineCell,
 .lastActivityCell {
   color: var(--fr-text-muted);
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
 }
 
 .deadlineCell[data-tone="warning"] {
@@ -1434,7 +1434,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
   flex-wrap: wrap;
   gap: 4px;
   color: var(--fr-text-muted);
-  font-size: 9px;
+  font-size: var(--fr-type-meta);
 }
 
 .signalCell small {
@@ -1443,7 +1443,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
   background: var(--fr-surface);
   border: 1px solid var(--fr-border);
   border-radius: 4px;
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
 }
 
 .clearSignal {
@@ -1465,7 +1465,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
   background: var(--fr-raised);
   border: 1px solid var(--fr-border);
   border-radius: 50%;
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
 }
 
 .compactDashboardRow,
@@ -1510,14 +1510,14 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 .compactDashboardRow strong,
 .lockedDecisionRow strong,
 .activityRow strong {
-  font-size: 10px;
+  font-size: var(--fr-type-label);
 }
 
 .compactDashboardRow small,
 .lockedDecisionRow small,
 .activityRow small {
   color: var(--fr-text-muted);
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
 }
 
 .rowStatusMark {
@@ -1537,7 +1537,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 
 .rowDate {
   color: var(--fr-text-muted);
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
 }
 
 .rowDate[data-overdue="true"] {
@@ -1575,7 +1575,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 .activityKind,
 .activityRow time {
   color: var(--fr-text-muted);
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
 }
 
 .activityRow time {
@@ -1598,12 +1598,12 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 }
 
 .dashboardRowEmpty strong {
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
 }
 
 .dashboardRowEmpty span {
   color: var(--fr-text-muted);
-  font-size: 9px;
+  font-size: var(--fr-type-meta);
 }
 
 .dashboardDataNotice {
@@ -1616,7 +1616,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
   background: #fff9ec;
   border: 1px solid #ead7ae;
   border-radius: var(--fr-control-radius);
-  font-size: 9px;
+  font-size: var(--fr-type-meta);
 }
 
 @media (max-width: 1180px) {

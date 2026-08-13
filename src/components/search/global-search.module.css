@@ -11,7 +11,7 @@
   border-bottom: 1px solid var(--fr-border-strong);
   background: var(--fr-raised);
   color: var(--fr-text);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 
 .actionsList {
@@ -30,7 +30,7 @@
   left: 10px;
   color: #7a6458;
   font-family: 'JetBrains Mono Variable', monospace;
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
   font-weight: 750;
   letter-spacing: 0.12em;
 }
@@ -51,7 +51,7 @@
 }
 
 .actionLabel {
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   font-weight: 700;
 }
 
@@ -64,7 +64,7 @@
   max-width: 54ch;
   overflow: hidden;
   color: var(--fr-text-muted);
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   line-height: 1.45;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -84,12 +84,12 @@
 
 .state strong {
   color: var(--fr-text);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 
 .state span {
   max-width: 46ch;
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   line-height: 1.5;
 }
 

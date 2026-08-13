@@ -42,7 +42,7 @@
   display: flex;
   align-items: center;
   gap: 24px;
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   font-weight: 650;
 }
 
@@ -76,7 +76,7 @@
 .previewLabel {
   color: var(--fr-primary);
   font-family: 'JetBrains Mono Variable', monospace;
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   font-weight: 750;
   letter-spacing: 0.11em;
   text-transform: uppercase;
@@ -116,7 +116,7 @@
   padding: 0 20px;
   border: 1px solid var(--fr-black);
   border-radius: 7px;
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
   font-weight: 720;
 }
 
@@ -140,7 +140,7 @@
   margin: 25px 0 0;
   padding: 0;
   color: var(--fr-text-muted);
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   font-weight: 650;
   list-style: none;
 }
@@ -178,14 +178,14 @@
   gap: 14px;
   padding: 0 18px;
   border-bottom: 1px solid var(--fr-border);
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   font-weight: 700;
 }
 
 .previewTopbar strong {
   color: var(--fr-success);
   font-family: 'JetBrains Mono Variable', monospace;
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
   letter-spacing: 0.08em;
 }
 
@@ -204,7 +204,7 @@
 .previewBody > p {
   margin: 0;
   color: var(--fr-text-muted);
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   line-height: 1.6;
 }
 
@@ -233,7 +233,7 @@
 .proposalList article > span {
   color: var(--fr-primary);
   font-family: 'JetBrains Mono Variable', monospace;
-  font-size: 9px;
+  font-size: var(--fr-type-meta);
   font-weight: 800;
 }
 
@@ -245,7 +245,7 @@
 
 .proposalList strong {
   overflow: hidden;
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -254,7 +254,7 @@
 .proposalList b,
 .previewFooter {
   color: var(--fr-text-muted);
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
   font-weight: 600;
 }
 
@@ -316,7 +316,7 @@
 .workflowGrid article > span {
   color: var(--fr-primary);
   font-family: 'JetBrains Mono Variable', monospace;
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   font-weight: 750;
 }
 
@@ -328,7 +328,7 @@
 .workflowGrid p {
   margin: 0;
   color: var(--fr-text-muted);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   line-height: 1.65;
 }
 
@@ -356,7 +356,7 @@
   margin: 0 auto;
   border-top: 1px solid var(--fr-border-strong);
   color: var(--fr-text-muted);
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
 }
 
 .footer > span {

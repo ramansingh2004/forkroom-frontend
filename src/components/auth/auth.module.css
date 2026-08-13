@@ -52,7 +52,7 @@
 .eyebrow {
   color: var(--fr-primary);
   font-family: 'JetBrains Mono Variable', monospace;
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -97,13 +97,13 @@
 .input :global(.mantine-InputWrapper-label) {
   margin-bottom: 6px;
   color: var(--fr-text);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
   font-weight: 650;
 }
 
 .input :global(.mantine-InputWrapper-error) {
   margin-top: 5px;
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
 }
 
 .formMeta {
@@ -113,7 +113,7 @@
   gap: 16px;
   margin-top: -4px;
   color: var(--fr-text-muted);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
 }
 
 .textLink {
@@ -135,7 +135,7 @@
 .secondary {
   margin: 0;
   color: var(--fr-text-muted);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
   line-height: 1.5;
   text-align: center;
 }
@@ -147,7 +147,7 @@
 .terms :global(.mantine-Checkbox-label) {
   padding-top: 1px;
   color: var(--fr-text-muted);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   line-height: 1.5;
 }
 
@@ -161,7 +161,7 @@
 .termsError {
   margin: -10px 0 0 30px;
   color: var(--fr-danger);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
 }
 
 .status {
@@ -207,7 +207,7 @@
 
 .statusSupporting {
   color: var(--fr-text-muted);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   line-height: 1.55;
 }
 
@@ -217,7 +217,7 @@
   gap: 8px;
   margin: -2px 0 0;
   color: var(--fr-text-muted);
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   line-height: 1.5;
 }
 
@@ -241,14 +241,14 @@
   margin: 0;
   color: #786d66;
   font-family: var(--fr-font-interface);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 
 .footer nav {
   display: flex;
   gap: 14px;
   font-family: var(--fr-font-interface);
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   font-weight: 650;
 }
 

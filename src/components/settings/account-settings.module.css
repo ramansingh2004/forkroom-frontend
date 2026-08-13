@@ -11,7 +11,7 @@
   justify-content: center;
   gap: 10px;
   color: var(--fr-text-muted);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 
 .retryButton {
@@ -21,7 +21,7 @@
 .eyebrow {
   color: #7a6458;
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   font-weight: 700;
   letter-spacing: 0.08em;
 }
@@ -74,7 +74,7 @@
   padding: 10px 12px;
   border-radius: 6px;
   color: var(--fr-text-muted);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   font-weight: 650;
 }
 
@@ -113,7 +113,7 @@
   padding-top: 4px;
   color: var(--fr-primary);
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 10px;
+  font-size: var(--fr-type-label);
   font-weight: 750;
 }
 
@@ -127,7 +127,7 @@
 .sectionHeading p {
   margin: 0;
   color: var(--fr-text-muted);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   line-height: 1.55;
 }
 
@@ -152,7 +152,7 @@
 .profileFacts small {
   color: #7a6458;
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 8px;
+  font-size: var(--fr-type-meta);
   font-weight: 750;
   letter-spacing: 0.08em;
 }
@@ -171,7 +171,7 @@
 
 .identityCard small {
   color: var(--fr-text-muted);
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
 }
 
 .profileFacts {
@@ -204,7 +204,7 @@
 .profileFacts strong {
   overflow: hidden;
   color: var(--fr-text);
-  font-size: 12px;
+  font-size: var(--fr-type-ui);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -238,14 +238,14 @@
 .emailIdentity strong {
   overflow: hidden;
   color: var(--fr-text);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .emailIdentity small {
   color: var(--fr-text-muted);
-  font-size: 10px;
+  font-size: var(--fr-type-label);
 }
 
 .inlineAction > div,
@@ -256,7 +256,7 @@
 .inlineAction strong,
 .capabilityRow strong {
   color: var(--fr-text);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 
 .inlineAction p,
@@ -264,7 +264,7 @@
   max-width: 62ch;
   margin: 5px 0 0;
   color: var(--fr-text-muted);
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
   line-height: 1.55;
 }
 
@@ -305,12 +305,12 @@
 
 .sessionRow strong {
   color: var(--fr-text);
-  font-size: 13px;
+  font-size: var(--fr-type-ui);
 }
 
 .sessionRow span {
   color: var(--fr-text-muted);
-  font-size: 11px;
+  font-size: var(--fr-type-ui-sm);
 }
 
 @media (max-width: 767px) {
