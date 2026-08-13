@@ -7,12 +7,14 @@ type DecisionRoomFocus = "outline" | "document" | "collaboration" | null;
 interface UiState {
   navigationOpen: boolean;
   sidebarCollapsed: boolean;
+  activeWorkspaceId: string | null;
   mobileDecisionTab: MobileDecisionTab;
   decisionRoomLeftCollapsed: boolean;
   decisionRoomRightCollapsed: boolean;
   decisionRoomFocus: DecisionRoomFocus;
   setNavigationOpen: (open: boolean) => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
+  setActiveWorkspaceId: (workspaceId: string | null) => void;
   setMobileDecisionTab: (tab: MobileDecisionTab) => void;
   setDecisionRoomLeftCollapsed: (collapsed: boolean) => void;
   setDecisionRoomRightCollapsed: (collapsed: boolean) => void;
@@ -25,12 +27,15 @@ export const useUiStore = create<UiState>()(
     (set) => ({
       navigationOpen: false,
       sidebarCollapsed: false,
+      activeWorkspaceId: null,
       mobileDecisionTab: "document",
       decisionRoomLeftCollapsed: false,
       decisionRoomRightCollapsed: false,
       decisionRoomFocus: null,
       setNavigationOpen: (navigationOpen) => set({ navigationOpen }),
       setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
+      setActiveWorkspaceId: (activeWorkspaceId) =>
+        set({ activeWorkspaceId }),
       setMobileDecisionTab: (mobileDecisionTab) => set({ mobileDecisionTab }),
       setDecisionRoomLeftCollapsed: (decisionRoomLeftCollapsed) =>
         set({ decisionRoomLeftCollapsed }),
@@ -48,6 +53,7 @@ export const useUiStore = create<UiState>()(
       name: "forkroom-ui",
       partialize: (state) => ({
         sidebarCollapsed: state.sidebarCollapsed,
+        activeWorkspaceId: state.activeWorkspaceId,
         mobileDecisionTab: state.mobileDecisionTab,
         decisionRoomLeftCollapsed: state.decisionRoomLeftCollapsed,
         decisionRoomRightCollapsed: state.decisionRoomRightCollapsed,

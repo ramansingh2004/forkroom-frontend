@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useDeleteWorkspace } from '@/hooks/use-workspaces';
 import { clearWorkspaceLocalState } from '@/lib/workspace-cleanup';
 import { getApiErrorMessage } from '@/services/auth.service';
+import { useUiStore } from '@/stores/use-ui-store';
 import styles from './workspace-settings.module.css';
 
 type WorkspaceDeleteModalProps = {
@@ -25,6 +26,10 @@ export function WorkspaceDeleteModal({
 }: WorkspaceDeleteModalProps) {
   const router = useRouter();
   const deleteWorkspace = useDeleteWorkspace(workspaceId);
+  const activeWorkspaceId = useUiStore((state) => state.activeWorkspaceId);
+  const setActiveWorkspaceId = useUiStore(
+    (state) => state.setActiveWorkspaceId,
+  );
   const [confirmation, setConfirmation] = useState('');
   const [acknowledged, setAcknowledged] = useState(false);
   const matches = confirmation === workspaceName;
@@ -44,6 +49,7 @@ export function WorkspaceDeleteModal({
     try {
       await deleteWorkspace.mutateAsync();
       clearWorkspaceLocalState(workspaceId);
+      if (activeWorkspaceId === workspaceId) setActiveWorkspaceId(null);
       notifications.show({
         color: 'green',
         title: 'Workspace deleted',

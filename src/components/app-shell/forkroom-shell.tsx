@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   ActionIcon,
   Avatar,
@@ -37,7 +38,11 @@ import {
 } from "@tabler/icons-react";
 import { useCurrentUser, useLogout } from "@/hooks/use-auth";
 import { useUnreadNotificationCount } from "@/hooks/use-notifications";
-import { useWorkspace, useWorkspaceMembers } from "@/hooks/use-workspaces";
+import {
+  useWorkspace,
+  useWorkspaceMembers,
+  useWorkspaces,
+} from "@/hooks/use-workspaces";
 import { useUiStore } from "@/stores/use-ui-store";
 import { GlobalSearch } from "@/components/search/global-search";
 import { getApiErrorMessage } from "@/services/auth.service";
@@ -205,7 +210,25 @@ export function ForkRoomShell({
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams<{ workspaceId?: string }>();
-  const workspaceId = params.workspaceId;
+  const [hasMounted, setHasMounted] = useState(false);
+  const routeWorkspaceId = params.workspaceId;
+  const workspaceList = useWorkspaces();
+  const activeWorkspaceId = useUiStore((state) => state.activeWorkspaceId);
+  const setActiveWorkspaceId = useUiStore(
+    (state) => state.setActiveWorkspaceId,
+  );
+  const rememberedWorkspaceId = hasMounted ? activeWorkspaceId : null;
+  const rememberedWorkspaceIsAccessible = workspaceList.data?.some(
+    (item) => item.id === rememberedWorkspaceId,
+  );
+  const workspaceId =
+    routeWorkspaceId ??
+    (workspaceList.isSuccess
+      ? rememberedWorkspaceIsAccessible
+        ? rememberedWorkspaceId
+        : workspaceList.data[0]?.id
+      : rememberedWorkspaceId) ??
+    undefined;
   const workspace = useWorkspace(workspaceId);
   const members = useWorkspaceMembers(workspaceId);
   const { data: user } = useCurrentUser();
@@ -223,6 +246,30 @@ export function ForkRoomShell({
       .slice(0, 2)
       .map((part) => part[0]?.toUpperCase())
       .join("") || "FR";
+
+  useEffect(() => setHasMounted(true), []);
+
+  useEffect(() => {
+    if (routeWorkspaceId && routeWorkspaceId !== activeWorkspaceId) {
+      setActiveWorkspaceId(routeWorkspaceId);
+    }
+  }, [activeWorkspaceId, routeWorkspaceId, setActiveWorkspaceId]);
+
+  useEffect(() => {
+    if (
+      !routeWorkspaceId &&
+      workspaceList.isSuccess &&
+      workspaceId !== activeWorkspaceId
+    ) {
+      setActiveWorkspaceId(workspaceId ?? null);
+    }
+  }, [
+    activeWorkspaceId,
+    routeWorkspaceId,
+    setActiveWorkspaceId,
+    workspaceId,
+    workspaceList.isSuccess,
+  ]);
 
   const currentMember = members.data?.find(
     (member) => member.user_id === user?.id,
