@@ -158,7 +158,14 @@ function WorkspaceNavigation({
         workspaceId && pathname.startsWith(`/w/${workspaceId}/decisions`),
       ),
     },
-    { label: "Documents", icon: IconFileText },
+    {
+      label: "Documents",
+      icon: IconFileText,
+      href: workspaceId ? `/w/${workspaceId}/documents` : undefined,
+      active: Boolean(
+        workspaceId && pathname.startsWith(`/w/${workspaceId}/documents`),
+      ),
+    },
     {
       label: "Members",
       icon: IconUsers,
@@ -177,12 +184,33 @@ function WorkspaceNavigation({
       active: pathname.startsWith("/notifications"),
       badge: unreadCount,
     },
-    { label: "Recent activity", icon: IconHistory },
-    { label: "Mentions", icon: IconAt },
+    {
+      label: "Recent activity",
+      icon: IconHistory,
+      href: workspaceId ? `/w/${workspaceId}/activity` : undefined,
+      active: Boolean(
+        workspaceId && pathname.startsWith(`/w/${workspaceId}/activity`),
+      ),
+    },
+    {
+      label: "Mentions",
+      icon: IconAt,
+      href: workspaceId ? `/w/${workspaceId}/mentions` : undefined,
+      active: Boolean(
+        workspaceId && pathname.startsWith(`/w/${workspaceId}/mentions`),
+      ),
+    },
   ];
 
   const systemItems: NavItem[] = [
-    { label: "Integrations", icon: IconPlug },
+    {
+      label: "Integrations",
+      icon: IconPlug,
+      href: workspaceId ? `/w/${workspaceId}/integrations` : undefined,
+      active: Boolean(
+        workspaceId && pathname.startsWith(`/w/${workspaceId}/integrations`),
+      ),
+    },
     ...(canManageWorkspace && workspaceId
       ? [
           {
@@ -286,6 +314,14 @@ export function ForkRoomShell({
     ? "Profile"
     : pathname.startsWith("/settings/security")
       ? "Security"
+      : pathname.includes("/documents")
+        ? "Documents"
+        : pathname.includes("/activity")
+          ? "Recent activity"
+          : pathname.includes("/mentions")
+            ? "Mentions"
+            : pathname.includes("/integrations")
+              ? "Integrations"
       : pathname.startsWith("/notifications")
         ? "Notifications"
         : pathname.includes("/settings")

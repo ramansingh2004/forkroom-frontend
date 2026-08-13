@@ -168,6 +168,8 @@ export const workspaceKeys = {
       ...workspaceKeys.decision(workspaceId, decisionId),
       "attachments",
     ] as const,
+  attachments: (workspaceId: string) =>
+    [...workspaceKeys.all, "attachments", workspaceId] as const,
 };
 
 export function useWorkspaces() {
@@ -1054,6 +1056,21 @@ export function useDecisionAttachments(
   });
 }
 
+export function useWorkspaceAttachments(workspaceId?: string) {
+  return useQuery({
+    queryKey: workspaceKeys.attachments(workspaceId ?? ""),
+    queryFn: () => listAttachments(workspaceId!),
+    enabled: Boolean(workspaceId),
+    refetchInterval: (query) =>
+      query.state.data?.some(
+        (attachment) =>
+          attachment.status === "pending" || attachment.status === "processing",
+      )
+        ? 2_500
+        : false,
+  });
+}
+
 export function useUploadDecisionAttachment(
   workspaceId: string,
   decisionId: string,
@@ -1081,9 +1098,14 @@ export function useUploadDecisionAttachment(
       return completeAttachmentUpload(workspaceId, prepared.attachment.id);
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: workspaceKeys.decisionAttachments(workspaceId, decisionId),
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: workspaceKeys.decisionAttachments(workspaceId, decisionId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: workspaceKeys.attachments(workspaceId),
+        }),
+      ]);
     },
   });
 }
@@ -1095,9 +1117,14 @@ export function useDeleteAttachment(workspaceId: string, decisionId: string) {
     mutationFn: (attachmentId: string) =>
       deleteAttachment(workspaceId, attachmentId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: workspaceKeys.decisionAttachments(workspaceId, decisionId),
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: workspaceKeys.decisionAttachments(workspaceId, decisionId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: workspaceKeys.attachments(workspaceId),
+        }),
+      ]);
     },
   });
 }
