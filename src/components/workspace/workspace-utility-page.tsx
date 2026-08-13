@@ -11,11 +11,11 @@ import {
   IconDownload,
   IconEye,
   IconFileText,
-  IconPlug,
   IconRefresh,
 } from "@tabler/icons-react";
 
 import { EvidencePreview, isEvidencePreviewable, type EvidencePreviewItem } from "@/components/decision-room/evidence-preview";
+import { IntegrationsPage } from "@/components/integrations/integrations-page";
 import { useNotifications } from "@/hooks/use-notifications";
 import {
   useAttachmentDownload,
@@ -88,7 +88,7 @@ export function WorkspaceUtilityPage({ workspaceId, kind }: Props) {
       {kind === "documents" && <DocumentsView workspaceId={workspaceId} />}
       {kind === "activity" && <ActivityView workspaceId={workspaceId} />}
       {kind === "mentions" && <MentionsView />}
-      {kind === "integrations" && <IntegrationsView />}
+      {kind === "integrations" && <IntegrationsPage workspaceId={workspaceId} />}
     </div>
   );
 }
@@ -202,10 +202,6 @@ function ActivityView({ workspaceId }: { workspaceId: string }) {
 
 function MentionsView() {
   return <CapabilityState icon={IconAt} title="Mentions are ready for a backend feed" description="This page is now reachable from every workspace. The current API does not expose comment mentions or a mention-specific notification kind, so ForkRoom will not fabricate results. When the backend adds mention events, they can populate this surface without changing navigation." />;
-}
-
-function IntegrationsView() {
-  return <CapabilityState icon={IconPlug} title="No integrations are configured" description="This page is now reachable from every workspace. The current API does not expose integration providers, connection status, or authorization endpoints, so connection controls remain unavailable until those contracts exist." />;
 }
 
 function UtilitySkeleton() {
