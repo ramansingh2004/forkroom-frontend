@@ -105,6 +105,7 @@ import {
   VotingPanel,
 } from "./voting-panel";
 import { MeetingDock } from "./meeting-room/meeting-dock";
+import { DiscussionPanel } from "./discussion-panel";
 
 type WorkMode = "document" | "proposal" | "compare" | "vote";
 type CollaborationTab = "discussion" | "evidence" | "people";
@@ -1007,9 +1008,11 @@ function CollaborationPanel({
   proposals,
   members,
   currentUserId,
+  canModerate,
   canUploadEvidence,
   canManageEvidence,
   decisionLock,
+  targetCommentId,
   value,
   onChange,
   onEnterFocus,
@@ -1019,9 +1022,11 @@ function CollaborationPanel({
   proposals: Proposal[];
   members: WorkspaceMember[];
   currentUserId: string;
+  canModerate: boolean;
   canUploadEvidence: boolean;
   canManageEvidence: boolean;
   decisionLock: DecisionLock | null;
+  targetCommentId: string | null;
   value: CollaborationTab;
   onChange: (value: CollaborationTab) => void;
   onEnterFocus?: () => void;
@@ -1056,9 +1061,15 @@ function CollaborationPanel({
             </Tooltip>
           )}
         </Tabs.List>
-        <Tabs.Panel value="discussion" className={styles.emptyPanel}>
-          <strong>No discussion yet</strong>
-          <span>Comments and collaborative discussion will appear here.</span>
+        <Tabs.Panel value="discussion" className={styles.collaborationBody}>
+          <DiscussionPanel
+            workspaceId={workspaceId}
+            decisionId={decisionId}
+            members={members}
+            currentUserId={currentUserId}
+            canModerate={canModerate}
+            targetCommentId={targetCommentId}
+          />
         </Tabs.Panel>
         <Tabs.Panel
           value="evidence"
@@ -1171,6 +1182,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
   const leftPanelRef = usePanelRef();
   const rightPanelRef = usePanelRef();
   const [meetingOpened, setMeetingOpened] = useState(false);
+  const [targetCommentId, setTargetCommentId] = useState<string | null>(null);
   const [workMode, setWorkMode] = useState<WorkMode>("document");
   const [collaborationTab, setCollaborationTab] =
     useState<CollaborationTab>("discussion");
@@ -1202,6 +1214,22 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
 
     return () => window.cancelAnimationFrame(frame);
   }, [desktop, focusPanel, leftCollapsed, rightCollapsed]);
+
+  useEffect(() => {
+    const targetComment = new URLSearchParams(window.location.search).get(
+      "comment",
+    );
+    if (!targetComment) return;
+
+    setTargetCommentId(targetComment);
+    setCollaborationTab("discussion");
+    if (desktop) {
+      setRightCollapsed(false);
+      rightPanelRef.current?.expand();
+    } else {
+      setMobileTab("discussion");
+    }
+  }, [desktop, setMobileTab, setRightCollapsed]);
 
   useEffect(() => {
     if (!desktop) return;
@@ -1857,9 +1885,11 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
       proposals={proposals.data}
       members={members.data}
       currentUserId={currentUser.data.id}
+      canModerate={canManageVoting}
       canUploadEvidence={canUploadEvidence}
       canManageEvidence={canManageVoting}
       decisionLock={decisionLock.data ?? null}
+      targetCommentId={targetCommentId}
       value={collaborationTab}
       onChange={setCollaborationTab}
       onEnterFocus={
