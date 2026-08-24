@@ -702,9 +702,10 @@ function ConnectionPanel({
                     checked={enabledEvents[event.eventType]}
                     disabled={!canManage || !active}
                     onChange={(change) => {
+                      const checked = change.currentTarget.checked;
                       setEnabledEvents((current) => ({
                         ...current,
-                        [event.eventType]: change.currentTarget.checked,
+                        [event.eventType]: checked,
                       }));
                       setDirty(true);
                       updateSubscriptions.reset();
