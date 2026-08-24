@@ -38,6 +38,7 @@ import {
 } from "@tabler/icons-react";
 import { useCurrentUser, useLogout } from "@/hooks/use-auth";
 import { useUnreadNotificationCount } from "@/hooks/use-notifications";
+import { useUnreadMentionCount } from "@/hooks/use-mentions";
 import {
   useWorkspace,
   useWorkspaceMembers,
@@ -132,12 +133,14 @@ function WorkspaceNavigation({
   canManageWorkspace = false,
   compact = false,
   pathname,
+  unreadMentionCount = 0,
   unreadCount = 0,
   workspaceId,
 }: {
   canManageWorkspace?: boolean;
   compact?: boolean;
   pathname: string;
+  unreadMentionCount?: number;
   unreadCount?: number;
   workspaceId?: string;
 }) {
@@ -199,6 +202,7 @@ function WorkspaceNavigation({
       active: Boolean(
         workspaceId && pathname.startsWith(`/w/${workspaceId}/mentions`),
       ),
+      badge: unreadMentionCount,
     },
   ];
 
@@ -261,6 +265,7 @@ export function ForkRoomShell({
   const members = useWorkspaceMembers(workspaceId);
   const { data: user } = useCurrentUser();
   const unreadNotifications = useUnreadNotificationCount();
+  const unreadMentions = useUnreadMentionCount();
   const logout = useLogout();
   const navigationOpen = useUiStore((state) => state.navigationOpen);
   const setNavigationOpen = useUiStore((state) => state.setNavigationOpen);
@@ -310,6 +315,7 @@ export function ForkRoomShell({
   );
 
   const unreadCount = unreadNotifications.data?.unread ?? 0;
+  const unreadMentionCount = unreadMentions.data?.count ?? 0;
   const section = pathname.startsWith("/settings/profile")
     ? "Profile"
     : pathname.startsWith("/settings/security")
@@ -417,6 +423,7 @@ export function ForkRoomShell({
             canManageWorkspace={canManageWorkspace}
             compact={sidebarCollapsed}
             pathname={pathname}
+            unreadMentionCount={unreadMentionCount}
             unreadCount={unreadCount}
             workspaceId={workspaceId}
           />
@@ -591,6 +598,7 @@ export function ForkRoomShell({
         <WorkspaceNavigation
           canManageWorkspace={canManageWorkspace}
           pathname={pathname}
+          unreadMentionCount={unreadMentionCount}
           unreadCount={unreadCount}
           workspaceId={workspaceId}
         />

@@ -1,4 +1,5 @@
 import {
+  IconAt,
   IconCalendarDue,
   IconCheckbox,
   IconClockHour4,
@@ -13,7 +14,7 @@ export const notificationKindMeta: Record<
   NotificationKind,
   {
     label: string;
-    color: "blue" | "orange" | "red" | "rust";
+    color: "blue" | "orange" | "red" | "rust" | "violet";
     icon: typeof IconCheckbox;
   }
 > = {
@@ -37,9 +38,16 @@ export const notificationKindMeta: Record<
     color: "rust",
     icon: IconClockHour4,
   },
+  mention: {
+    label: "Mention",
+    color: "violet",
+    icon: IconAt,
+  },
 };
 
 export function getNotificationDestination(notification: Notification) {
+  if (notification.action_url) return notification.action_url;
+
   const workspacePath = `/w/${notification.workspace_id}`;
 
   if (notification.kind === "decision_deadline") {

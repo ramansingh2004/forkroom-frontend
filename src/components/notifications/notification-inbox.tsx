@@ -50,6 +50,7 @@ const kindOptions: { value: KindFilter; label: string }[] = [
   { value: "decision_review", label: "Reviews" },
   { value: "decision_deadline", label: "Decision deadlines" },
   { value: "voting_close", label: "Voting closes" },
+  { value: "mention", label: "Mentions" },
 ];
 
 function NotificationRow({
