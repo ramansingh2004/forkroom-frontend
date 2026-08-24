@@ -115,22 +115,30 @@ export function ObjectionStatusModal({
         note: '',
       },
     });
+  const resetForm = form.reset;
+  const resetTransitionObjection = transitionObjection.reset;
 
   useEffect(() => {
     if (!opened) {
       return;
     }
 
-    form.reset({
-      note: '',
+    const frame = window.requestAnimationFrame(() => {
+      resetForm({
+        note: '',
+      });
+
+      resetTransitionObjection();
     });
 
-    transitionObjection.reset();
+    return () => window.cancelAnimationFrame(frame);
   }, [
     opened,
     objection?.id,
     nextStatus,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+    resetForm,
+    resetTransitionObjection,
+  ]);
 
   if (
     !objection ||

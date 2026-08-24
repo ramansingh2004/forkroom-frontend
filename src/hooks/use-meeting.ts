@@ -263,9 +263,14 @@ export function useMeeting({
   const qualityRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const connectRef = useRef(
-    async (_reconnecting: boolean, _generation: number) => {},
+    async (_reconnecting: boolean, _generation: number) => {
+      void _reconnecting;
+      void _generation;
+    },
   );
-  const handleEventRef = useRef(async (_event: MeetingEventEnvelope) => {});
+  const handleEventRef = useRef(async (_event: MeetingEventEnvelope) => {
+    void _event;
+  });
 
   const publishParticipants = useCallback(() => {
     const ordered = [...participantStoreRef.current.values()].sort(
@@ -606,6 +611,9 @@ export function useMeeting({
     setParticipants([]);
   }, []);
 
+  // Mutable dispatchers intentionally keep WebSocket callbacks connected to
+  // the latest render without recreating the socket for every state change.
+  // eslint-disable-next-line react-hooks/refs
   handleEventRef.current = async (event) => {
     try {
       if (event.type === "meeting.ready") {
@@ -726,6 +734,8 @@ export function useMeeting({
     }
   };
 
+  // See handleEventRef above; reconnect timers must call the latest closure.
+  // eslint-disable-next-line react-hooks/refs
   connectRef.current = async (reconnecting, generation) => {
     try {
       const token = await issueMeetingToken(workspaceId, decisionId);
@@ -1092,8 +1102,10 @@ export function useMeeting({
 
   useEffect(() => {
     if (status !== "connected") {
-      setActiveSpeakerId(null);
-      return;
+      const frame = window.requestAnimationFrame(() =>
+        setActiveSpeakerId(null),
+      );
+      return () => window.cancelAnimationFrame(frame);
     }
 
     const audibleParticipants = participants.filter(
@@ -1102,8 +1114,10 @@ export function useMeeting({
         Boolean(participant.stream?.getAudioTracks().length),
     );
     if (audibleParticipants.length === 0 || !("AudioContext" in window)) {
-      setActiveSpeakerId(null);
-      return;
+      const frame = window.requestAnimationFrame(() =>
+        setActiveSpeakerId(null),
+      );
+      return () => window.cancelAnimationFrame(frame);
     }
 
     const audioContext = new AudioContext();
@@ -1171,7 +1185,9 @@ export function useMeeting({
   }, [closePeer, measureQuality, startOffer]);
 
   const leaveRef = useRef(leave);
-  leaveRef.current = leave;
+  useEffect(() => {
+    leaveRef.current = leave;
+  }, [leave]);
   useEffect(() => () => leaveRef.current(), []);
 
   return {

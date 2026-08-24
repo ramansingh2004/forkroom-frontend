@@ -83,11 +83,7 @@ function structuredBody(
   const occurrences = [...memberByLabel.values()]
     .flatMap((member) => {
       const token = `@${member.display_name}`;
-      const positions: Array<{
-        start: number;
-        end: number;
-        member: SelectedMember;
-      }> = [];
+      const positions: Array<{ start: number; end: number; member: SelectedMember }> = [];
       let from = 0;
       while (from < body.length) {
         const start = body.indexOf(token, from);
@@ -104,10 +100,7 @@ function structuredBody(
   for (const occurrence of occurrences) {
     if (occurrence.start < cursor) continue;
     if (occurrence.start > cursor) {
-      content.push({
-        type: "text",
-        text: body.slice(cursor, occurrence.start),
-      });
+      content.push({ type: "text", text: body.slice(cursor, occurrence.start) });
     }
     content.push({
       type: "mention",
@@ -116,28 +109,18 @@ function structuredBody(
     });
     cursor = occurrence.end;
   }
-  if (cursor < body.length)
-    content.push({ type: "text", text: body.slice(cursor) });
+  if (cursor < body.length) content.push({ type: "text", text: body.slice(cursor) });
   if (content.length === 0) content.push({ type: "text", text: body });
   return { content };
 }
 
-function CommentBody({
-  nodes,
-  fallback,
-}: {
-  nodes: CommentNode[];
-  fallback: string;
-}) {
+function CommentBody({ nodes, fallback }: { nodes: CommentNode[]; fallback: string }) {
   if (nodes.length === 0) return <>{fallback}</>;
   return (
     <>
       {nodes.map((node, index) =>
         node.type === "mention" ? (
-          <span
-            className={styles.inlineMention}
-            key={`${node.user_id}-${index}`}
-          >
+          <span className={styles.inlineMention} key={`${node.user_id}-${index}`}>
             @{node.label}
           </span>
         ) : (
@@ -176,6 +159,7 @@ export function DiscussionPanel({
     () => comments.data?.pages.flatMap((page) => page) ?? [],
     [comments.data],
   );
+  const fetchNextCommentsPage = comments.fetchNextPage;
   const mentionMatch = body.slice(0, caret).match(/@([^@\n]{0,50})$/);
   const mentionQuery = mentionMatch?.[1].trim().toLowerCase() ?? null;
   const suggestions =
@@ -196,10 +180,10 @@ export function DiscussionPanel({
       comments.hasNextPage &&
       !comments.isFetchingNextPage
     ) {
-      void comments.fetchNextPage();
+      void fetchNextCommentsPage();
     }
   }, [
-    comments.fetchNextPage,
+    fetchNextCommentsPage,
     comments.hasNextPage,
     comments.isFetchingNextPage,
     items,
@@ -291,8 +275,7 @@ export function DiscussionPanel({
   const confirmDelete = (comment: DecisionComment) => {
     modals.openConfirmModal({
       title: "Delete this comment?",
-      children:
-        "The comment and every mention created from it will be removed.",
+      children: "The comment and every mention created from it will be removed.",
       labels: { confirm: "Delete comment", cancel: "Keep comment" },
       confirmProps: { color: "red" },
       onConfirm: async () => {
@@ -327,11 +310,7 @@ export function DiscussionPanel({
           <Loader color="rust" size="sm" /> Loading discussion…
         </div>
       ) : comments.isError && !comments.data ? (
-        <Alert
-          color="red"
-          title="Discussion is unavailable"
-          className={styles.errorState}
-        >
+        <Alert color="red" title="Discussion is unavailable" className={styles.errorState}>
           {getApiErrorMessage(
             comments.error,
             "ForkRoom could not load this decision discussion.",
@@ -349,11 +328,7 @@ export function DiscussionPanel({
       ) : (
         <ScrollArea className={styles.commentScroll} type="auto">
           {comments.isError && comments.data && (
-            <Alert
-              color="orange"
-              title="Showing the last loaded discussion"
-              className={styles.staleAlert}
-            >
+            <Alert color="orange" title="Showing the last loaded discussion" className={styles.staleAlert}>
               ForkRoom could not refresh these comments.
               <Button
                 ml="sm"
@@ -367,23 +342,18 @@ export function DiscussionPanel({
             </Alert>
           )}
           <div className={styles.threadMeta}>
-            <span>
-              {items.length} loaded comment{items.length === 1 ? "" : "s"}
-            </span>
+            <span>{items.length} loaded comment{items.length === 1 ? "" : "s"}</span>
             <span>Use @ to mention a member</span>
           </div>
           {items.length === 0 ? (
             <div className={styles.emptyDiscussion}>
               <IconAt size={25} />
               <strong>Start the decision discussion</strong>
-              <span>
-                Write a comment or mention a member whose attention is needed.
-              </span>
+              <span>Write a comment or mention a member whose attention is needed.</span>
             </div>
           ) : (
             items.map((comment) => {
-              const canChange =
-                comment.author.id === currentUserId || canModerate;
+              const canChange = comment.author.id === currentUserId || canModerate;
               return (
                 <article
                   id={`comment-${comment.id}`}
@@ -401,9 +371,7 @@ export function DiscussionPanel({
                   <div>
                     <header>
                       <strong>{comment.author.display_name}</strong>
-                      <time dateTime={comment.created_at}>
-                        {formatTime(comment.created_at)}
-                      </time>
+                      <time dateTime={comment.created_at}>{formatTime(comment.created_at)}</time>
                     </header>
                     <p>
                       <CommentBody
@@ -412,21 +380,13 @@ export function DiscussionPanel({
                       />
                     </p>
                     <footer>
-                      {comment.updated_at !== comment.created_at && (
-                        <span>Edited</span>
-                      )}
+                      {comment.updated_at !== comment.created_at && <span>Edited</span>}
                       {canChange && (
                         <>
-                          <button
-                            type="button"
-                            onClick={() => beginEditing(comment)}
-                          >
+                          <button type="button" onClick={() => beginEditing(comment)}>
                             <IconEdit size={13} /> Edit
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => confirmDelete(comment)}
-                          >
+                          <button type="button" onClick={() => confirmDelete(comment)}>
                             <IconTrash size={13} /> Delete
                           </button>
                         </>
@@ -491,11 +451,7 @@ export function DiscussionPanel({
             aria-label="Decision comment"
           />
           {suggestions.length > 0 && (
-            <div
-              className={styles.mentionSuggestions}
-              role="listbox"
-              aria-label="Mention a workspace member"
-            >
+            <div className={styles.mentionSuggestions} role="listbox" aria-label="Mention a workspace member">
               {suggestions.map((member) => (
                 <button
                   type="button"
@@ -505,27 +461,17 @@ export function DiscussionPanel({
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => insertMention(member)}
                 >
-                  <Avatar
-                    src={member.avatar_url}
-                    size={25}
-                    radius="xl"
-                    color="rust"
-                  >
+                  <Avatar src={member.avatar_url} size={25} radius="xl" color="rust">
                     {initials(member.display_name)}
                   </Avatar>
-                  <span>
-                    <strong>{member.display_name}</strong>
-                    <small>{member.email}</small>
-                  </span>
+                  <span><strong>{member.display_name}</strong><small>{member.email}</small></span>
                 </button>
               ))}
             </div>
           )}
         </div>
         <div className={styles.composerActions}>
-          <span>
-            <IconAt size={14} /> Mentions use verified workspace members.
-          </span>
+          <span><IconAt size={14} /> Mentions use verified workspace members.</span>
           <Tooltip label="Post with Ctrl/⌘ + Enter">
             <Button
               size="xs"

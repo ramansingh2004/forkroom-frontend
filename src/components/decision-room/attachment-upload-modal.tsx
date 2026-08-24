@@ -90,6 +90,7 @@ export function AttachmentUploadModal({
   const [linkTarget, setLinkTarget] = useState(DECISION_LEVEL);
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const resetUpload = upload.reset;
 
   const proposalById = useMemo(
     () => new Map(proposals.map((proposal) => [proposal.id, proposal])),
@@ -99,13 +100,17 @@ export function AttachmentUploadModal({
   useEffect(() => {
     if (!opened) return;
 
-    setSelectedFiles([]);
-    setQueue([]);
-    setLinkTarget(retryAttachment?.proposal_id ?? DECISION_LEVEL);
-    setActiveItemId(null);
-    setValidationError(null);
-    upload.reset();
-  }, [opened, retryAttachment?.id]);
+    const frame = window.requestAnimationFrame(() => {
+      setSelectedFiles([]);
+      setQueue([]);
+      setLinkTarget(retryAttachment?.proposal_id ?? DECISION_LEVEL);
+      setActiveItemId(null);
+      setValidationError(null);
+      resetUpload();
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [opened, resetUpload, retryAttachment?.id, retryAttachment?.proposal_id]);
 
   useEffect(() => {
     if (!attachments.data) return;
@@ -113,30 +118,34 @@ export function AttachmentUploadModal({
       attachments.data.map((attachment) => [attachment.id, attachment]),
     );
 
-    setQueue((current) =>
-      current.map((item) => {
-        if (!item.attachmentId) return item;
-        const attachment = attachmentById.get(item.attachmentId);
-        if (!attachment) return item;
+    const frame = window.requestAnimationFrame(() => {
+      setQueue((current) =>
+        current.map((item) => {
+          if (!item.attachmentId) return item;
+          const attachment = attachmentById.get(item.attachmentId);
+          if (!attachment) return item;
 
-        if (attachment.status === "available") {
-          return { ...item, stage: "available", error: null };
-        }
-        if (attachment.status === "processing") {
-          return { ...item, stage: "processing", error: null };
-        }
-        if (attachment.status === "rejected") {
-          return {
-            ...item,
-            stage: "failed",
-            error:
-              attachment.processing_error ??
-              "ForkRoom could not verify this stored file.",
-          };
-        }
-        return item;
-      }),
-    );
+          if (attachment.status === "available") {
+            return { ...item, stage: "available", error: null };
+          }
+          if (attachment.status === "processing") {
+            return { ...item, stage: "processing", error: null };
+          }
+          if (attachment.status === "rejected") {
+            return {
+              ...item,
+              stage: "failed",
+              error:
+                attachment.processing_error ??
+                "ForkRoom could not verify this stored file.",
+            };
+          }
+          return item;
+        }),
+      );
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [attachments.data]);
 
   const isBusy = upload.isPending || removeAttachment.isPending;

@@ -114,31 +114,41 @@ export function ObjectionEditorModal({
         description: '',
       },
     });
+  const resetForm = form.reset;
+  const resetCreateObjection = createObjection.reset;
+  const resetUpdateObjection = updateObjection.reset;
 
   useEffect(() => {
     if (!opened) {
       return;
     }
 
-    form.reset({
-      severity:
-        objection?.severity ??
-        'major',
+    const frame = window.requestAnimationFrame(() => {
+      resetForm({
+        severity:
+          objection?.severity ??
+          'major',
 
-      title:
-        objection?.title ?? '',
+        title:
+          objection?.title ?? '',
 
-      description:
-        objection?.description ??
-        '',
+        description:
+          objection?.description ??
+          '',
+      });
+
+      resetCreateObjection();
+      resetUpdateObjection();
     });
 
-    createObjection.reset();
-    updateObjection.reset();
+    return () => window.cancelAnimationFrame(frame);
   }, [
     opened,
     objection,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+    resetCreateObjection,
+    resetForm,
+    resetUpdateObjection,
+  ]);
 
   const submit =
     form.handleSubmit(

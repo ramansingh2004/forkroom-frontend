@@ -56,10 +56,12 @@ export function EvidencePreview({
     const controller = new AbortController();
     let localUrl: string | null = null;
 
-    setPreviewUrl(null);
-    setPreviewError(null);
-
     const loadPreview = async () => {
+      await Promise.resolve();
+      if (controller.signal.aborted) return;
+      setPreviewUrl(null);
+      setPreviewError(null);
+
       try {
         const response = await fetch(item.url, {
           method: "GET",

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Alert, Avatar, Badge, Button, Skeleton, Tooltip } from "@mantine/core";
+import { useEffect, useState } from "react";
+import { Avatar, Badge, Button, Skeleton, Tooltip } from "@mantine/core";
 import {
   IconAlertTriangle,
   IconArrowRight,
@@ -71,8 +72,9 @@ function formatDate(value: string | null) {
   }).format(new Date(value));
 }
 
-function formatRelativeTime(value: string) {
-  const difference = new Date(value).getTime() - Date.now();
+function formatRelativeTime(value: string, now: number | null) {
+  if (now === null) return formatDate(value);
+  const difference = new Date(value).getTime() - now;
   const absoluteDifference = Math.abs(difference);
   const formatter = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
 
@@ -89,9 +91,10 @@ function formatRelativeTime(value: string) {
   return formatDate(value);
 }
 
-function deadlineTone(value: string | null) {
+function deadlineTone(value: string | null, now: number | null) {
   if (!value) return "neutral";
-  const difference = new Date(value).getTime() - Date.now();
+  if (now === null) return "neutral";
+  const difference = new Date(value).getTime() - now;
   if (difference < 0) return "danger";
   if (difference <= DAY_IN_MS * 7) return "warning";
   return "neutral";
@@ -124,6 +127,7 @@ function DashboardLoading() {
 }
 
 export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
+  const [now, setNow] = useState<number | null>(null);
   const currentUser = useCurrentUser();
   const workspace = useWorkspace(workspaceId);
   const decisions = useWorkspaceDecisions(workspaceId);
@@ -133,6 +137,16 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
     workspaceId,
     decisions.data ?? [],
   );
+
+  useEffect(() => {
+    const updateTime = () => setNow(Date.now());
+    const frame = window.requestAnimationFrame(updateTime);
+    const timer = window.setInterval(updateTime, 60_000);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearInterval(timer);
+    };
+  }, []);
 
   if (
     currentUser.isPending ||
@@ -169,7 +183,6 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
     );
   }
 
-  const now = Date.now();
   const memberById = new Map(
     members.data.map((member) => [member.user_id, member]),
   );
@@ -248,7 +261,10 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
       return leftDue - rightDue;
     });
   const overdueActions = myActions.filter(
-    ({ action }) => action.due_at && new Date(action.due_at).getTime() < now,
+    ({ action }) =>
+      now !== null &&
+      action.due_at &&
+      new Date(action.due_at).getTime() < now,
   );
   const reviewsDue: ReviewWithDecision[] = canManageWorkspace
     ? dashboard.decisionDetails
@@ -258,6 +274,7 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
         .filter(
           ({ review }) =>
             review.status === "scheduled" &&
+            now !== null &&
             new Date(review.scheduled_for).getTime() <= now,
         )
         .sort(
@@ -285,7 +302,7 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
     ({ decisionExport }) => decisionExport?.status === "failed",
   );
   const approachingDeadlines = activeDecisions.filter((decision) => {
-    if (!decision.due_at) return false;
+    if (!decision.due_at || now === null) return false;
     const difference = new Date(decision.due_at).getTime() - now;
     return difference >= 0 && difference <= DAY_IN_MS * 7;
   });
@@ -296,7 +313,7 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
       label: "VOTE WAITING",
       title: decision.title,
       detail: session.closes_at
-        ? `Voting closes ${formatRelativeTime(session.closes_at)}.`
+        ? `Voting closes ${formatRelativeTime(session.closes_at, now)}.`
         : "Voting is open with no scheduled close time.",
       href: decisionPath(decision.id),
       tone: "rust" as const,
@@ -348,7 +365,7 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
       id: `review-${review.id}`,
       label: "REVIEW DUE",
       title: decision.title,
-      detail: `Scheduled ${formatRelativeTime(review.scheduled_for)}. Record an outcome or reschedule.`,
+      detail: `Scheduled ${formatRelativeTime(review.scheduled_for, now)}. Record an outcome or reschedule.`,
       href: decisionPath(decision.id),
       tone: "warning" as const,
       icon: IconCalendarDue,
@@ -357,7 +374,7 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
       id: `deadline-${decision.id}`,
       label: "DEADLINE NEAR",
       title: decision.title,
-      detail: `Decision deadline ${formatRelativeTime(decision.due_at!)}.`,
+      detail: `Decision deadline ${formatRelativeTime(decision.due_at!, now)}.`,
       href: decisionPath(decision.id),
       tone: "warning" as const,
       icon: IconClock,
@@ -442,7 +459,7 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
             <span>CONTINUE WORKING</span>
             <strong>{resumeDecision.title}</strong>
             <small>
-              Updated {formatRelativeTime(resumeDecision.updated_at)}
+              Updated {formatRelativeTime(resumeDecision.updated_at, now)}
             </small>
             <IconArrowRight size={17} aria-hidden="true" />
           </Link>
@@ -624,6 +641,7 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
                     action.status !== "completed" &&
                     action.status !== "cancelled" &&
                     action.due_at &&
+                    now !== null &&
                     new Date(action.due_at).getTime() < now,
                 ).length ?? 0;
               const failedEvidence = decisionAttachments.filter(
@@ -699,12 +717,12 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
                   </span>
                   <span
                     className={styles.deadlineCell}
-                    data-tone={deadlineTone(decision.due_at)}
+                    data-tone={deadlineTone(decision.due_at, now)}
                   >
                     {formatDate(decision.due_at)}
                   </span>
                   <span className={styles.lastActivityCell}>
-                    {formatRelativeTime(lastActivity)}
+                    {formatRelativeTime(lastActivity, now)}
                   </span>
                   <span className={styles.signalCell}>
                     {dashboard.isPending ? (
@@ -770,6 +788,7 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
             <div className={styles.compactDashboardList}>
               {myActions.slice(0, 7).map(({ action, decision }) => {
                 const overdue =
+                  now !== null &&
                   Boolean(action.due_at) &&
                   new Date(action.due_at!).getTime() < now;
                 return (
@@ -836,6 +855,7 @@ export function WorkspaceDashboard({ workspaceId }: { workspaceId: string }) {
                       Locked{" "}
                       {formatRelativeTime(
                         decision.locked_at ?? decision.updated_at,
+                        now,
                       )}{" "}
                       · {memberName(memberById.get(decision.created_by_id))}
                     </small>

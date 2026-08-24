@@ -42,14 +42,15 @@ export function ConnectionStatus() {
     // Browser-only state is synchronized after hydration. If the page loaded
     // while offline, the banner appears immediately after the component mounts
     // without changing the server/client hydration tree.
-    if (!navigator.onLine) {
-      setState("offline");
-    }
+    const initialFrame = window.requestAnimationFrame(() => {
+      if (!navigator.onLine) setState("offline");
+    });
 
     window.addEventListener("offline", handleOffline);
     window.addEventListener("online", handleOnline);
     return () => {
       if (successTimer) clearTimeout(successTimer);
+      window.cancelAnimationFrame(initialFrame);
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("online", handleOnline);
     };

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import {
   ActionIcon,
   Avatar,
@@ -56,6 +56,10 @@ type NavItem = {
   active?: boolean;
   badge?: number;
 };
+
+const subscribeToHydration = () => () => undefined;
+const getHydratedSnapshot = () => true;
+const getServerHydrationSnapshot = () => false;
 
 function NavGroup({
   compact = false,
@@ -242,7 +246,11 @@ export function ForkRoomShell({
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams<{ workspaceId?: string }>();
-  const [hasMounted, setHasMounted] = useState(false);
+  const hasMounted = useSyncExternalStore(
+    subscribeToHydration,
+    getHydratedSnapshot,
+    getServerHydrationSnapshot,
+  );
   const routeWorkspaceId = params.workspaceId;
   const workspaceList = useWorkspaces();
   const activeWorkspaceId = useUiStore((state) => state.activeWorkspaceId);
@@ -279,8 +287,6 @@ export function ForkRoomShell({
       .slice(0, 2)
       .map((part) => part[0]?.toUpperCase())
       .join("") || "FR";
-
-  useEffect(() => setHasMounted(true), []);
 
   useEffect(() => {
     if (routeWorkspaceId && routeWorkspaceId !== activeWorkspaceId) {

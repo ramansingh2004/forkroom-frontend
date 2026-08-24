@@ -298,45 +298,46 @@ export function VotingPanel({
 
   useEffect(() => {
     if (!actionRequest) return;
-    onActionHandled(actionRequest.id);
+    const frame = window.requestAnimationFrame(() => {
+      onActionHandled(actionRequest.id);
 
-    if (actionRequest.action === "create-round") {
-      setCreateOpened(true);
-      return;
-    }
-
-    if (actionRequest.action === "open-voting") {
-      if (selectedSession?.status === "draft" && !readinessBlocked) {
-        confirmOpen();
+      if (actionRequest.action === "create-round") {
+        setCreateOpened(true);
+        return;
       }
-      return;
-    }
 
-    if (actionRequest.action === "close-voting") {
-      if (selectedSession?.status === "open") confirmClose();
-      return;
-    }
-
-    if (actionRequest.action === "lock-decision") {
-      if (selectedSession?.status === "closed" && canLockResult) {
-        setLockOpened(true);
-      } else {
-        document
-          .getElementById("closed-voting-result")
-          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (actionRequest.action === "open-voting") {
+        if (selectedSession?.status === "draft" && !readinessBlocked) {
+          confirmOpen();
+        }
+        return;
       }
-      return;
-    }
 
-    const targetId =
-      actionRequest.action === "cast-vote"
-        ? "decision-ballot"
-        : "closed-voting-result";
-    window.requestAnimationFrame(() => {
+      if (actionRequest.action === "close-voting") {
+        if (selectedSession?.status === "open") confirmClose();
+        return;
+      }
+
+      if (actionRequest.action === "lock-decision") {
+        if (selectedSession?.status === "closed" && canLockResult) {
+          setLockOpened(true);
+        } else {
+          document
+            .getElementById("closed-voting-result")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+        return;
+      }
+
+      const targetId =
+        actionRequest.action === "cast-vote"
+          ? "decision-ballot"
+          : "closed-voting-result";
       document
         .getElementById(targetId)
         ?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
+    return () => window.cancelAnimationFrame(frame);
     // Each request has a monotonic id, so it is handled exactly once.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [actionRequest?.id]);

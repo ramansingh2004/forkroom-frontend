@@ -97,8 +97,9 @@ function formatDateTime(value: string | null | undefined) {
   }).format(new Date(value));
 }
 
-function providerIcon(provider: string) {
-  return provider === "slack" ? IconBrandSlack : IconPlugConnected;
+function ProviderIcon({ provider }: { provider: string }) {
+  const Icon = provider === "slack" ? IconBrandSlack : IconPlugConnected;
+  return <Icon size={24} aria-hidden="true" />;
 }
 
 function statusColor(status: IntegrationConnection["status"]) {
@@ -251,7 +252,6 @@ export function IntegrationsPage({ workspaceId }: { workspaceId: string }) {
 
         <div className={styles.providerList}>
           {providers.data.map((provider) => {
-            const ProviderIcon = providerIcon(provider.provider);
             const activeCount = visibleConnections.filter(
               (connection) =>
                 connection.provider === provider.provider &&
@@ -268,7 +268,7 @@ export function IntegrationsPage({ workspaceId }: { workspaceId: string }) {
               <article className={styles.providerRow} key={provider.provider}>
                 <div className={styles.providerIdentity}>
                   <span className={styles.providerIcon}>
-                    <ProviderIcon size={24} aria-hidden="true" />
+                    <ProviderIcon provider={provider.provider} />
                   </span>
                   <div>
                     <div className={styles.providerTitle}>
@@ -391,25 +391,30 @@ function ConnectionPanel({
   const sendTest = useTestIntegration(workspaceId, connection.id);
   const disconnect = useDisconnectIntegration(workspaceId, connection.id);
   const [disconnectOpened, setDisconnectOpened] = useState(false);
-  const [selectedDestinationId, setSelectedDestinationId] = useState("");
-  const [enabledEvents, setEnabledEvents] = useState<
-    Record<IntegrationEventType, boolean>
-  >(() => initialEventState([]));
-  const [dirty, setDirty] = useState(false);
+  const [draft, setDraft] = useState<{
+    selectedDestinationId: string;
+    enabledEvents: Record<IntegrationEventType, boolean>;
+  } | null>(null);
 
   const destinationById = useMemo(
     () => new Map((destinations.data ?? []).map((item) => [item.id, item])),
     [destinations.data],
   );
 
-  useEffect(() => {
-    if (!subscriptions.data || dirty) return;
-    setEnabledEvents(initialEventState(subscriptions.data));
-    setSelectedDestinationId(
-      subscriptions.data.find((item) => item.destination_id)?.destination_id ??
-        "",
-    );
-  }, [dirty, subscriptions.data]);
+  const configuredEvents = useMemo(
+    () => initialEventState(subscriptions.data ?? []),
+    [subscriptions.data],
+  );
+  const configuredDestinationId = useMemo(
+    () =>
+      subscriptions.data?.find((item) => item.destination_id)?.destination_id ??
+      "",
+    [subscriptions.data],
+  );
+  const enabledEvents = draft?.enabledEvents ?? configuredEvents;
+  const selectedDestinationId =
+    draft?.selectedDestinationId ?? configuredDestinationId;
+  const dirty = draft !== null;
 
   const actionError =
     updateSubscriptions.error ?? sendTest.error ?? disconnect.error;
@@ -441,7 +446,7 @@ function ConnectionPanel({
 
     try {
       await updateSubscriptions.mutateAsync(payload);
-      setDirty(false);
+      setDraft(null);
       notifications.show({
         color: "green",
         title: "Slack notifications saved",
@@ -485,24 +490,17 @@ function ConnectionPanel({
   };
 
   const resetConfiguration = () => {
-    const current = subscriptions.data ?? [];
-    setEnabledEvents(initialEventState(current));
-    setSelectedDestinationId(
-      current.find((item) => item.destination_id)?.destination_id ?? "",
-    );
-    setDirty(false);
+    setDraft(null);
     updateSubscriptions.reset();
     sendTest.reset();
   };
-
-  const ProviderIcon = providerIcon(connection.provider);
 
   return (
     <article className={styles.connectionCard}>
       <header className={styles.connectionHeader}>
         <div className={styles.connectionIdentity}>
           <span className={styles.providerIcon}>
-            <ProviderIcon size={24} aria-hidden="true" />
+            <ProviderIcon provider={connection.provider} />
           </span>
           <div>
             <div className={styles.connectionTitle}>
@@ -626,8 +624,10 @@ function ConnectionPanel({
                   searchable
                   value={selectedDestinationId}
                   onChange={(value) => {
-                    setSelectedDestinationId(value ?? "");
-                    setDirty(true);
+                    setDraft((current) => ({
+                      selectedDestinationId: value ?? "",
+                      enabledEvents: current?.enabledEvents ?? configuredEvents,
+                    }));
                     updateSubscriptions.reset();
                     sendTest.reset();
                   }}
@@ -703,11 +703,15 @@ function ConnectionPanel({
                     disabled={!canManage || !active}
                     onChange={(change) => {
                       const checked = change.currentTarget.checked;
-                      setEnabledEvents((current) => ({
-                        ...current,
-                        [event.eventType]: checked,
+                      setDraft((current) => ({
+                        selectedDestinationId:
+                          current?.selectedDestinationId ??
+                          configuredDestinationId,
+                        enabledEvents: {
+                          ...(current?.enabledEvents ?? configuredEvents),
+                          [event.eventType]: checked,
+                        },
                       }));
-                      setDirty(true);
                       updateSubscriptions.reset();
                     }}
                   />

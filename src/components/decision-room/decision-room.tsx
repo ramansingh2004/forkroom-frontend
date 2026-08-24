@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActionIcon,
   Alert,
@@ -1111,9 +1111,14 @@ function CollaborationPanel({
 type DecisionRoomProps = {
   workspaceId: string;
   decisionId: string;
+  targetCommentId?: string | null;
 };
 
-export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
+export function DecisionRoom({
+  workspaceId,
+  decisionId,
+  targetCommentId = null,
+}: DecisionRoomProps) {
   const currentUser = useCurrentUser();
   const workspace = useWorkspace(workspaceId);
   const members = useWorkspaceMembers(workspaceId);
@@ -1182,7 +1187,7 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
   const leftPanelRef = usePanelRef();
   const rightPanelRef = usePanelRef();
   const [meetingOpened, setMeetingOpened] = useState(false);
-  const [targetCommentId, setTargetCommentId] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState<number | null>(null);
   const [workMode, setWorkMode] = useState<WorkMode>("document");
   const [collaborationTab, setCollaborationTab] =
     useState<CollaborationTab>("discussion");
@@ -1191,7 +1196,6 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
   );
   const [votingActionRequest, setVotingActionRequest] =
     useState<VotingPanelActionRequest | null>(null);
-  const votingActionSequence = useRef(0);
   const [editorProposal, setEditorProposal] = useState<
     Proposal | null | undefined
   >(undefined);
@@ -1213,23 +1217,46 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     });
 
     return () => window.cancelAnimationFrame(frame);
-  }, [desktop, focusPanel, leftCollapsed, rightCollapsed]);
+  }, [
+    desktop,
+    focusPanel,
+    leftCollapsed,
+    leftPanelRef,
+    rightCollapsed,
+    rightPanelRef,
+  ]);
 
   useEffect(() => {
-    const targetComment = new URLSearchParams(window.location.search).get(
-      "comment",
-    );
-    if (!targetComment) return;
+    if (!targetCommentId) return;
 
-    setTargetCommentId(targetComment);
-    setCollaborationTab("discussion");
-    if (desktop) {
-      setRightCollapsed(false);
-      rightPanelRef.current?.expand();
-    } else {
-      setMobileTab("discussion");
-    }
-  }, [desktop, setMobileTab, setRightCollapsed]);
+    const frame = window.requestAnimationFrame(() => {
+      setCollaborationTab("discussion");
+      if (desktop) {
+        setRightCollapsed(false);
+        rightPanelRef.current?.expand();
+      } else {
+        setMobileTab("discussion");
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [
+    desktop,
+    rightPanelRef,
+    setMobileTab,
+    setRightCollapsed,
+    targetCommentId,
+  ]);
+
+  useEffect(() => {
+    const updateTime = () => setCurrentTime(Date.now());
+    const frame = window.requestAnimationFrame(updateTime);
+    const timer = window.setInterval(updateTime, 60_000);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearInterval(timer);
+    };
+  }, []);
 
   useEffect(() => {
     if (!desktop) return;
@@ -1426,7 +1453,8 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     }
     if (
       draftVotingSession?.closes_at &&
-      new Date(draftVotingSession.closes_at).getTime() <= Date.now()
+      currentTime !== null &&
+      new Date(draftVotingSession.closes_at).getTime() <= currentTime
     ) {
       readinessIssues.push(
         "The configured voting close time has passed. Cancel this round and create a new one.",
@@ -1588,8 +1616,10 @@ export function DecisionRoom({ workspaceId, decisionId }: DecisionRoomProps) {
     setFocusPanel(null);
     setWorkMode("vote");
     if (!desktop) setMobileTab("vote");
-    votingActionSequence.current += 1;
-    setVotingActionRequest({ id: votingActionSequence.current, action });
+    setVotingActionRequest((current) => ({
+      id: (current?.id ?? 0) + 1,
+      action,
+    }));
   };
 
   const openLockedExport = () => {

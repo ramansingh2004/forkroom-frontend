@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Alert, Button, TextInput } from "@mantine/core";
+import { Button, TextInput } from "@mantine/core";
 import {
   IconArrowRight,
   IconBuilding,
