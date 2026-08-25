@@ -2,14 +2,24 @@
   --fr-primary: #cb4d22;
   --fr-primary-hover: #b8431d;
   --fr-primary-soft: #f2d5ca;
-  --fr-black: #000000;
-  --fr-canvas: #f4eeea;
-  --fr-surface: #eae0d6;
-  --fr-raised: #fffdfc;
-  --fr-text: #111827;
-  --fr-text-muted: #4b5563;
-  --fr-border: #e5e7eb;
-  --fr-border-strong: #cfc3ba;
+  --fr-secondary: #000000;
+  --fr-accent: #7a6458;
+  --fr-background: #f4eeea;
+  --fr-surface: #fffdfc;
+  --fr-text-primary: #111827;
+  --fr-text-secondary: #4b5563;
+  --fr-border: #cfc3ba;
+
+  /* Compatibility aliases for the existing component vocabulary. */
+  --fr-black: var(--fr-secondary);
+  --fr-canvas: var(--fr-background);
+  --fr-raised: var(--fr-surface);
+  --fr-text: var(--fr-text-primary);
+  --fr-text-muted: var(--fr-text-secondary);
+  --fr-border-strong: var(--fr-border);
+  --fr-surface-muted: #f7f1ed;
+  --fr-surface-hover: #faf5f1;
+  --fr-accent-soft: #eee6e1;
   --fr-success: #287a52;
   --fr-warning: #a26312;
   --fr-danger: #b42318;
@@ -75,6 +85,81 @@ a {
 :focus-visible {
   outline: 2px solid var(--fr-primary);
   outline-offset: 2px;
+}
+
+/* Mantine foundations inherit the ForkRoom paper-and-border hierarchy. */
+:where(
+  .mantine-Input-input,
+  .mantine-TextInput-input,
+  .mantine-Textarea-input,
+  .mantine-Select-input,
+  .mantine-NumberInput-input,
+  .mantine-DateInput-input
+) {
+  border-color: var(--fr-border);
+  background: var(--fr-surface);
+  color: var(--fr-text-primary);
+}
+
+:where(
+  .mantine-Input-input,
+  .mantine-TextInput-input,
+  .mantine-Textarea-input,
+  .mantine-Select-input,
+  .mantine-NumberInput-input,
+  .mantine-DateInput-input
+):focus,
+:where(
+  .mantine-Input-input,
+  .mantine-TextInput-input,
+  .mantine-Textarea-input,
+  .mantine-Select-input,
+  .mantine-NumberInput-input,
+  .mantine-DateInput-input
+):focus-within {
+  border-color: var(--fr-primary);
+  box-shadow: 0 0 0 1px var(--fr-primary);
+}
+
+:where(.mantine-Input-input, .mantine-TextInput-input, .mantine-Textarea-input)::placeholder {
+  color: var(--fr-accent);
+  opacity: 0.78;
+}
+
+:where(.mantine-Input-input, .mantine-TextInput-input, .mantine-Textarea-input):disabled {
+  border-color: var(--fr-border);
+  background: var(--fr-surface-muted);
+  color: var(--fr-text-secondary);
+  opacity: 0.72;
+}
+
+:where(
+  .mantine-Button-root[data-variant="default"],
+  .mantine-ActionIcon-root[data-variant="default"]
+) {
+  border-color: var(--fr-border);
+  background: var(--fr-surface);
+  color: var(--fr-text-primary);
+}
+
+:where(
+  .mantine-Button-root[data-variant="default"],
+  .mantine-ActionIcon-root[data-variant="default"]
+):hover {
+  background: var(--fr-surface-hover);
+}
+
+:where(
+  .mantine-Modal-content,
+  .mantine-Modal-header,
+  .mantine-Drawer-content,
+  .mantine-Drawer-header,
+  .mantine-Popover-dropdown,
+  .mantine-Menu-dropdown
+) {
+  border-color: var(--fr-border);
+  background: var(--fr-surface);
+  color: var(--fr-text-primary);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -40,7 +40,7 @@
 }
 
 .sectionHeading span {
-  color: #7a6458;
+  color: var(--fr-accent);
   font-family: var(--fr-font-mono);
   font-size: var(--fr-type-label);
   font-weight: 700;

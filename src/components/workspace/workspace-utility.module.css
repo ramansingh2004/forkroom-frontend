@@ -1,11 +1,11 @@
 .page { max-width: 1440px; margin: 0 auto; padding: 38px 48px 64px; }
 .header { margin-bottom: 28px; }
-.header > span, .capability span { color: #7a6458; font-family: var(--fr-font-mono); font-size: var(--fr-type-label); font-weight: 700; letter-spacing: .1em; }
+.header > span, .capability span { color: var(--fr-accent); font-family: var(--fr-font-mono); font-size: var(--fr-type-label); font-weight: 700; letter-spacing: .1em; }
 .header h1 { margin: 8px 0; font-size: clamp(32px, 4vw, 46px); letter-spacing: -.04em; }
 .header p { max-width: 760px; margin: 0; color: var(--fr-text-muted); font-size: var(--fr-type-body); line-height: 1.6; }
 .panel, .timeline, .state, .capability { border: 1px solid var(--fr-border-strong); background: var(--fr-raised); }
 .tableHeader, .documentRow { display: grid; grid-template-columns: minmax(240px, 1.6fr) minmax(180px, 1fr) 170px 110px minmax(210px, auto); align-items: center; gap: 16px; padding: 14px 18px; }
-.tableHeader { color: #7a6458; background: var(--fr-surface); font-size: var(--fr-type-label); font-weight: 700; text-transform: uppercase; }
+.tableHeader { color: var(--fr-accent); background: var(--fr-surface); font-size: var(--fr-type-label); font-weight: 700; text-transform: uppercase; }
 .documentRow { min-height: 84px; border-top: 1px solid var(--fr-border); }
 .documentRow > div:first-child { min-width: 0; display: grid; gap: 4px; }
 .documentRow strong { overflow: hidden; font-size: var(--fr-type-ui); text-overflow: ellipsis; white-space: nowrap; }

@@ -19,7 +19,7 @@
 }
 
 .eyebrow {
-  color: #7a6458;
+  color: var(--fr-accent);
   font-family: "JetBrains Mono Variable", monospace;
   font-size: var(--fr-type-label);
   font-weight: 700;
@@ -150,7 +150,7 @@
 
 .identityCard span,
 .profileFacts small {
-  color: #7a6458;
+  color: var(--fr-accent);
   font-family: "JetBrains Mono Variable", monospace;
   font-size: var(--fr-type-meta);
   font-weight: 750;

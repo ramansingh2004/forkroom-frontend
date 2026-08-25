@@ -3,19 +3,19 @@
 .summaryBar > div { display: flex; align-items: center; gap: 9px; }
 .summaryBar span { color: var(--fr-text-muted); font-size: var(--fr-type-ui-sm); }
 .summaryBar > div > span { font-family: var(--fr-font-mono); font-size: var(--fr-type-meta); font-weight: 700; letter-spacing: .08em; }
-.summaryBar strong { color: #675a8e; font-family: var(--fr-font-mono); font-size: 19px; }
+.summaryBar strong { color: var(--fr-accent); font-family: var(--fr-font-mono); font-size: 19px; }
 .refreshNote { justify-self: start; }
 .toolbar { display: flex; align-items: center; justify-content: space-between; }
 .mentionList { border: 1px solid var(--fr-border-strong); background: var(--fr-raised); }
 .mentionRow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 14px; min-height: 124px; padding: 18px; border-top: 1px solid var(--fr-border); }
 .mentionRow:first-child { border-top: 0; }
-.mentionUnread { position: relative; background: #faf8ff; }
-.mentionUnread::before { position: absolute; inset: 0 auto 0 0; width: 3px; content: ""; background: #675a8e; }
+.mentionUnread { position: relative; background: var(--fr-accent-soft); }
+.mentionUnread::before { position: absolute; inset: 0 auto 0 0; width: 3px; content: ""; background: var(--fr-accent); }
 .mentionContent { min-width: 0; }
 .mentionMeta { display: flex; align-items: center; flex-wrap: wrap; gap: 7px 12px; color: var(--fr-text-muted); font-size: var(--fr-type-label); }
 .mentionMeta time { margin-left: auto; font-family: var(--fr-font-mono); font-size: var(--fr-type-meta); }
 .mentionContent h2 { margin: 8px 0 5px; color: var(--fr-text); font-size: 15px; font-weight: 650; line-height: 1.4; }
-.mentionContent h2 span { color: #675a8e; }
+.mentionContent h2 span { color: var(--fr-accent); }
 .mentionContent p { margin: 0; color: var(--fr-text-muted); font-size: var(--fr-type-ui-sm); line-height: 1.55; }
 .rowActions { align-self: center; display: flex; align-items: center; gap: 5px; }
 .statePanel { min-height: 330px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 9px; padding: 32px; border: 1px solid var(--fr-border-strong); background: var(--fr-raised); text-align: center; }

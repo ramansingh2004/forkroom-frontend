@@ -1,13 +1,13 @@
 .discussionBody { min-height: 0; height: 100%; display: flex; flex-direction: column; }
 .commentScroll { min-height: 0; flex: 1; }
-.threadMeta { display: flex; justify-content: space-between; gap: 12px; padding: 13px 14px 9px; color: #7a6458; font-family: var(--fr-font-mono); font-size: var(--fr-type-meta); font-weight: 650; letter-spacing: .035em; }
+.threadMeta { display: flex; justify-content: space-between; gap: 12px; padding: 13px 14px 9px; color: var(--fr-accent); font-family: var(--fr-font-mono); font-size: var(--fr-type-meta); font-weight: 650; letter-spacing: .035em; }
 .comment { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 9px; padding: 14px; border-top: 1px solid var(--fr-border); scroll-margin: 80px; transition: background-color .2s ease; }
-.targetComment { background: #faf8ff; box-shadow: inset 3px 0 #675a8e; }
+.targetComment { background: var(--fr-accent-soft); box-shadow: inset 3px 0 var(--fr-accent); }
 .comment header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .comment strong { color: var(--fr-text); font-size: var(--fr-type-ui-sm); }
 .comment time { color: #88776e; font-family: var(--fr-font-mono); font-size: var(--fr-type-meta); }
 .comment p { margin: 6px 0 7px; color: var(--fr-text-muted); font-size: var(--fr-type-ui-sm); line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
-.inlineMention { color: #675a8e; font-weight: 700; }
+.inlineMention { color: var(--fr-accent); font-weight: 700; }
 .comment footer { display: flex; align-items: center; gap: 11px; color: var(--fr-text-muted); font-size: var(--fr-type-meta); }
 .comment footer button { display: inline-flex; align-items: center; gap: 3px; padding: 0; border: 0; color: #76594c; background: transparent; font-size: var(--fr-type-label); font-weight: 650; cursor: pointer; }
 .comment footer button:hover { color: var(--fr-primary); }
@@ -19,13 +19,13 @@
 .composer { flex: 0 0 auto; padding: 10px; border-top: 1px solid var(--fr-border-strong); background: #f7f1ed; }
 .composerField { position: relative; }
 .composerField :global(.mantine-Textarea-input) { border-color: var(--fr-border-strong); background: var(--fr-raised); font-size: var(--fr-type-ui-sm); }
-.editingNotice { display: flex; align-items: center; justify-content: space-between; margin: -2px 0 7px; color: #675a8e; font-size: var(--fr-type-label); font-weight: 700; }
+.editingNotice { display: flex; align-items: center; justify-content: space-between; margin: -2px 0 7px; color: var(--fr-accent); font-size: var(--fr-type-label); font-weight: 700; }
 .composerActions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 7px; }
 .composerActions > span { display: flex; align-items: center; gap: 4px; color: var(--fr-text-muted); font-size: var(--fr-type-meta); }
 .mentionSuggestions { position: absolute; z-index: 15; right: 0; bottom: calc(100% + 5px); left: 0; overflow: hidden; border: 1px solid var(--fr-border-strong); border-radius: 7px; background: var(--fr-raised); box-shadow: 0 8px 24px rgba(45, 35, 30, .12); }
 .mentionSuggestions button { width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 9px; padding: 8px 10px; border: 0; border-top: 1px solid var(--fr-border); color: var(--fr-text); background: transparent; text-align: left; cursor: pointer; }
 .mentionSuggestions button:first-child { border-top: 0; }
-.mentionSuggestions button:hover, .mentionSuggestions button:focus-visible { background: #f3effa; outline: 0; }
+.mentionSuggestions button:hover, .mentionSuggestions button:focus-visible { background: var(--fr-accent-soft); outline: 0; }
 .mentionSuggestions button > span { min-width: 0; display: grid; }
 .mentionSuggestions strong, .mentionSuggestions small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mentionSuggestions small { color: var(--fr-text-muted); }

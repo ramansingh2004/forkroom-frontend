@@ -54,7 +54,7 @@
 
 .eyebrow,
 .kicker {
-  color: #7a6458;
+  color: var(--fr-accent);
   font-family: "JetBrains Mono Variable", monospace;
   font-size: var(--fr-type-meta);
   font-weight: 750;
@@ -92,7 +92,7 @@
 }
 
 .memberMetrics span {
-  color: #7a6458;
+  color: var(--fr-accent);
   font-family: "JetBrains Mono Variable", monospace;
   font-size: var(--fr-type-meta);
   font-weight: 750;
@@ -136,7 +136,7 @@
   align-items: center;
   gap: 12px;
   padding: 0 17px 0 66px;
-  color: #7a6458;
+  color: var(--fr-accent);
   border-bottom: 1px solid var(--fr-border);
   font-family: var(--fr-font-interface);
   font-size: var(--fr-type-meta);
@@ -172,7 +172,7 @@
 }
 
 .memberRow:hover {
-  background: #faf5f1;
+  background: var(--fr-surface-hover);
 }
 
 .memberRow:focus-visible {
@@ -304,7 +304,7 @@
 }
 
 .detailsMetadata small {
-  color: #7a6458;
+  color: var(--fr-accent);
   font-family: "JetBrains Mono Variable", monospace;
   font-size: var(--fr-type-meta);
   font-weight: 750;

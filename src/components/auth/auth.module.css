@@ -40,7 +40,6 @@
   background: var(--fr-raised);
   border: 1px solid var(--fr-border-strong);
   border-radius: 10px;
-  box-shadow: 0 22px 60px rgba(77, 50, 37, 0.08);
 }
 
 .heading {
@@ -87,7 +86,7 @@
 .input :global(.mantine-Input-input) {
   min-height: 46px;
   border-color: var(--fr-border-strong);
-  background: #fff;
+  background: var(--fr-surface);
 }
 
 .input :global(.mantine-Input-input:focus) {

@@ -11,7 +11,7 @@
   border: 1px solid var(--mantine-color-gray-4);
   border-left: 3px solid var(--mantine-color-orange-7);
   border-radius: 8px;
-  background: #fffdfc;
+  background: var(--fr-surface);
   color: var(--mantine-color-dark-8);
   font-size: 0.84rem;
 }
@@ -41,7 +41,7 @@
   border: 1px solid var(--mantine-color-gray-4);
   border-left: 3px solid var(--mantine-color-red-7);
   border-radius: 8px;
-  background: #fffdfc;
+  background: var(--fr-surface);
 }
 
 .statePanel[data-kind="permission"] {
@@ -99,7 +99,7 @@
     );
   min-height: calc(100vh - 56px);
   padding: 8px;
-  background: #f4eeea;
+  background: var(--fr-background);
 }
 
 @media (max-width: 760px) {

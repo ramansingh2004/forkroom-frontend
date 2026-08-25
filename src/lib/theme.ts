@@ -13,10 +13,42 @@ const rust: MantineColorsTuple = [
   '#9b3515',
 ];
 
+const warmGray: MantineColorsTuple = [
+  '#fffdfc',
+  '#faf5f1',
+  '#f4eeea',
+  '#e7dcd5',
+  '#cfc3ba',
+  '#b6a69c',
+  '#958177',
+  '#7a6458',
+  '#4b5563',
+  '#111827',
+];
+
+const ink: MantineColorsTuple = [
+  '#f4eeea',
+  '#e7dcd5',
+  '#cfc3ba',
+  '#aa9a90',
+  '#7a6458',
+  '#5b4e47',
+  '#000000',
+  '#292522',
+  '#111827',
+  '#000000',
+];
+
 export const forkRoomTheme = createTheme({
   primaryColor: 'rust',
   primaryShade: 7,
-  colors: { rust },
+  colors: {
+    rust,
+    gray: warmGray,
+    dark: ink,
+  },
+  white: '#fffdfc',
+  black: '#000000',
   fontFamily: "'Inter Variable', 'Inter', sans-serif",
   fontFamilyMonospace: "'JetBrains Mono Variable', 'JetBrains Mono', monospace",
   headings: {

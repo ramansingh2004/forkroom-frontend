@@ -76,7 +76,7 @@
 
 .brandTagline,
 .navLabel {
-  color: #7a6458;
+  color: var(--fr-accent);
   font-family: "JetBrains Mono Variable", monospace;
   font-size: var(--fr-type-meta);
   font-weight: 700;
@@ -103,8 +103,8 @@
 }
 
 .workspaceSwitcher:hover {
-  background: #faf5f1;
-  border-color: #bba99e;
+  background: var(--fr-surface-hover);
+  border-color: var(--fr-border);
 }
 
 .workspaceSwitcher > span {
