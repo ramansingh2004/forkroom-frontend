@@ -66,3 +66,10 @@ export async function resetPassword(token: string, newPassword: string) {
   );
   return data;
 }
+
+export function getGoogleOAuthAuthorizeUrl(returnPath: string) {
+  return apiClient.getUri({
+    url: "/auth/google/authorize",
+    params: { return_path: returnPath },
+  });
+}

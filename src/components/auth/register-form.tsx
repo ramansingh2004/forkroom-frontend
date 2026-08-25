@@ -11,6 +11,7 @@ import { authPath } from '@/lib/auth/navigation';
 import { registerSchema, type RegisterValues } from '@/lib/auth/schema';
 import { getApiErrorMessage, register, requestEmailVerification } from '@/services/auth.service';
 import { AuthHeading } from './auth-shell';
+import { GoogleOAuthButton } from './google-oauth-button';
 import styles from './auth.module.css';
 
 export function RegisterForm() {
@@ -71,6 +72,8 @@ export function RegisterForm() {
             {submitError}
           </Alert>
         )}
+
+        <GoogleOAuthButton mode="register" next={next} />
 
         <div className={styles.fieldStack}>
           <Controller

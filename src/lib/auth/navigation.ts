@@ -1,4 +1,5 @@
 export const DEFAULT_AUTHENTICATED_PATH = '/workspaces';
+export const GOOGLE_OAUTH_CALLBACK_PATH = '/oauth/google/callback';
 
 export function safeNextPath(next: string | null) {
   if (!next || !next.startsWith('/') || next.startsWith('//') || next.includes('\\')) {
@@ -31,4 +32,9 @@ export function authPath(pathname: string, options: AuthPathOptions = {}) {
 
   const query = search.toString();
   return query ? `${pathname}?${query}` : pathname;
+}
+
+export function googleOAuthCallbackPath(next: string | null) {
+  const search = new URLSearchParams({ next: safeNextPath(next) });
+  return `${GOOGLE_OAUTH_CALLBACK_PATH}?${search.toString()}`;
 }

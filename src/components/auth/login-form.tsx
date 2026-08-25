@@ -13,6 +13,7 @@ import { authPath, safeNextPath } from '@/lib/auth/navigation';
 import { loginSchema, type LoginValues } from '@/lib/auth/schema';
 import { getApiErrorMessage, getMe, login } from '@/services/auth.service';
 import { AuthHeading } from './auth-shell';
+import { GoogleOAuthButton } from './google-oauth-button';
 import styles from './auth.module.css';
 
 export function LoginForm() {
@@ -94,6 +95,8 @@ export function LoginForm() {
             )}
           </Alert>
         )}
+
+        <GoogleOAuthButton mode="login" next={next} />
 
         <div className={styles.fieldStack}>
           <Controller
