@@ -133,7 +133,7 @@
   padding: 3px 7px;
   border: 1px solid var(--fr-border);
   border-radius: 6px;
-  color: #6e5b51;
+  color: var(--fr-text-secondary);
   background: var(--fr-surface);
   font-family: var(--fr-font-mono);
   font-size: var(--fr-type-meta);

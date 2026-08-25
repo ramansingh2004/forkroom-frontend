@@ -100,7 +100,7 @@
   border-bottom: 0;
 }
 .workspaceRow:hover {
-  background: #f8f2ee;
+  background: var(--fr-surface-muted);
 }
 
 .workspaceIdentity {
@@ -132,7 +132,7 @@
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  color: #fff;
+  color: var(--fr-text-inverse);
   background: var(--fr-black);
   border-radius: 7px;
   font-weight: 750;
@@ -360,7 +360,7 @@
 
 .decisionCode,
 .recentCode {
-  color: #6e5e54;
+  color: var(--fr-text-secondary);
   background: var(--fr-primary-soft);
   border-radius: 3px;
   font-family: "JetBrains Mono Variable", monospace;
@@ -1277,8 +1277,8 @@ summary.dashboardPanelHeader::-webkit-details-marker {
   display: grid;
   place-items: center;
   color: var(--fr-success);
-  background: #edf6f0;
-  border: 1px solid #cfe4d6;
+  background: var(--fr-success-soft);
+  border: 1px solid var(--fr-success-border);
   border-radius: 50%;
   font-weight: 800;
 }
@@ -1318,7 +1318,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
   min-height: 34px;
   padding: 7px 14px;
   color: var(--fr-accent);
-  background: #fbf8f5;
+  background: var(--fr-surface-hover);
   border-bottom: 1px solid var(--fr-border);
   font-family: var(--fr-font-interface);
   font-size: var(--fr-type-meta);
@@ -1356,7 +1356,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 .activeDecisionTableRow :global(.mantine-Badge-root[data-color="rust"]) {
   color: var(--fr-primary);
   background: var(--fr-primary-soft);
-  border-color: #dfb7a3;
+  border-color: var(--fr-primary-border);
 }
 
 .tableDecisionTitle {
@@ -1613,8 +1613,8 @@ summary.dashboardPanelHeader::-webkit-details-marker {
   margin-top: 10px;
   padding: 9px 12px;
   color: var(--fr-warning);
-  background: #fff9ec;
-  border: 1px solid #ead7ae;
+  background: var(--fr-warning-soft);
+  border: 1px solid var(--fr-warning-border);
   border-radius: var(--fr-control-radius);
   font-size: var(--fr-type-meta);
 }

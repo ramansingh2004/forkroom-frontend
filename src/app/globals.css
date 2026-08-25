@@ -8,6 +8,7 @@
   --fr-surface: #fffdfc;
   --fr-text-primary: #111827;
   --fr-text-secondary: #4b5563;
+  --fr-text-inverse: #fffdfc;
   --fr-border: #cfc3ba;
 
   /* Compatibility aliases for the existing component vocabulary. */
@@ -20,10 +21,19 @@
   --fr-surface-muted: #f7f1ed;
   --fr-surface-hover: #faf5f1;
   --fr-accent-soft: #eee6e1;
+  --fr-primary-border: #df9d85;
   --fr-success: #287a52;
+  --fr-success-soft: #edf6f0;
+  --fr-success-border: #cfe4d6;
   --fr-warning: #a26312;
+  --fr-warning-soft: #fff9ec;
+  --fr-warning-border: #ead7ae;
   --fr-danger: #b42318;
+  --fr-danger-soft: #fff8f7;
+  --fr-danger-border: #e2c2bd;
   --fr-info: #2f5d8a;
+  --fr-info-soft: #eef6ff;
+  --fr-info-border: #c9daed;
   --fr-gutter: 8px;
   --fr-control-radius: 6px;
   --fr-card-radius: 8px;

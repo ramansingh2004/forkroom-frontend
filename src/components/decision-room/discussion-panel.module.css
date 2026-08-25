@@ -5,18 +5,18 @@
 .targetComment { background: var(--fr-accent-soft); box-shadow: inset 3px 0 var(--fr-accent); }
 .comment header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .comment strong { color: var(--fr-text); font-size: var(--fr-type-ui-sm); }
-.comment time { color: #88776e; font-family: var(--fr-font-mono); font-size: var(--fr-type-meta); }
+.comment time { color: var(--fr-text-secondary); font-family: var(--fr-font-mono); font-size: var(--fr-type-meta); }
 .comment p { margin: 6px 0 7px; color: var(--fr-text-muted); font-size: var(--fr-type-ui-sm); line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
 .inlineMention { color: var(--fr-accent); font-weight: 700; }
 .comment footer { display: flex; align-items: center; gap: 11px; color: var(--fr-text-muted); font-size: var(--fr-type-meta); }
-.comment footer button { display: inline-flex; align-items: center; gap: 3px; padding: 0; border: 0; color: #76594c; background: transparent; font-size: var(--fr-type-label); font-weight: 650; cursor: pointer; }
+.comment footer button { display: inline-flex; align-items: center; gap: 3px; padding: 0; border: 0; color: var(--fr-text-secondary); background: transparent; font-size: var(--fr-type-label); font-weight: 650; cursor: pointer; }
 .comment footer button:hover { color: var(--fr-primary); }
 .commentState, .emptyDiscussion { min-height: 220px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; padding: 24px; color: var(--fr-text-muted); font-size: var(--fr-type-ui-sm); text-align: center; }
 .emptyDiscussion strong { color: var(--fr-text); }
 .errorState { margin: 12px; }
 .staleAlert { margin: 10px; }
 .loadOlder { display: flex; justify-content: center; padding: 12px; border-top: 1px solid var(--fr-border); }
-.composer { flex: 0 0 auto; padding: 10px; border-top: 1px solid var(--fr-border-strong); background: #f7f1ed; }
+.composer { flex: 0 0 auto; padding: 10px; border-top: 1px solid var(--fr-border-strong); background: var(--fr-surface-muted); }
 .composerField { position: relative; }
 .composerField :global(.mantine-Textarea-input) { border-color: var(--fr-border-strong); background: var(--fr-raised); font-size: var(--fr-type-ui-sm); }
 .editingNotice { display: flex; align-items: center; justify-content: space-between; margin: -2px 0 7px; color: var(--fr-accent); font-size: var(--fr-type-label); font-weight: 700; }

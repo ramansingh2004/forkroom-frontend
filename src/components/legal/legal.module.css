@@ -33,7 +33,7 @@
   display: grid;
   place-items: center;
   border-radius: 6px;
-  color: #fff;
+  color: var(--fr-text-inverse);
   background: var(--fr-black);
   font-size: var(--fr-type-ui);
 }
@@ -159,10 +159,10 @@
 .draftNotice {
   margin: 28px 0 12px;
   padding: 15px 17px;
-  border: 1px solid #d9ad74;
+  border: 1px solid var(--fr-warning-border);
   border-radius: 7px;
-  color: #74480e;
-  background: #fff5e7;
+  color: var(--fr-warning);
+  background: var(--fr-warning-soft);
   font-size: var(--fr-type-ui-sm);
   line-height: 1.6;
 }
@@ -194,7 +194,7 @@
 
 .section p {
   margin: 0 0 12px;
-  color: #384151;
+  color: var(--fr-text-secondary);
   font-size: var(--fr-type-ui);
   line-height: 1.75;
 }

@@ -46,7 +46,7 @@
 
 .action:hover,
 .action[data-selected] {
-  border-color: #d5b6a6;
+  border-color: var(--fr-primary-border);
   background: var(--fr-primary-soft);
 }
 
@@ -57,7 +57,7 @@
 
 .actionLabel :global(mark) {
   color: inherit;
-  background: #f4cbbd;
+  background: var(--fr-primary-soft);
 }
 
 .actionDescription {

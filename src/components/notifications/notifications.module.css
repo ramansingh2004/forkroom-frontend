@@ -161,18 +161,18 @@
   display: grid;
   place-items: center;
   border-radius: 8px;
-  color: #2f5d8a;
-  background: #e8f0f7;
+  color: var(--fr-info);
+  background: var(--fr-info-soft);
 }
 
 .notificationIcon[data-color="orange"] {
-  color: #8a560f;
-  background: #f7ead4;
+  color: var(--fr-warning);
+  background: var(--fr-warning-soft);
 }
 
 .notificationIcon[data-color="red"] {
-  color: #9b2a22;
-  background: #f8e0dc;
+  color: var(--fr-danger);
+  background: var(--fr-danger-soft);
 }
 
 .notificationIcon[data-color="rust"] {

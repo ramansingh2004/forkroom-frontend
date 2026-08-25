@@ -32,7 +32,7 @@
   display: grid;
   place-items: center;
   border-radius: 7px;
-  color: #fff;
+  color: var(--fr-text-inverse);
   background: var(--fr-black);
   font-size: 14px;
 }
@@ -54,7 +54,7 @@
 .headerCta {
   padding: 10px 16px;
   border-radius: 7px;
-  color: #fff !important;
+  color: var(--fr-text-inverse) !important;
   background: var(--fr-black);
 }
 
@@ -121,12 +121,12 @@
 }
 
 .primaryAction {
-  color: #fff;
+  color: var(--fr-text-inverse);
   background: var(--fr-black);
 }
 
 .primaryAction:hover {
-  background: #24201e;
+  background: var(--fr-secondary);
 }
 
 .secondaryAction:hover {
@@ -165,7 +165,7 @@
   position: absolute;
   inset: 14px -14px -14px 14px;
   z-index: -1;
-  border: 1px solid #d9c7bb;
+  border: 1px solid var(--fr-border);
   border-radius: 10px;
   background: var(--fr-surface);
 }
@@ -225,7 +225,7 @@
 }
 
 .selectedProposal {
-  border-color: #c98c74 !important;
+  border-color: var(--fr-primary-border) !important;
   background: var(--fr-primary-soft);
   box-shadow: inset 3px 0 var(--fr-primary);
 }

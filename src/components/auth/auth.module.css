@@ -183,12 +183,12 @@
 
 .statusIconSuccess {
   color: var(--fr-success);
-  background: #def2e7;
+  background: var(--fr-success-soft);
 }
 
 .statusIconError {
   color: var(--fr-danger);
-  background: #fbe7e5;
+  background: var(--fr-danger-soft);
 }
 
 .status h1 {
@@ -238,7 +238,7 @@
   justify-content: space-between;
   gap: 18px;
   margin: 0;
-  color: #786d66;
+  color: var(--fr-text-secondary);
   font-family: var(--fr-font-interface);
   font-size: var(--fr-type-ui);
 }

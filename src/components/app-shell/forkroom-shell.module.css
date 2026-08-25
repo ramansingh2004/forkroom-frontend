@@ -149,7 +149,7 @@
   gap: 11px;
   padding: 8px 10px;
   border-radius: 6px;
-  color: #443d39;
+  color: var(--fr-text-primary);
   font-size: var(--fr-type-ui);
   font-weight: 600;
   transition:
@@ -184,7 +184,7 @@
   margin-left: auto;
   padding: 0 5px;
   border-radius: 999px;
-  color: #fff;
+  color: var(--fr-text-inverse);
   background: var(--fr-primary);
   font-family: "JetBrains Mono Variable", monospace;
   font-size: var(--fr-type-meta);
@@ -192,7 +192,7 @@
 }
 
 .navItemDisabled {
-  color: #9a8f88;
+  color: var(--fr-text-secondary);
   cursor: default;
   opacity: 0.62;
 }

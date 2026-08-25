@@ -387,8 +387,8 @@
 }
 
 .dangerSection {
-  border-color: #e2c2bd;
-  background: #fff8f7;
+  border-color: var(--fr-danger-border);
+  background: var(--fr-danger-soft);
 }
 
 .dangerSection :global(.mantine-Button-root) {
