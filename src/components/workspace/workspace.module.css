@@ -66,8 +66,9 @@
 .activePanel,
 .lockedPanel {
   background: var(--fr-raised);
-  border: 1px solid var(--fr-border-strong);
-  border-radius: 8px;
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-card-radius);
+  box-shadow: var(--fr-shadow-sm);
 }
 
 .listHeader,
@@ -82,6 +83,7 @@
   padding: 10px 18px;
   color: var(--fr-accent);
   border-bottom: 1px solid var(--fr-border);
+  background: var(--fr-surface-muted);
   font-family: var(--fr-font-interface);
   font-size: var(--fr-type-label);
   font-weight: 700;
@@ -146,7 +148,7 @@
 }
 
 .emptyState {
-  min-height: 320px;
+  min-height: 240px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -193,8 +195,9 @@
 .metricStrip,
 .dashboardCard {
   background: var(--fr-raised);
-  border: 1px solid var(--fr-border-strong);
-  border-radius: 8px;
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-card-radius);
+  box-shadow: var(--fr-shadow-sm);
 }
 
 .dashboardHero {
@@ -715,14 +718,14 @@
   padding: 0;
   overflow: hidden;
   border-radius: var(--fr-card-radius);
-  box-shadow: none;
+  box-shadow: var(--fr-shadow-sm);
 }
 
 .dashboardSectionHeader {
   min-height: 48px;
   align-items: center;
   padding: 10px 14px;
-  background: var(--fr-surface);
+  background: var(--fr-surface-muted);
 }
 
 .viewAllLink {
@@ -764,7 +767,7 @@
 .decisionTable,
 .workspaceList {
   overflow: hidden;
-  box-shadow: none;
+  box-shadow: var(--fr-shadow-sm);
 }
 
 .decisionTableRow,
@@ -779,7 +782,7 @@
 
 .formCard,
 .emptyState {
-  box-shadow: none;
+  box-shadow: var(--fr-shadow-sm);
 }
 
 @media (max-width: 900px) {
@@ -923,8 +926,9 @@
   gap: 24px;
   padding: 20px 24px;
   background: var(--fr-raised);
-  border: 1px solid var(--fr-border-strong);
+  border: 1px solid var(--fr-border);
   border-radius: var(--fr-card-radius);
+  box-shadow: var(--fr-shadow-sm);
 }
 
 .workspaceHeading {
@@ -1032,21 +1036,21 @@
 
 .dashboardPanel,
 .firstDecisionState {
-  margin-top: 10px;
+  margin-top: 16px;
   overflow: hidden;
   background: var(--fr-raised);
-  border: 1px solid var(--fr-border-strong);
+  border: 1px solid var(--fr-border);
   border-radius: var(--fr-card-radius);
-  box-shadow: none;
+  box-shadow: var(--fr-shadow-sm);
 }
 
 .firstDecisionState {
-  min-height: 360px;
+  min-height: 260px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  padding: 44px;
+  padding: 36px;
 }
 
 .firstDecisionState h2 {
@@ -1063,7 +1067,7 @@
 }
 
 .attentionPanelNew {
-  border-left: 3px solid var(--fr-primary);
+  border-left: 3px solid var(--fr-accent);
 }
 
 .dashboardPanelHeader {
@@ -1073,8 +1077,8 @@
   justify-content: space-between;
   gap: 18px;
   padding: 10px 16px;
-  background: var(--fr-surface);
-  border-bottom: 1px solid var(--fr-border-strong);
+  background: var(--fr-surface-muted);
+  border-bottom: 1px solid var(--fr-border);
 }
 
 summary.dashboardPanelHeader {
@@ -1094,10 +1098,14 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 }
 
 .sectionIndex {
-  color: var(--fr-accent);
+  color: var(--fr-primary);
   font-size: var(--fr-type-meta);
   font-weight: 800;
   letter-spacing: 0.1em;
+}
+
+.attentionPanelNew .sectionIndex {
+  color: var(--fr-accent);
 }
 
 .partialLabel {
@@ -1264,11 +1272,11 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 }
 
 .attentionClear {
-  min-height: 112px;
+  min-height: 88px;
   display: flex;
   align-items: center;
   gap: 13px;
-  padding: 20px 16px;
+  padding: 16px;
 }
 
 .clearMark {
@@ -1318,7 +1326,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
   min-height: 34px;
   padding: 7px 14px;
   color: var(--fr-accent);
-  background: var(--fr-surface-hover);
+  background: var(--fr-surface-muted);
   border-bottom: 1px solid var(--fr-border);
   font-family: var(--fr-font-interface);
   font-size: var(--fr-type-meta);
@@ -1453,7 +1461,7 @@ summary.dashboardPanelHeader::-webkit-details-marker {
 .dashboardLowerGrid {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
-  gap: 10px;
+  gap: 16px;
 }
 
 .sectionCount {

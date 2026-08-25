@@ -6,7 +6,7 @@
   gap: 24px;
   padding: 28px 20px 22px;
   background:
-    radial-gradient(circle at 50% 16%, rgba(203, 77, 34, 0.08), transparent 34rem),
+    radial-gradient(circle at 50% 16%, rgba(15, 107, 102, 0.1), transparent 34rem),
     var(--fr-canvas);
 }
 
@@ -38,8 +38,9 @@
   align-self: center;
   padding: 36px;
   background: var(--fr-raised);
-  border: 1px solid var(--fr-border-strong);
+  border: 1px solid var(--fr-border);
   border-radius: 10px;
+  box-shadow: var(--fr-shadow-md);
 }
 
 .heading {

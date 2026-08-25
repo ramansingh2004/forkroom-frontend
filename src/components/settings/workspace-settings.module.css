@@ -57,9 +57,10 @@
   top: calc(var(--fr-header-height) + 22px);
   display: grid;
   padding: 7px;
-  border: 1px solid var(--fr-border-strong);
-  border-radius: 8px;
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-card-radius);
   background: var(--fr-raised);
+  box-shadow: var(--fr-shadow-sm);
 }
 
 .settingsNav a {
@@ -81,7 +82,7 @@
 .settingsContent {
   min-width: 0;
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 .settingsSection {
@@ -89,9 +90,10 @@
   display: grid;
   gap: 20px;
   padding: 24px;
-  border: 1px solid var(--fr-border-strong);
-  border-radius: 8px;
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-card-radius);
   background: var(--fr-raised);
+  box-shadow: var(--fr-shadow-sm);
 }
 
 .sectionHeading {
@@ -100,6 +102,10 @@
   gap: 12px;
   padding-bottom: 18px;
   border-bottom: 1px solid var(--fr-border);
+  background: var(--fr-surface-muted);
+  margin: -24px -24px 0;
+  padding: 20px 24px 18px;
+  border-radius: var(--fr-card-radius) var(--fr-card-radius) 0 0;
 }
 
 .sectionHeading > span {
@@ -142,7 +148,7 @@
   border: 1px solid var(--fr-border-strong);
   border-radius: 8px;
   background: color-mix(in srgb, var(--fr-raised) 94%, transparent);
-  box-shadow: 0 12px 28px rgb(59 37 26 / 9%);
+  box-shadow: var(--fr-shadow-md);
   backdrop-filter: blur(10px);
 }
 
@@ -268,16 +274,17 @@
 }
 
 .permissionState {
-  min-height: 440px;
+  min-height: 280px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   padding: 48px 28px;
-  border: 1px solid var(--fr-border-strong);
-  border-radius: 8px;
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-card-radius);
   color: var(--fr-text-muted);
   background: var(--fr-raised);
+  box-shadow: var(--fr-shadow-sm);
   text-align: center;
 }
 
@@ -414,7 +421,7 @@
   }
 }
 
-/* Settings hierarchy comes from grouped paper surfaces, not elevation. */
+/* Settings hierarchy combines grouped surfaces with restrained elevation. */
 .settingsContent {
   gap: 18px;
 }
@@ -423,12 +430,13 @@
 .settingsNav,
 .saveBar,
 .permissionState {
-  box-shadow: none;
+  box-shadow: var(--fr-shadow-sm);
 }
 
 .saveBar {
   background: var(--fr-raised);
-  backdrop-filter: none;
+  box-shadow: var(--fr-shadow-md);
+  backdrop-filter: blur(10px);
 }
 
 .ownerCard,
@@ -440,7 +448,7 @@
 }
 
 .ownerCard {
-  background: var(--fr-raised);
+  background: var(--fr-surface-muted);
 }
 
 .ownerCard :global(.mantine-Badge-root) {

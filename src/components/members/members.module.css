@@ -20,9 +20,10 @@
   justify-content: space-between;
   gap: 28px;
   padding: 26px 28px;
-  border: 1px solid var(--fr-border-strong);
-  border-radius: 8px;
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-card-radius);
   background: var(--fr-raised);
+  box-shadow: var(--fr-shadow-sm);
 }
 
 .membersHeader h1 {
@@ -65,10 +66,11 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-top: 10px;
-  border: 1px solid var(--fr-border-strong);
-  border-radius: 8px;
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-card-radius);
   overflow: hidden;
   background: var(--fr-raised);
+  box-shadow: var(--fr-shadow-sm);
 }
 
 .memberMetrics > div {
@@ -107,16 +109,17 @@
   min-height: 610px;
   display: grid;
   grid-template-columns: minmax(420px, 0.92fr) minmax(430px, 1.08fr);
-  gap: 10px;
-  margin-top: 10px;
+  gap: 16px;
+  margin-top: 16px;
 }
 
 .memberListPanel,
 .memberDetailsPanel {
   min-width: 0;
-  border: 1px solid var(--fr-border-strong);
-  border-radius: 8px;
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-card-radius);
   background: var(--fr-raised);
+  box-shadow: var(--fr-shadow-sm);
   overflow: hidden;
 }
 
@@ -126,7 +129,7 @@
   gap: 10px;
   padding: 15px;
   border-bottom: 1px solid var(--fr-border);
-  background: var(--fr-surface);
+  background: var(--fr-surface-muted);
 }
 
 .memberListHeader {
@@ -138,6 +141,7 @@
   padding: 0 17px 0 66px;
   color: var(--fr-accent);
   border-bottom: 1px solid var(--fr-border);
+  background: var(--fr-surface-muted);
   font-family: var(--fr-font-interface);
   font-size: var(--fr-type-meta);
   font-weight: 750;
@@ -563,14 +567,14 @@
 }
 
 .memberGrid {
-  gap: var(--fr-gutter);
-  margin-top: var(--fr-gutter);
+  gap: 16px;
+  margin-top: 16px;
 }
 
 .memberListPanel,
 .memberDetailsPanel {
-  border-radius: 0;
-  box-shadow: none;
+  border-radius: var(--fr-card-radius);
+  box-shadow: var(--fr-shadow-sm);
 }
 
 .memberToolbar {
@@ -606,7 +610,7 @@
 .dangerSection,
 .adminBoundary {
   border-radius: var(--fr-card-radius);
-  box-shadow: none;
+  box-shadow: var(--fr-shadow-sm);
 }
 
 .accessCard {

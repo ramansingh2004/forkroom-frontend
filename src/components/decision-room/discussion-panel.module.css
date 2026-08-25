@@ -22,7 +22,7 @@
 .editingNotice { display: flex; align-items: center; justify-content: space-between; margin: -2px 0 7px; color: var(--fr-accent); font-size: var(--fr-type-label); font-weight: 700; }
 .composerActions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 7px; }
 .composerActions > span { display: flex; align-items: center; gap: 4px; color: var(--fr-text-muted); font-size: var(--fr-type-meta); }
-.mentionSuggestions { position: absolute; z-index: 15; right: 0; bottom: calc(100% + 5px); left: 0; overflow: hidden; border: 1px solid var(--fr-border-strong); border-radius: 7px; background: var(--fr-raised); box-shadow: 0 8px 24px rgba(45, 35, 30, .12); }
+.mentionSuggestions { position: absolute; z-index: 15; right: 0; bottom: calc(100% + 5px); left: 0; overflow: hidden; border: 1px solid var(--fr-border); border-radius: var(--fr-control-radius); background: var(--fr-raised); box-shadow: var(--fr-shadow-md); }
 .mentionSuggestions button { width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 9px; padding: 8px 10px; border: 0; border-top: 1px solid var(--fr-border); color: var(--fr-text); background: transparent; text-align: left; cursor: pointer; }
 .mentionSuggestions button:first-child { border-top: 0; }
 .mentionSuggestions button:hover, .mentionSuggestions button:focus-visible { background: var(--fr-accent-soft); outline: 0; }

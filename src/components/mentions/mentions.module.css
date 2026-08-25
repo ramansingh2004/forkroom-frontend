@@ -1,14 +1,15 @@
 .mentionsSurface { display: grid; gap: 16px; }
-.summaryBar { min-height: 68px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 22px; padding: 12px 16px; border: 1px solid var(--fr-border-strong); background: var(--fr-raised); }
+.summaryBar { min-height: 68px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 22px; padding: 12px 16px; border: 1px solid var(--fr-border); border-radius: var(--fr-card-radius); background: var(--fr-raised); box-shadow: var(--fr-shadow-sm); }
 .summaryBar > div { display: flex; align-items: center; gap: 9px; }
 .summaryBar span { color: var(--fr-text-muted); font-size: var(--fr-type-ui-sm); }
 .summaryBar > div > span { font-family: var(--fr-font-mono); font-size: var(--fr-type-meta); font-weight: 700; letter-spacing: .08em; }
 .summaryBar strong { color: var(--fr-accent); font-family: var(--fr-font-mono); font-size: 19px; }
 .refreshNote { justify-self: start; }
-.toolbar { display: flex; align-items: center; justify-content: space-between; }
-.mentionList { border: 1px solid var(--fr-border-strong); background: var(--fr-raised); }
-.mentionRow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 14px; min-height: 124px; padding: 18px; border-top: 1px solid var(--fr-border); }
+.toolbar { display: flex; align-items: center; justify-content: space-between; padding: 8px; border-radius: var(--fr-card-radius); background: var(--fr-surface-muted); }
+.mentionList { overflow: hidden; border: 1px solid var(--fr-border); border-radius: var(--fr-card-radius); background: var(--fr-raised); box-shadow: var(--fr-shadow-sm); }
+.mentionRow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 14px; min-height: 112px; padding: 18px; border-top: 1px solid var(--fr-border); transition: background-color 120ms ease; }
 .mentionRow:first-child { border-top: 0; }
+.mentionRow:hover { background: var(--fr-surface-hover); }
 .mentionUnread { position: relative; background: var(--fr-accent-soft); }
 .mentionUnread::before { position: absolute; inset: 0 auto 0 0; width: 3px; content: ""; background: var(--fr-accent); }
 .mentionContent { min-width: 0; }
@@ -18,7 +19,7 @@
 .mentionContent h2 span { color: var(--fr-accent); }
 .mentionContent p { margin: 0; color: var(--fr-text-muted); font-size: var(--fr-type-ui-sm); line-height: 1.55; }
 .rowActions { align-self: center; display: flex; align-items: center; gap: 5px; }
-.statePanel { min-height: 330px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 9px; padding: 32px; border: 1px solid var(--fr-border-strong); background: var(--fr-raised); text-align: center; }
+.statePanel { min-height: 240px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 9px; padding: 32px; border: 1px solid var(--fr-border); border-radius: var(--fr-card-radius); background: var(--fr-raised); box-shadow: var(--fr-shadow-sm); text-align: center; }
 .statePanel strong { font-size: 18px; }
 .statePanel p { max-width: 620px; margin: 0 0 6px; color: var(--fr-text-muted); font-size: var(--fr-type-ui); line-height: 1.6; }
 .skeletonList { display: grid; gap: 8px; }

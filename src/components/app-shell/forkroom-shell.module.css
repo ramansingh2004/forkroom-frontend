@@ -17,7 +17,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background: var(--fr-surface);
+  background: var(--fr-sidebar);
   border-right: 1px solid var(--fr-border-strong);
   overflow-x: hidden;
   overflow-y: auto;
@@ -40,7 +40,7 @@
   align-items: center;
   gap: 9px;
   padding: 0 12px;
-  background: var(--fr-surface);
+  background: var(--fr-sidebar);
   border-right: 1px solid var(--fr-border-strong);
   border-bottom: 1px solid var(--fr-border-strong);
 }
@@ -94,7 +94,8 @@
   color: var(--fr-text);
   background: var(--fr-raised);
   border: 1px solid var(--fr-border-strong);
-  border-radius: 7px;
+  border-radius: var(--fr-card-radius);
+  box-shadow: var(--fr-shadow-sm);
   transition:
     border-color 140ms ease,
     background-color 140ms ease,
@@ -158,7 +159,7 @@
 }
 
 .navItem:hover {
-  background: rgba(255, 253, 252, 0.72);
+  background: var(--fr-surface-hover);
 }
 
 .navItemActive {
@@ -218,7 +219,7 @@
 }
 
 .profileBlock:hover {
-  background: rgba(255, 253, 252, 0.72);
+  background: var(--fr-surface-hover);
 }
 
 .profileCopy {
@@ -308,8 +309,9 @@
   align-items: center;
   gap: 18px;
   padding: 0 16px 0 22px;
-  background: var(--fr-raised);
+  background: var(--fr-surface);
   border-bottom: 1px solid var(--fr-border-strong);
+  box-shadow: 0 1px 0 rgb(23 33 31 / 4%);
 }
 
 .mobileBrand {
@@ -344,9 +346,9 @@
   gap: 9px;
   padding: 0 9px 0 12px;
   color: var(--fr-text-muted);
-  background: var(--fr-canvas);
-  border: 1px solid var(--fr-border-strong);
-  border-radius: 6px;
+  background: var(--fr-surface-muted);
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-control-radius);
   cursor: pointer;
   text-align: left;
 }

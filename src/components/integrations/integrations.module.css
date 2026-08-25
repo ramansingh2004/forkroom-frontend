@@ -9,8 +9,10 @@
   align-items: start;
   gap: 12px;
   padding: 16px 18px;
-  border: 1px solid var(--fr-border-strong);
-  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-card-radius);
+  background: var(--fr-surface-muted);
+  box-shadow: var(--fr-shadow-sm);
 }
 
 .permissionNotice strong {
@@ -25,8 +27,11 @@
 }
 
 .section {
-  border: 1px solid var(--fr-border-strong);
+  overflow: hidden;
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-card-radius);
   background: var(--fr-raised);
+  box-shadow: var(--fr-shadow-sm);
 }
 
 .sectionHeading {
@@ -35,8 +40,8 @@
   align-items: end;
   gap: 24px;
   padding: 22px 24px;
-  border-bottom: 1px solid var(--fr-border-strong);
-  background: var(--fr-surface);
+  border-bottom: 1px solid var(--fr-border);
+  background: var(--fr-surface-muted);
 }
 
 .sectionHeading span {
@@ -73,6 +78,11 @@
   min-height: 116px;
   padding: 20px 24px;
   border-top: 1px solid var(--fr-border);
+  transition: background-color 120ms ease;
+}
+
+.providerRow:hover {
+  background: var(--fr-surface-hover);
 }
 
 .providerRow:first-child,
@@ -95,8 +105,8 @@
   place-items: center;
   border: 1px solid var(--fr-border-strong);
   border-radius: 8px;
-  color: var(--fr-primary);
-  background: var(--fr-surface);
+  color: var(--fr-accent);
+  background: var(--fr-accent-soft);
 }
 
 .providerTitle,
@@ -195,7 +205,7 @@
 
 .destinationPanel {
   border-right: 1px solid var(--fr-border);
-  background: var(--fr-surface);
+  background: var(--fr-surface-muted);
 }
 
 .panelTitle {
@@ -256,7 +266,8 @@
   display: grid;
   gap: 4px;
   padding: 12px 14px;
-  border: 1px solid var(--fr-border-strong);
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-control-radius);
   background: var(--fr-raised);
 }
 
@@ -273,6 +284,8 @@
 .eventList {
   display: grid;
   border: 1px solid var(--fr-border);
+  border-radius: var(--fr-control-radius);
+  overflow: hidden;
 }
 
 .eventRow {
@@ -283,6 +296,11 @@
   min-height: 76px;
   padding: 13px 15px;
   border-top: 1px solid var(--fr-border);
+  transition: background-color 120ms ease;
+}
+
+.eventRow:hover {
+  background: var(--fr-surface-hover);
 }
 
 .eventRow:first-child {

@@ -14,7 +14,7 @@
   gap: 24px;
   padding: 0 max(20px, calc((100% - 1120px) / 2));
   border-bottom: 1px solid var(--fr-border);
-  background: rgba(255, 253, 252, 0.96);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(12px);
 }
 

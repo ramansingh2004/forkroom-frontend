@@ -1,15 +1,16 @@
 :root {
-  --fr-primary: #cb4d22;
-  --fr-primary-hover: #b8431d;
-  --fr-primary-soft: #f2d5ca;
-  --fr-secondary: #000000;
-  --fr-accent: #7a6458;
-  --fr-background: #f4eeea;
-  --fr-surface: #fffdfc;
-  --fr-text-primary: #111827;
-  --fr-text-secondary: #4b5563;
-  --fr-text-inverse: #fffdfc;
-  --fr-border: #cfc3ba;
+  --fr-primary: #0f6b66;
+  --fr-primary-hover: #0b514d;
+  --fr-primary-soft: #d7efec;
+  --fr-secondary: #172422;
+  --fr-accent: #a94e2b;
+  --fr-background: #dce3df;
+  --fr-surface: #ffffff;
+  --fr-sidebar: #f7faf8;
+  --fr-text-primary: #17211f;
+  --fr-text-secondary: #52605c;
+  --fr-text-inverse: #ffffff;
+  --fr-border: #b8c4be;
 
   /* Compatibility aliases for the existing component vocabulary. */
   --fr-black: var(--fr-secondary);
@@ -17,26 +18,28 @@
   --fr-raised: var(--fr-surface);
   --fr-text: var(--fr-text-primary);
   --fr-text-muted: var(--fr-text-secondary);
-  --fr-border-strong: var(--fr-border);
-  --fr-surface-muted: #f7f1ed;
-  --fr-surface-hover: #faf5f1;
-  --fr-accent-soft: #eee6e1;
-  --fr-primary-border: #df9d85;
-  --fr-success: #287a52;
-  --fr-success-soft: #edf6f0;
-  --fr-success-border: #cfe4d6;
-  --fr-warning: #a26312;
-  --fr-warning-soft: #fff9ec;
-  --fr-warning-border: #ead7ae;
+  --fr-border-strong: #82928a;
+  --fr-surface-muted: #f1f5f3;
+  --fr-surface-hover: #e8efeb;
+  --fr-accent-soft: #f5e4dc;
+  --fr-primary-border: #7dafaa;
+  --fr-success: #1f7a52;
+  --fr-success-soft: #e1f2e9;
+  --fr-success-border: #9bcfb1;
+  --fr-warning: #a85f00;
+  --fr-warning-soft: #fff0d6;
+  --fr-warning-border: #d9ae67;
   --fr-danger: #b42318;
-  --fr-danger-soft: #fff8f7;
-  --fr-danger-border: #e2c2bd;
+  --fr-danger-soft: #fde8e6;
+  --fr-danger-border: #e3aaa5;
   --fr-info: #2f5d8a;
-  --fr-info-soft: #eef6ff;
-  --fr-info-border: #c9daed;
-  --fr-gutter: 8px;
-  --fr-control-radius: 6px;
-  --fr-card-radius: 8px;
+  --fr-info-soft: #e7f0f8;
+  --fr-info-border: #afc7dc;
+  --fr-gutter: 12px;
+  --fr-control-radius: 8px;
+  --fr-card-radius: 10px;
+  --fr-shadow-sm: 0 2px 8px rgb(23 33 31 / 7%);
+  --fr-shadow-md: 0 10px 28px rgb(23 33 31 / 10%);
   --fr-header-height: 56px;
   --fr-nav-width: 232px;
   --fr-nav-compact-width: 72px;
@@ -70,9 +73,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Application hierarchy is carried by paper surfaces, borders, and gutters. */
+/* Darker cool-stone gaps separate bright working surfaces at a glance. */
 ::backdrop {
-  background: rgb(17 24 39 / 42%);
+  background: rgb(23 33 31 / 48%);
 }
 
 button,
@@ -170,6 +173,7 @@ a {
   border-color: var(--fr-border);
   background: var(--fr-surface);
   color: var(--fr-text-primary);
+  box-shadow: var(--fr-shadow-md);
 }
 
 @media (prefers-reduced-motion: reduce) {

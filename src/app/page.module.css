@@ -2,7 +2,7 @@
   min-height: 100dvh;
   overflow: hidden;
   background:
-    radial-gradient(circle at 78% 11%, rgba(203, 77, 34, 0.11), transparent 28rem),
+    radial-gradient(circle at 78% 11%, rgba(15, 107, 102, 0.13), transparent 28rem),
     var(--fr-canvas);
 }
 
@@ -14,7 +14,7 @@
   justify-content: space-between;
   gap: 24px;
   margin: 0 auto;
-  border-bottom: 1px solid rgba(207, 195, 186, 0.7);
+  border-bottom: 1px solid color-mix(in srgb, var(--fr-border) 70%, transparent);
 }
 
 .brand {
@@ -156,7 +156,7 @@
   border: 1px solid var(--fr-border-strong);
   border-radius: 10px;
   background: var(--fr-raised);
-  box-shadow: 0 32px 80px rgba(77, 50, 37, 0.14);
+  box-shadow: 0 32px 80px rgb(23 33 31 / 14%);
   transform: rotate(0.7deg);
 }
 

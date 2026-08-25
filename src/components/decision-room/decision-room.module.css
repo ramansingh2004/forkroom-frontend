@@ -1946,7 +1946,7 @@
 }
 
 .modeTab:hover {
-  background: rgba(255, 253, 252, 0.8);
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .modeTab[data-active] {
@@ -2867,7 +2867,7 @@
     left: 0;
     display: block;
     padding: 9px 12px;
-    background: rgba(255, 253, 252, 0.96);
+    background: rgba(255, 255, 255, 0.96);
     border-top: 1px solid var(--fr-border-strong);
   }
 
