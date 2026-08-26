@@ -1551,9 +1551,10 @@
 }
 
 .footer .brand { color: #f7faf8; }
-.footer .brand > span { color: #17211f; background: #8cc4bd; }
-.footerBrand p { margin: 23px 0 16px; color: #82918c; font-size: 12px; line-height: 1.7; }
-.footerBrand > a { color: #a8bbb5; font-size: 11px; }
+.footer .brand strong { font-size: 16px; }
+.footer .brand > span { width: 38px; height: 38px; color: #17211f; background: #8cc4bd; }
+.footerBrand p { margin: 23px 0 18px; color: #94a49f; font-size: 15px; line-height: 1.75; }
+.footerBrand > a { color: #b7c8c3; font-size: 14px; line-height: 1.5; }
 .footerBrand > a:hover { color: #fff; }
 
 .footerLinks {
@@ -1562,10 +1563,10 @@
   gap: 30px;
 }
 
-.footerLinks > div { display: grid; align-content: start; gap: 11px; }
-.footerLinks strong { margin-bottom: 5px; color: #eff5f2; font-size: 11px; }
+.footerLinks > div { display: grid; align-content: start; gap: 14px; }
+.footerLinks strong { margin-bottom: 5px; color: #eff5f2; font-size: 14px; line-height: 1.35; }
 .footerLinks a,
-.footerLinks span { width: max-content; max-width: 100%; color: #7f908a; font-size: 10px; }
+.footerLinks span { width: max-content; max-width: 100%; color: #94a49f; font-size: 13px; line-height: 1.5; }
 .footerLinks a:hover { color: #b9ddd8; }
 .footerLinks span { cursor: default; }
 
@@ -1577,7 +1578,8 @@
   gap: 20px;
   border-top: 1px solid rgba(255,255,255,.08);
   color: #65756f;
-  font-size: 8px;
+  font-size: 11px;
+  line-height: 1.5;
 }
 
 .footerBottom > span:last-child { justify-self: end; }
