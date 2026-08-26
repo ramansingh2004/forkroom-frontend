@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import styles from './page.module.css';
 
@@ -89,103 +89,112 @@ function CheckIcon() {
   );
 }
 
-function ProductVisual() {
+type AssemblyTone = 'paper' | 'teal' | 'rust' | 'yellow' | 'green' | 'ink';
+type AssemblyCubeStyle = CSSProperties & Record<`--${string}`, string>;
+
+const ASSEMBLY_STEP = 86;
+
+const assemblyLabels: Record<number, string> = {
+  18: 'CONTEXT',
+  19: 'OPTION',
+  20: 'EVIDENCE',
+  21: 'BLOCKER',
+  22: 'FORKROOM',
+  23: 'VOTE',
+  24: 'QUORUM',
+  25: 'OWNER',
+  26: 'REVIEW',
+};
+
+const assemblyTones: AssemblyTone[] = [
+  'paper', 'teal', 'paper', 'yellow', 'paper', 'green', 'paper', 'rust', 'paper',
+  'teal', 'paper', 'yellow', 'paper', 'green', 'paper', 'rust', 'paper', 'teal',
+  'paper', 'yellow', 'paper', 'rust', 'ink', 'teal', 'green', 'paper', 'teal',
+];
+
+const assemblyCubes = Array.from({ length: 27 }, (_, index) => {
+  const gridX = (index % 3) - 1;
+  const gridY = (Math.floor(index / 3) % 3) - 1;
+  const gridZ = Math.floor(index / 9) - 1;
+
+  // A deterministic golden-angle scatter keeps the starting shape organic,
+  // while every assembled coordinate is an exact 3 x 3 x 3 cube grid.
+  const angle = ((index * 137.508) % 360) * (Math.PI / 180);
+  const radius = 220 + (index % 5) * 34;
+  const scatterX = Math.round(Math.cos(angle) * radius);
+  const scatterY = Math.round(Math.sin(angle) * radius * 0.72);
+  const scatterZ = ((index * 83) % 360) - 180;
+
+  const style: AssemblyCubeStyle = {
+    '--ax': `${gridX * ASSEMBLY_STEP}px`,
+    '--ay': `${gridY * ASSEMBLY_STEP}px`,
+    '--az': `${gridZ * ASSEMBLY_STEP}px`,
+    '--sx': `${scatterX}px`,
+    '--sy': `${scatterY}px`,
+    '--sz': `${scatterZ}px`,
+    '--srx': `${((index * 31) % 118) - 59}deg`,
+    '--sry': `${((index * 47) % 126) - 63}deg`,
+    '--srz': `${((index * 61) % 112) - 56}deg`,
+  };
+
+  return {
+    index,
+    label: assemblyLabels[index],
+    tone: assemblyTones[index],
+    style,
+  };
+});
+
+function AssemblyCube({
+  label,
+  tone = 'paper',
+  style,
+}: {
+  label?: string;
+  tone?: AssemblyTone;
+  style: AssemblyCubeStyle;
+}) {
+  const toneClass = {
+    paper: styles.cubeTonePaper,
+    teal: styles.cubeToneTeal,
+    rust: styles.cubeToneRust,
+    yellow: styles.cubeToneYellow,
+    green: styles.cubeToneGreen,
+    ink: styles.cubeToneInk,
+  }[tone];
+
   return (
-    <div className={styles.productStage} aria-label="ForkRoom decision room product preview">
-      <div className={styles.productGlow} />
-      <div className={styles.productWindow}>
-        <div className={styles.windowTopbar}>
-          <div className={styles.windowDots}><i /><i /><i /></div>
-          <span>app.forkroom.io / decisions / auth-architecture</span>
-          <div className={styles.livePill}><i /> LIVE</div>
-        </div>
+    <div className={`${styles.assemblyBlock} ${toneClass}`} style={style} aria-hidden="true">
+      <span className={`${styles.cubeFace} ${styles.cubeFront}`}>{label && <b>{label}</b>}</span>
+      <span className={`${styles.cubeFace} ${styles.cubeBack}`} />
+      <span className={`${styles.cubeFace} ${styles.cubeRight}`} />
+      <span className={`${styles.cubeFace} ${styles.cubeLeft}`} />
+      <span className={`${styles.cubeFace} ${styles.cubeTop}`} />
+      <span className={`${styles.cubeFace} ${styles.cubeBottom}`} />
+    </div>
+  );
+}
 
-        <div className={styles.appFrame}>
-          <aside className={styles.mockSidebar}>
-            <div className={styles.mockBrand}><MarkIcon /><strong>ForkRoom</strong></div>
-            <div className={styles.workspaceSwitcher}>A <span>Acme Product</span><b>⌄</b></div>
-            <nav>
-              <span><i>⌂</i> Overview</span>
-              <span className={styles.mockNavActive}><i>◈</i> Decisions <b>7</b></span>
-              <span><i>□</i> Documents</span>
-              <span><i>◎</i> Activity</span>
-              <span><i>◇</i> Members</span>
-            </nav>
-            <div className={styles.mockSidebarBottom}>
-              <div className={styles.avatarStack}><i>JS</i><i>AK</i><i>ML</i></div>
-              <small>6 collaborators</small>
-            </div>
-          </aside>
-
-          <div className={styles.mockMain}>
-            <div className={styles.decisionHeader}>
-              <div>
-                <span className={styles.miniCrumb}>DECISIONS / ARCHITECTURE</span>
-                <h3>Authentication architecture</h3>
-              </div>
-              <button type="button">Open voting</button>
-            </div>
-
-            <div className={styles.lifecycle}>
-              <div className={styles.lifecycleDone}><i>✓</i><span>Draft</span></div>
-              <b />
-              <div className={styles.lifecycleDone}><i>✓</i><span>Active</span></div>
-              <b />
-              <div className={styles.lifecycleCurrent}><i>3</i><span>Voting</span></div>
-              <b />
-              <div><i>4</i><span>Closed</span></div>
-              <b />
-              <div><i>5</i><span>Locked</span></div>
-            </div>
-
-            <div className={styles.mockColumns}>
-              <section className={styles.proposalsPanel}>
-                <div className={styles.panelHeading}><span>PROPOSALS</span><b>3 active</b></div>
-                <article className={styles.proposalActive}>
-                  <span className={styles.proposalLetter}>A</span>
-                  <div><strong>HTTP-only session cookies</strong><p>Server-owned rotation and revocation with Redis-backed sessions.</p></div>
-                  <span className={styles.support}>4 support</span>
-                </article>
-                <article>
-                  <span className={styles.proposalLetter}>B</span>
-                  <div><strong>Short-lived JWT + refresh</strong><p>Stateless API access with family-based refresh-token rotation.</p></div>
-                  <span className={styles.support}>2 support</span>
-                </article>
-                <article>
-                  <span className={styles.proposalLetter}>C</span>
-                  <div><strong>Managed identity proxy</strong><p>Offload session handling to the infrastructure boundary.</p></div>
-                  <span className={styles.support}>0 support</span>
-                </article>
-              </section>
-
-              <aside className={styles.readinessPanel}>
-                <div className={styles.panelHeading}><span>VOTING READINESS</span><b className={styles.ready}>READY</b></div>
-                <div className={styles.ringWrap}>
-                  <div className={styles.progressRing}><strong>86%</strong><span>ready</span></div>
-                  <div className={styles.readinessStats}>
-                    <span><b>6</b> eligible voters</span>
-                    <span><b>4</b> quorum required</span>
-                    <span><b>0</b> blocking objections</span>
-                  </div>
-                </div>
-                <div className={styles.evidenceCard}>
-                  <span>Latest evidence</span>
-                  <strong>Security review.pdf</strong>
-                  <small><i /> Processed · 2 min ago</small>
-                </div>
-              </aside>
-            </div>
-          </div>
-        </div>
+function DecisionAssembly() {
+  return (
+    <div className={styles.assemblyStage} aria-label="Animated ForkRoom decision assembly">
+      <div className={styles.assemblyHalo} aria-hidden="true" />
+      <div className={styles.assemblyGuide} aria-hidden="true"><i /><i /><i /></div>
+      <div className={styles.assemblyScene}>
+        {assemblyCubes.map((cube) => (
+          <AssemblyCube
+            key={cube.index}
+            label={cube.label}
+            tone={cube.tone}
+            style={cube.style}
+          />
+        ))}
       </div>
 
-      <div className={`${styles.floatCard} ${styles.floatCardOne}`}>
-        <span className={styles.floatIcon}>✓</span>
-        <div><strong>Objection resolved</strong><small>Session revocation clarified</small></div>
-      </div>
-      <div className={`${styles.floatCard} ${styles.floatCardTwo}`}>
-        <div className={styles.voteAvatars}><i>JS</i><i>AK</i><i>+4</i></div>
-        <div><strong>6 people ready</strong><small>Quorum can be reached</small></div>
+      <div className={styles.assemblyLegend} aria-hidden="true">
+        <span><i /> Scattered context</span>
+        <b>→</b>
+        <strong><i /> One durable decision</strong>
       </div>
     </div>
   );
@@ -241,15 +250,16 @@ export function LandingPage() {
           </Link>
 
           <nav className={`${styles.desktopNav} ${menuOpen ? styles.mobileNavOpen : ''}`} aria-label="Public navigation">
-            <Link href="#problem" onClick={() => setMenuOpen(false)}>Why ForkRoom</Link>
+            <Link href="#problem" onClick={() => setMenuOpen(false)}>Platform</Link>
             <Link href="#features" onClick={() => setMenuOpen(false)}>Features</Link>
             <Link href="#how-it-works" onClick={() => setMenuOpen(false)}>How it works</Link>
             <Link href="#use-cases" onClick={() => setMenuOpen(false)}>Use cases</Link>
+            <Link href="#footer" onClick={() => setMenuOpen(false)}>Resources</Link>
           </nav>
 
           <div className={styles.navActions}>
             <Link href="/login" className={styles.signIn}>Sign in</Link>
-            <Link href="/register" className={styles.navCta}>Get started <ArrowIcon /></Link>
+            <Link href="/register" className={styles.navCta}>Start a workspace</Link>
             <button
               type="button"
               className={styles.menuButton}
@@ -265,27 +275,26 @@ export function LandingPage() {
 
       <section className={styles.hero}>
         <div className={styles.heroCopy} data-reveal>
-          <div className={styles.heroBadge}><i /><span>DECISIONS, WITH THE WHY ATTACHED</span></div>
-          <h1>Stop losing the <em>reasoning</em> behind important decisions.</h1>
+          <div className={styles.heroBadge}><i /><span>DECISION INFRASTRUCTURE FOR TEAMS</span></div>
+          <h1>TURN SCATTERED INPUT INTO <em>ONE DECISION.</em></h1>
           <p>
-            ForkRoom is a collaborative decision workspace where teams compare proposals, attach evidence,
-            surface objections, vote with clear rules, and preserve a durable record of what happened next.
+            ForkRoom pulls proposals, evidence, objections, votes, owners, and review dates into one living decision record—so the reasoning never disappears after the meeting.
           </p>
           <div className={styles.heroActions}>
             <Link href="/register" className={styles.primaryAction}>Start deciding clearly <ArrowIcon /></Link>
             <Link href="#how-it-works" className={styles.secondaryAction}><span className={styles.playIcon}>▶</span> See how it works</Link>
           </div>
           <div className={styles.heroProof}>
-            <div><strong>No credit card</strong><span>Start with a workspace</span></div>
+            <div><strong>Frame the question</strong><span>Context and constraints</span></div>
             <i />
-            <div><strong>Built-in accountability</strong><span>Owners, dissent, review dates</span></div>
+            <div><strong>Resolve the trade-offs</strong><span>Evidence and objections</span></div>
             <i />
-            <div><strong>One durable record</strong><span>Evidence → vote → outcome</span></div>
+            <div><strong>Lock the reasoning</strong><span>Vote → owner → review</span></div>
           </div>
         </div>
 
         <div className={styles.heroVisual} data-reveal>
-          <ProductVisual />
+          <DecisionAssembly />
         </div>
 
         <div className={styles.scrollCue} aria-hidden="true"><span>SCROLL TO EXPLORE</span><i /></div>
@@ -510,7 +519,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <footer className={styles.footer}>
+      <footer className={styles.footer} id="footer">
         <div className={styles.footerTop}>
           <div className={styles.footerBrand}>
             <Link href="/" className={styles.brand}><span><MarkIcon /></span><strong>ForkRoom</strong></Link>
