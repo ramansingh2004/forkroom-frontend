@@ -4,6 +4,15 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import styles from './page.module.css';
 
+const problemPhotos = {
+  scattered:
+    'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1400&q=88',
+  ambiguous:
+    'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1400&q=88',
+  followThrough:
+    'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=88',
+};
+
 const featurePhotos = {
   collaboration:
     'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=86',
@@ -311,32 +320,55 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div className={styles.problemGrid}>
-            <article data-reveal>
-              <span className={styles.problemNumber}>01</span>
-              <div className={styles.problemIcon}>↗</div>
-              <h3>Discussion is scattered</h3>
-              <p>Proposals live in docs, objections in chat, and key context disappears inside meeting notes.</p>
-              <div className={styles.scatterDemo} aria-hidden="true">
-                <span>Slack thread</span><span>Meeting notes</span><span>Doc v6</span><span>DM</span>
+          <div className={styles.problemStoryGrid}>
+            <article className={styles.problemStoryCard} data-reveal>
+              <div className={styles.problemCardMedia}>
+                <img src={problemPhotos.scattered} alt="Team discussing work across several laptops and notes" loading="lazy" />
+                <div className={styles.problemMediaShade} />
+                <div className={`${styles.problemFloatChip} ${styles.problemChipOne}`}>Slack thread</div>
+                <div className={`${styles.problemFloatChip} ${styles.problemChipTwo}`}>Meeting notes</div>
+                <div className={`${styles.problemFloatChip} ${styles.problemChipThree}`}>Proposal</div>
+                <span className={styles.problemMediaIndex}>01</span>
+              </div>
+              <div className={styles.problemCardBody}>
+                <span className={styles.problemCardMeta}>INPUT FRAGMENTATION</span>
+                <h3>Discussion is scattered</h3>
+                <p>Proposals live in docs, objections in chat, and the context that made the choice sensible disappears across tools.</p>
               </div>
             </article>
-            <article data-reveal>
-              <span className={styles.problemNumber}>02</span>
-              <div className={styles.problemIcon}>?</div>
-              <h3>“We agreed” is ambiguous</h3>
-              <p>Teams move forward without knowing who supported the choice, what quorum meant, or what remained unresolved.</p>
-              <div className={styles.ambiguityDemo} aria-hidden="true">
-                <i /><i /><i /><i /><i /><span>3 different memories</span>
+
+            <article className={styles.problemStoryCard} data-reveal>
+              <div className={styles.problemCardMedia}>
+                <img src={problemPhotos.ambiguous} alt="Team members discussing a decision together around a table" loading="lazy" />
+                <div className={styles.problemMediaShade} />
+                <div className={styles.problemMemorySignal} aria-hidden="true">
+                  <i /><i /><i /><i />
+                  <span>4 interpretations</span>
+                </div>
+                <span className={styles.problemMediaIndex}>02</span>
+              </div>
+              <div className={styles.problemCardBody}>
+                <span className={styles.problemCardMeta}>CONSENSUS GAP</span>
+                <h3>“We agreed” is ambiguous</h3>
+                <p>Teams move forward without a durable record of who supported the choice, what quorum meant, or what remained unresolved.</p>
               </div>
             </article>
-            <article data-reveal>
-              <span className={styles.problemNumber}>03</span>
-              <div className={styles.problemIcon}>⌁</div>
-              <h3>Follow-through gets detached</h3>
-              <p>The decision and the work it created separate immediately, making ownership and review easy to forget.</p>
-              <div className={styles.followDemo} aria-hidden="true">
-                <span><i /> Decision</span><b>········</b><span><i /> Action</span>
+
+            <article className={styles.problemStoryCard} data-reveal>
+              <div className={styles.problemCardMedia}>
+                <img src={problemPhotos.followThrough} alt="Laptop showing project work and follow-through tasks" loading="lazy" />
+                <div className={styles.problemMediaShade} />
+                <div className={styles.problemActionSignal} aria-hidden="true">
+                  <span><i /> Decision</span>
+                  <b><em /></b>
+                  <span><i /> Action</span>
+                </div>
+                <span className={styles.problemMediaIndex}>03</span>
+              </div>
+              <div className={styles.problemCardBody}>
+                <span className={styles.problemCardMeta}>FOLLOW-THROUGH</span>
+                <h3>Ownership gets detached</h3>
+                <p>The decision and the work it created separate immediately, making owners, review dates, and accountability easy to lose.</p>
               </div>
             </article>
           </div>
